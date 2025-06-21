@@ -1,0 +1,66 @@
+# Build and Release Folders
+bin-debug/
+bin-release/
+[Oo]bj/
+[Bb]in/
+
+# Other files and folders
+.settings/
+appsettings.json
+.vs
+
+# Executables
+*.swf
+*.air
+*.ipa
+*.apk
+
+# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
+# should NOT be excluded as they contain compiler settings and other important
+# information for Eclipse / Flash Builder.
+
+# Node modules
+node_modules/
+
+# Build output
+.next/
+out/
+
+# Vercel build output
+.vercel/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local env files (nhớ giữ file mẫu .env.example nếu có)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+*.swp
+*.swo
+
+# Dependency lock files (tuỳ nếu bạn không muốn commit)
+# Chọn một: package-lock.json, yarn.lock hoặc pnpm-lock.yaml
+# Nếu dùng yarn:
+# !yarn.lock
+
+# Optional: nếu dùng TypeScript
+*.tsbuildinfo
+
+# Optional: nếu dùng testing tools
+coverage/
