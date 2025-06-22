@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace GESS.DesktopApp
+namespace SEP490_G18_GESS_DESKTOPAPP
 {
     /// <summary>
     /// Interaction logic for App.xaml

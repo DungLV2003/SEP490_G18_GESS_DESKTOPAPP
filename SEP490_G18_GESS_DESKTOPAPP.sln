@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GESS.DesktopApp", "GESS.DesktopApp\GESS.DesktopApp.csproj", "{81399136-9F56-4B8A-91F2-F6E86BDA9067}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SEP490_G18_GESS_DESKTOPAPP", "SEP490_G18_GESS_DESKTOPAPP\SEP490_G18_GESS_DESKTOPAPP.csproj", "{42B82543-4301-4B4B-99B3-0447388CEFC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{81399136-9F56-4B8A-91F2-F6E86BDA9067}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{81399136-9F56-4B8A-91F2-F6E86BDA9067}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{81399136-9F56-4B8A-91F2-F6E86BDA9067}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{81399136-9F56-4B8A-91F2-F6E86BDA9067}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42B82543-4301-4B4B-99B3-0447388CEFC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42B82543-4301-4B4B-99B3-0447388CEFC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42B82543-4301-4B4B-99B3-0447388CEFC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42B82543-4301-4B4B-99B3-0447388CEFC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {CB3DEAFB-57D0-4EFC-9D49-D7C1A3900E3B}
+		SolutionGuid = {04B38447-33D7-4FA5-8E62-7605C3635D48}
 	EndGlobalSection
 EndGlobal

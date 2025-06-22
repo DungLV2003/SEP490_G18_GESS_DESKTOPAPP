@@ -9,7 +9,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace GESS.DesktopApp
+namespace SEP490_G18_GESS_DESKTOPAPP
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

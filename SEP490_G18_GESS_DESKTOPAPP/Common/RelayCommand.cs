@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace GESS.DesktopApp.Common
+namespace SEP490_G18_GESS_DESKTOPAPP.Common
 {
     public class RelayCommand : ICommand
     {

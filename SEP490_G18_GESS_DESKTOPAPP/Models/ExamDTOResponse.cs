@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GESS.DesktopApp.Services
+namespace SEP490_G18_GESS_DESKTOPAPP.Models
 {
-    class ApiService
+    internal class ExamDTOResponse
     {
     }
 }
