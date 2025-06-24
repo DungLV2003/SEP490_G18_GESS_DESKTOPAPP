@@ -1,0 +1,13 @@
+﻿using SEP490_G18_GESS_DESKTOPAPP.Services.Interface;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
+{
+    public class LichSuBaiThiSinhVienService : ILichSuBaiThiSinhVienService
+    {
+    }
+}

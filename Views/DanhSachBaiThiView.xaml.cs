@@ -1,29 +1,30 @@
 ﻿using SEP490_G18_GESS_DESKTOPAPP.Helpers;
-using SEP490_G18_GESS_DESKTOPAPP.Services.Implement;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SEP490_G18_GESS_DESKTOPAPP
+namespace SEP490_G18_GESS_DESKTOPAPP.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for DanhSachBaiThiView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class DanhSachBaiThiView : Window
     {
-        public MainWindow(MainViewModel mViewModel)
+        public DanhSachBaiThiView(DanhSachBaiThiSinhVienViewModel dsbtViewModel)
         {
             InitializeComponent();
-            this.DataContext = mViewModel;
+            this.DataContext = dsbtViewModel;
             AnimationHelper.ApplyFadeIn(this);
         }
     }

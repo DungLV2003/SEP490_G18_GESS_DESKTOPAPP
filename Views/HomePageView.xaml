@@ -1,0 +1,414 @@
+﻿<Window x:Class="SEP490_G18_GESS_DESKTOPAPP.Views.HomePageView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
+        mc:Ignorable="d"
+        Title="HomePageView" WindowState="Maximized" Background="#F8F9FA">
+    <Window.Resources>
+        <!-- Định nghĩa màu sắc -->
+        <SolidColorBrush x:Key="PrimaryBlue" Color="#6366F1"/>
+        <SolidColorBrush x:Key="PrimaryBlueHover" Color="#5B5DEF"/>
+        <SolidColorBrush x:Key="LightGray" Color="#F1F5F9"/>
+        <SolidColorBrush x:Key="TextGray" Color="#64748B"/>
+        <SolidColorBrush x:Key="DarkText" Color="#1E293B"/>
+        <SolidColorBrush x:Key="GreenCheck" Color="#10B981"/>
+
+        <!-- Style cho Card -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="32"/>
+            <Setter Property="Margin" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#E2E8F0" Direction="270" ShadowDepth="4" BlurRadius="20" Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" 
+                                               To="1.02" Duration="0:0:0.4">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" 
+                                               To="1.02" Duration="0:0:0.4">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" 
+                                               To="1" Duration="0:0:0.4">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" 
+                                               To="1" Duration="0:0:0.4">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Style cho Button chính -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="32,16"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="12"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource PrimaryBlueHover}"/>
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" 
+                                               To="1.01" Duration="0:0:0.6">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" 
+                                               To="1.01" Duration="0:0:0.6">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" 
+                                               To="1" Duration="0:0:0.6">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" 
+                                               To="1" Duration="0:0:0.6">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="0.3" ScaleY="0.3"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Style cho header button -->
+        <Style x:Key="HeaderButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="40,20"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="12"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Icon cho checkmark -->
+        <Style x:Key="CheckIconStyle" TargetType="Ellipse">
+            <Setter Property="Fill" Value="{StaticResource GreenCheck}"/>
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Background gradient -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#F8FAFC" Offset="0"/>
+                <GradientStop Color="#F1F5F9" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,40,0,20">
+            <TextBlock Text="Hệ thống thi trực tuyến"
+                       FontSize="40"
+                       FontWeight="Bold"
+                       Foreground="{StaticResource PrimaryBlue}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,16"/>
+
+            <TextBlock Text="Chào mừng bạn đến với hệ thống thi trực tuyến. Vui lòng chọn một"
+                       FontSize="16"
+                       Foreground="{StaticResource TextGray}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,4"/>
+
+            <TextBlock Text="trong các tùy chọn dưới đây để tiếp tục."
+                       FontSize="16"
+                       Foreground="{StaticResource TextGray}"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Margin="40,0,40,40">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Card Lịch sử thi -->
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <!-- Header của card -->
+                    <Border Background="{StaticResource PrimaryBlue}" 
+                            CornerRadius="12" 
+                            Padding="24,16" 
+                            Margin="0,0,0,24">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Lịch sử thi của sinh viên"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Xem lại các bài thi đã hoàn thành"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       HorizontalAlignment="Center"
+                                       Opacity="0.9"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Icon và mô tả -->
+                    <Border Background="{StaticResource LightGray}"
+                            CornerRadius="50"
+                            Width="80"
+                            Height="80"
+                            Margin="0,0,0,24">
+                        <TextBlock Text="🕒"
+                                   FontSize="36"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+
+                    <TextBlock Text="Xem lại kết quả các bài thi bạn đã tham gia trước đây."
+                               FontSize="14"
+                               Foreground="{StaticResource TextGray}"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Margin="0,0,0,24"/>
+
+                    <!-- Danh sách tính năng -->
+                    <StackPanel Margin="0,0,0,32"  HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <Border Background="{StaticResource GreenCheck}"
+                                    CornerRadius="10"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="✓"
+                                           Foreground="White"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="12"/>
+                            </Border>
+                            <TextBlock Text="Xem điểm số các bài thi theo môn học"
+                                       FontSize="14"
+                                       Foreground="{StaticResource DarkText}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Border Background="{StaticResource GreenCheck}"
+                                    CornerRadius="10"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="✓"
+                                           Foreground="White"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="12"/>
+                            </Border>
+                            <TextBlock Text="Lưu lại các bài thi theo môn học"
+                                       FontSize="14"
+
+                                       Foreground="{StaticResource DarkText}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Button -->
+                    <!--<Button Content="Xem lịch sử thi"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="ViewHistory_Click"
+                            HorizontalAlignment="Stretch" Margin="0,60,0,0"/>-->
+                </StackPanel>
+            </Border>
+
+            <!-- Card Tham gia thi -->
+            <Border Grid.Column="1" Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <!-- Header của card -->
+                    <Border Background="{StaticResource PrimaryBlue}" 
+                            CornerRadius="12" 
+                            Padding="24,16" 
+                            Margin="0,0,0,24">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Tham gia thi"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Foreground="White"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Tham gia các bài thi hiện có"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       HorizontalAlignment="Center"
+                                       Opacity="0.9"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Icon và mô tả -->
+                    <Border Background="{StaticResource LightGray}"
+                            CornerRadius="50"
+                            Width="80"
+                            Height="80"
+                            Margin="0,0,0,24">
+                        <TextBlock Text="📝"
+                                   FontSize="36"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+
+                    <TextBlock Text="Tham gia các bài thi đã được lên lịch cho kỳ học hiện tại."
+                               FontSize="14"
+                               Foreground="{StaticResource TextGray}"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Margin="0,0,0,24"/>
+
+                    <!-- Danh sách tính năng -->
+                    <StackPanel Margin="0,0,0,32"  HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <Border Background="{StaticResource GreenCheck}"
+                                    CornerRadius="10"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="✓"
+                                           Foreground="White"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="12"/>
+                            </Border>
+                            <TextBlock Text="Danh sách bài thi sắp tới"
+                                       FontSize="14"
+                                       Foreground="{StaticResource DarkText}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" >
+                            <Border Background="{StaticResource GreenCheck}"
+                                    CornerRadius="10"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="✓"
+                                           Foreground="White"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="12"/>
+                            </Border>
+                            <TextBlock Text="Thi trắc nghiệm và tự luận"
+                                       FontSize="14"
+                                       Foreground="{StaticResource DarkText}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Button -->
+                    <!--<Button Content="Tham gia thi ngay"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="JoinExam_Click"
+                            HorizontalAlignment="Stretch" Margin="0,60,0,0"/>-->
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

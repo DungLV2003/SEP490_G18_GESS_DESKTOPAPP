@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SEP490_G18_GESS_DESKTOPAPP.Helpers;
+using SEP490_G18_GESS_DESKTOPAPP.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,16 +14,18 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
+namespace SEP490_G18_GESS_DESKTOPAPP.Views
 {
     /// <summary>
-    /// Interaction logic for TestViewModel.xaml
+    /// Interaction logic for HomePageView.xaml
     /// </summary>
-    public partial class TestViewModel : Window
+    public partial class HomePageView : Window
     {
-        public TestViewModel()
+        public HomePageView(HomePageViewModel hpViewModel)
         {
             InitializeComponent();
+            this.DataContext = hpViewModel;
+            AnimationHelper.ApplyFadeIn(this);
         }
     }
 }
