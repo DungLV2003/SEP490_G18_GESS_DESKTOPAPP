@@ -24,8 +24,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 _navigationService.NavigateWithFade<MainWindow, HomePageView>());
 
             // Initialize commands
-            //ViewHistoryCommand = new RelayCommand(ExecuteViewHistory);
-            //JoinExamCommand = new RelayCommand(ExecuteJoinExam);
         }
     }
 }

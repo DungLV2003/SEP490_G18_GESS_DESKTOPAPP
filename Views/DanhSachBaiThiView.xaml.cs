@@ -2,6 +2,7 @@
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,4 +29,20 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             AnimationHelper.ApplyFadeIn(this);
         }
     }
+    // Converter cho STT
+    public class AddOneMultiConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values[0] is int index)
+                return (index + 1).ToString();
+            return "1";
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
 }

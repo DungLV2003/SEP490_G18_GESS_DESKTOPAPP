@@ -141,13 +141,13 @@
                         </BeginStoryboard>
                     </Trigger.ExitActions>
                 </Trigger>
-                <Trigger Property="IsPressed" Value="True">
+                <!--<Trigger Property="IsPressed" Value="True">
                     <Setter Property="RenderTransform">
                         <Setter.Value>
                             <ScaleTransform ScaleX="0.3" ScaleY="0.3"/>
                         </Setter.Value>
                     </Setter>
-                </Trigger>
+                </Trigger>-->
             </Style.Triggers>
         </Style>
 
@@ -311,10 +311,10 @@
                     </StackPanel>
 
                     <!-- Button -->
-                    <!--<Button Content="Xem lịch sử thi"
+                    <Button Content="Xem lịch sử thi"
                             Style="{StaticResource PrimaryButtonStyle}"
-                            Click="ViewHistory_Click"
-                            HorizontalAlignment="Stretch" Margin="0,60,0,0"/>-->
+                            Command="{Binding ViewHistory}"
+                            HorizontalAlignment="Stretch" Margin="0,60,0,0"/>
                 </StackPanel>
             </Border>
 
@@ -402,11 +402,11 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- Button -->
-                    <!--<Button Content="Tham gia thi ngay"
+                     <!--Button--> 
+                    <Button Content="Tham gia thi ngay"
                             Style="{StaticResource PrimaryButtonStyle}"
-                            Click="JoinExam_Click"
-                            HorizontalAlignment="Stretch" Margin="0,60,0,0"/>-->
+                            Command="{Binding ExamList}"
+                            HorizontalAlignment="Stretch" Margin="0,60,0,0"/>
                 </StackPanel>
             </Border>
         </Grid>

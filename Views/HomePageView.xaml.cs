@@ -25,6 +25,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         {
             InitializeComponent();
             this.DataContext = hpViewModel;
+            this.ResizeMode = ResizeMode.CanMinimize;
+            this.WindowStyle = WindowStyle.SingleBorderWindow;
             AnimationHelper.ApplyFadeIn(this);
         }
     }
