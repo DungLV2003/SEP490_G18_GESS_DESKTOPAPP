@@ -5,8 +5,489 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
         mc:Ignorable="d"
-        Title="DanhSachBaiThiView" Height="450" Width="800">
+        Title="DanhSachBaiThiView" Background="#F8FAFC" WindowState="Maximized">
+    <Window.Resources>
+        <!-- Solid Brushes -->
+        <SolidColorBrush x:Key="HeaderBackground" Color="#E9ECEF"/>
+        <SolidColorBrush x:Key="TabBackground" Color="#6C757D"/>
+
+        <!-- Button Styles -->
+        <Style x:Key="TabButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#343A40"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8,8,0,0" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#5C636A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsMultiExamSelected}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource TabBackground}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="TabButtonStyle2" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#343A40"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="8,8,0,0" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#6C757D"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsPracticeExamSelected}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource TabBackground}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#6C757D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="4" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#5C636A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DisabledButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#DC3545"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,4"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="4" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Section với Title -->
+        <Border Grid.Row="0" Background="{StaticResource HeaderBackground}" 
+                CornerRadius="12,12,0,0"
+                Margin="20,20,20,20">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" Opacity="0.1" 
+                                ShadowDepth="2" BlurRadius="8"/>
+            </Border.Effect>
+            <Grid Margin="20,15">
+                <TextBlock Text="Danh sách bài thi" 
+                         FontSize="24" 
+                         FontWeight="Bold" 
+                         Foreground="#343A40" 
+                         HorizontalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Loading Indicator -->
+        <Grid Grid.Row="1">
+            <Border Background="#80FFFFFF">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Đang tải dữ liệu..." 
+                               FontSize="18" 
+                               Foreground="#6C757D"
+                               HorizontalAlignment="Center"/>
+                    <ProgressBar IsIndeterminate="True" 
+                                 Width="200" Height="4" 
+                                 Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Main Content -->
+            <Border CornerRadius="15,15,15,15" 
+                    Margin="20,0,20,20">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" Opacity="0.05" 
+                                    ShadowDepth="0" BlurRadius="20"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70*"/>
+                        <ColumnDefinition Width="30*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Table Content -->
+                    <Border Grid.Column="0" 
+                            Background="White" 
+                            CornerRadius="12,12,12,12" 
+                            BorderThickness="0">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <!-- Tab Section - LIỀN VỚI BẢNG -->
+                                <Border Background="White" CornerRadius="12,12,12,12" >
+                                    <StackPanel Orientation="Horizontal" Margin="0,0">
+                                        <Button Content="Trắc nghiệm" 
+                                                Style="{StaticResource TabButtonStyle}"
+                                                Command="{Binding LoadMultiExamCommand}"/>
+                                        <Button Content="Tự luận" 
+                                                Style="{StaticResource TabButtonStyle2}" 
+                                                Command="{Binding LoadPracticeExamCommand}"
+                                                Margin="2,0,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Table Header -->
+                                <Border Background="#DEE2E6">
+                                    <Grid Margin="20,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40"/>
+                                            <ColumnDefinition Width="280"/>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="140"/>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="100"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="STT" FontWeight="Bold"
+                                                 Foreground="#343A40" FontSize="14"
+                                                 HorizontalAlignment="Center" TextAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="Tên bài thi" FontWeight="Bold"
+                                                 Foreground="#343A40" FontSize="14"
+                                                 HorizontalAlignment="Center" TextAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="Môn" FontWeight="Bold"
+                                                 Foreground="#343A40" FontSize="14"
+                                                 HorizontalAlignment="Center" TextAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="Thời gian" FontWeight="Bold"
+                                                 Foreground="#343A40" FontSize="14"
+                                                 HorizontalAlignment="Center" TextAlignment="Center"/>
+                                        <TextBlock Grid.Column="4" Text="Ngày thi" FontWeight="Bold"
+                                                 Foreground="#343A40" FontSize="14"
+                                                 HorizontalAlignment="Center" TextAlignment="Center"/>
+                                        <TextBlock Grid.Column="5" Text="Ca thi" FontWeight="Bold"
+                                                 Foreground="#343A40" FontSize="14"
+                                                 HorizontalAlignment="Center" TextAlignment="Center"/>
+                                        <TextBlock Grid.Column="6" Text="Phòng thi" FontWeight="Bold"
+                                                 Foreground="#343A40" FontSize="14"
+                                                 HorizontalAlignment="Center" TextAlignment="Center"/>
+                                        <TextBlock Grid.Column="7" Text="Thao tác" FontWeight="Bold"
+                                                 Foreground="#343A40" FontSize="14"
+                                                 HorizontalAlignment="Center" TextAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Data Rows -->
+                                <ItemsControl ItemsSource="{Binding ExamList}" AlternationCount="2">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#CED4DA" BorderThickness="0,0,0,1">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="White"/>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                                                <Setter Property="Background" Value="#F8F9FA"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+
+                                                <Grid Margin="20,15">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="40"/>
+                                                        <ColumnDefinition Width="280"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="140"/>
+                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="100"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- STT bắt đầu từ 1 -->
+                                                    <TextBlock Grid.Column="0" FontSize="14" Foreground="#495057" 
+         HorizontalAlignment="Center" TextAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0}">
+                                                                <MultiBinding.Converter>
+                                                                    <local:AddOneMultiConverter/>
+                                                                </MultiBinding.Converter>
+                                                                <Binding RelativeSource="{RelativeSource TemplatedParent}" 
+                     Path="(ItemsControl.AlternationIndex)"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+
+                                                    <!-- Tên bài thi -->
+                                                    <TextBlock Grid.Column="1" 
+                                                             Text="{Binding ExamName}" 
+                                                             FontSize="14" Foreground="#495057" 
+                                                             TextWrapping="Wrap" 
+                                                             TextTrimming="CharacterEllipsis"
+                                                             MaxHeight="50"
+                                                             Padding="5,0"
+                                                               HorizontalAlignment="Center" TextAlignment="Center"/>
+
+                                                    <!-- Môn học -->
+                                                    <TextBlock Grid.Column="2" 
+                                                             Text="{Binding SubjectName}" 
+                                                             FontSize="14" Foreground="#495057" 
+                                                             TextWrapping="Wrap"
+                                                             HorizontalAlignment="Center" TextAlignment="Center"/>
+
+                                                    <!-- Thời gian -->
+                                                    <TextBlock Grid.Column="3" 
+                                                             FontSize="14" Foreground="#495057"
+                                                             HorizontalAlignment="Center" TextAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} phút">
+                                                                <Binding Path="Duration"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+
+                                                    <!-- Ngày thi -->
+                                                    <TextBlock Grid.Column="4" 
+                                                             Text="{Binding StartTime, StringFormat='dd/MM/yyyy'}" 
+                                                             FontSize="14" Foreground="#495057"
+                                                             HorizontalAlignment="Center" TextAlignment="Center"/>
+
+                                                    <!-- Ca thi: nếu null thì chỉ hiển thị "-" -->
+                                                    <Grid Grid.Column="5">
+                                                        <!-- Ca thi có dữ liệu -->
+                                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <StackPanel.Style>
+                                                                <Style TargetType="StackPanel">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding ExamSlotName}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding ExamSlotName}" Value="">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </StackPanel.Style>
+
+                                                            <!-- Tên ca thi -->
+                                                            <TextBlock Text="{Binding ExamSlotName}"
+                                                                     FontSize="14" Foreground="#495057" 
+                                                                     TextAlignment="Center" FontWeight="SemiBold"/>
+                                                            <!-- Khoảng thời gian -->
+                                                            <TextBlock FontSize="12" Foreground="#6C757D" 
+                                                                     TextAlignment="Center" Margin="0,2,0,0">
+                                                                <TextBlock.Text>
+                                                                    <MultiBinding StringFormat="({0:HH:mm} - {1:HH:mm})">
+                                                                        <Binding Path="StartTime"/>
+                                                                        <Binding Path="EndTime"/>
+                                                                    </MultiBinding>
+                                                                </TextBlock.Text>
+                                                            </TextBlock>
+                                                        </StackPanel>
+
+                                                        <!-- Ca thi null hoặc empty -->
+                                                        <TextBlock Text="-" FontSize="14" Foreground="#495057" 
+                                                                 HorizontalAlignment="Center" TextAlignment="Center">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding ExamSlotName}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding ExamSlotName}" Value="">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </Grid>
+
+                                                    <!-- Phòng thi -->
+                                                    <TextBlock Grid.Column="6" 
+                                                             FontSize="14" Foreground="#495057"
+                                                             HorizontalAlignment="Center" TextAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <Binding Path="RoomName">
+                                                                <Binding.TargetNullValue>-</Binding.TargetNullValue>
+                                                                <Binding.FallbackValue>-</Binding.FallbackValue>
+                                                            </Binding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+
+                                                    <!-- Button Vào Thi -->
+                                                    <Button Grid.Column="7" 
+                                                            Content="Vào Thi" 
+                                                            Style="{StaticResource ActionButtonStyle}"
+                                                            HorizontalAlignment="Center"
+                                                            Command="{Binding DataContext.JoinExamCommand, 
+                                                                     RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Message khi không có dữ liệu -->
+                                <Grid>
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ExamList.Count}" Value="0">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <TextBlock Text="Không có dữ liệu bài thi" 
+                                             FontSize="16" 
+                                             Foreground="#6C757D"
+                                             HorizontalAlignment="Center"
+                                             Margin="20,40"/>
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Applications Status Panel - giữ nguyên -->
+                    <Border Grid.Column="1" 
+                            Background="#E9ECEF" 
+                            CornerRadius="12,12,12,12" 
+                            Margin="20,0,0,0">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" Opacity="0.05" 
+                                            ShadowDepth="0" BlurRadius="10"/>
+                        </Border.Effect>
+                        <Grid Margin="15,15">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Background="#DC3545" 
+                                    CornerRadius="12" 
+                                    Padding="8,6" 
+                                    Margin="0,0,0,10">
+                                <TextBlock Text="⚠ Vui lòng tắt tất cả ứng dụng để vào thi" 
+                                         FontSize="12" 
+                                         Foreground="White" 
+                                         FontWeight="Medium" 
+                                         HorizontalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Grid.Row="1" Text="Ứng dụng bị cấm" 
+                                     FontWeight="Bold" FontSize="16" 
+                                     Foreground="#343A40" Margin="0,0,0,10" 
+                                     HorizontalAlignment="Center"/>
+                            <StackPanel Grid.Row="2">
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Chrome" FontSize="13" 
+                                             Foreground="#343A40" VerticalAlignment="Center" 
+                                             HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="Đang mở" FontSize="13" 
+                                             Foreground="#343A40" VerticalAlignment="Center" 
+                                             HorizontalAlignment="Center"/>
+                                    <Button Grid.Column="2" Content="Tắt" 
+                                            Style="{StaticResource DisabledButtonStyle}" 
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid Margin="0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Word" FontSize="13" 
+                                             Foreground="#343A40" VerticalAlignment="Center" 
+                                             HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="Đang mở" FontSize="13" 
+                                             Foreground="#343A40" VerticalAlignment="Center" 
+                                             HorizontalAlignment="Center"/>
+                                    <Button Grid.Column="2" Content="Tắt" 
+                                            Style="{StaticResource DisabledButtonStyle}" 
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
