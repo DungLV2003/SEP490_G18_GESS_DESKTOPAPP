@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Nhập mã bài thi" 
         Height="630" Width="800"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterOwner"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -50,10 +50,12 @@
         </Style>
 
         <!-- PasswordBox Styles -->
+        <!-- Cập nhật ModernPasswordBoxStyle -->
         <Style x:Key="ModernPasswordBoxStyle" TargetType="PasswordBox">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Height" Value="45"/>
-            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="Padding" Value="15,0,50,0"/>
+            <!-- Thêm padding bên phải cho button -->
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="#D1D5DB"/>
             <Setter Property="Background" Value="White"/>
@@ -62,25 +64,12 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="PasswordBox">
                         <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8">
-                            <Grid>
-                                <ScrollViewer x:Name="PART_ContentHost" 
-                                            Margin="{TemplateBinding Padding}"
-                                            VerticalAlignment="Center"/>
-                                <Button x:Name="ShowPasswordButton"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Center"
-                                        Width="40" Height="30"
-                                        Margin="0,0,8,0"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Cursor="Hand"
-                                        Click="ShowPasswordButton_Click">
-                                    <TextBlock x:Name="EyeIcon" Text="👁" FontSize="16" Foreground="#6B7280"/>
-                                </Button>
-                            </Grid>
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost" 
+                                Margin="{TemplateBinding Padding}"
+                                VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -220,17 +209,36 @@
             Background="#F9FAFB"
             Margin="0,0,0,20"/>
 
-                <!-- OTP bài thi -->
                 <TextBlock Text="OTP bài thi" Style="{StaticResource FieldLabelStyle}"/>
                 <Grid Margin="0,0,0,0">
                     <PasswordBox x:Name="OTPPasswordBox" 
-                    Style="{StaticResource ModernPasswordBoxStyle}"
-                    Visibility="Visible"
-                    PasswordChanged="OTPPasswordBox_PasswordChanged"/>
+                 Style="{StaticResource ModernPasswordBoxStyle}"
+                 Visibility="Visible"
+                 PasswordChanged="OTPPasswordBox_PasswordChanged"/>
+
                     <TextBox x:Name="OTPTextBox" 
-                Style="{StaticResource ModernTextBoxStyle}"
-                Visibility="Collapsed"
-                TextChanged="OTPTextBox_TextChanged"/>
+             Style="{StaticResource ModernTextBoxStyle}"
+             Visibility="Collapsed"
+             TextChanged="OTPTextBox_TextChanged"/>
+
+                    <!-- Button đặt ngoài, không nằm trong template -->
+                    <!-- Trong XAML, thay thế button content -->
+                    <Button x:Name="ShowPasswordButton"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Center"
+        Width="40" Height="30"
+        Margin="0,0,8,0"
+        Background="Transparent"
+        BorderThickness="0"
+        Cursor="Hand"
+        Panel.ZIndex="10"
+        Click="ShowPasswordButton_Click">
+                        <Viewbox Width="20" Height="20">
+                            <Path x:Name="EyeIcon" 
+              Fill="#6B7280"
+              Data="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z"/>
+                        </Viewbox>
+                    </Button>
                 </Grid>
             </StackPanel>
 

@@ -2,6 +2,7 @@
 using SEP490_G18_GESS_DESKTOPAPP.Models.LichSuBaiThiSinhVienDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interface;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels.Base;
+using SEP490_G18_GESS_DESKTOPAPP.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
     public class LichSuBaiThiSinhVienViewModel : BaseViewModel
     {
         private readonly ILichSuBaiThiSinhVienService _lichSuBaiThiService;
+        // Thêm vào phần Properties
+        private readonly INavigationService _navigationService;
 
         #region Properties
         private ObservableCollection<int> _yearList;
@@ -110,14 +113,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         #endregion
 
         #region Commands
+        public ICommand BackCommand { get; }
         public ICommand LoadDataCommand { get; }
         public ICommand RefreshCommand { get; }
         #endregion
 
-        public LichSuBaiThiSinhVienViewModel(ILichSuBaiThiSinhVienService lichSuBaiThiService)
+        public LichSuBaiThiSinhVienViewModel(ILichSuBaiThiSinhVienService lichSuBaiThiService, INavigationService navigationService)
         {
             _lichSuBaiThiService = lichSuBaiThiService;
-
+            _navigationService = navigationService;
             YearList = new ObservableCollection<int>();
             SemesterList = new ObservableCollection<SemesterResponse>();
             SubjectList = new ObservableCollection<AllSubjectBySemesterOfStudentDTOResponse>();
@@ -125,6 +129,9 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             LoadDataCommand = new RelayCommand(async () => await LoadInitialDataAsync());
             RefreshCommand = new RelayCommand(async () => await LoadInitialDataAsync());
+            BackCommand = new RelayCommand(() =>
+      _navigationService.NavigateWithFade<LichSuBaiThiSinhVienView, HomePageView>());
+
 
             // Load dữ liệu ban đầu
             _ = Task.Run(async () => await LoadInitialDataAsync());
