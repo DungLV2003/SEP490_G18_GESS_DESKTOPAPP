@@ -1,0 +1,260 @@
+﻿<Window x:Class="SEP490_G18_GESS_DESKTOPAPP.Views.Dialog.DialogNhapMaBaiThiView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.Dialog"
+        mc:Ignorable="d"
+        Title="Nhập mã bài thi" 
+        Height="630" Width="800"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+
+    <Window.Resources>
+        <!-- TextBox Styles -->
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost" 
+                                        Margin="{TemplateBinding Padding}"
+                                        VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" Value="#9CA3AF"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#3B82F6"/>
+                                <Setter Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- PasswordBox Styles -->
+        <Style x:Key="ModernPasswordBoxStyle" TargetType="PasswordBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <Grid>
+                                <ScrollViewer x:Name="PART_ContentHost" 
+                                            Margin="{TemplateBinding Padding}"
+                                            VerticalAlignment="Center"/>
+                                <Button x:Name="ShowPasswordButton"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Width="40" Height="30"
+                                        Margin="0,0,8,0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Click="ShowPasswordButton_Click">
+                                    <TextBlock x:Name="EyeIcon" Text="👁" FontSize="16" Foreground="#6B7280"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" Value="#9CA3AF"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#3B82F6"/>
+                                <Setter Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button Styles -->
+        <Style x:Key="CancelButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#6B7280"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="20,0">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#4B5563"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#374151"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ConfirmButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#3B82F6"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="MinWidth" Value="140"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="20,0">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="✓" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#1D4ED8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Label Style -->
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="#374151"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="White" CornerRadius="15" BorderBrush="#E5E7EB" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" Direction="270" ShadowDepth="8" Opacity="0.15" BlurRadius="20"/>
+        </Border.Effect>
+
+        <Grid Margin="40">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header Icon -->
+            <Grid Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,25">
+                <Ellipse Width="90" Height="90" Fill="#3B82F6"/>
+                <TextBlock Text="📝" FontSize="42" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                          Foreground="White" Margin="0,4,0,0"/>
+            </Grid>
+
+            <!-- Title -->
+            <TextBlock Grid.Row="1" 
+           Text="{Binding DialogTitle}"
+           FontSize="26" FontWeight="Bold" 
+           HorizontalAlignment="Center" 
+           Foreground="#1F2937" Margin="0,0,0,10"/>
+
+            <!-- Subtitle -->
+            <TextBlock Grid.Row="2" 
+           Text="{Binding DialogSubtitle}"
+           FontSize="16" 
+           HorizontalAlignment="Center" 
+           Foreground="#6B7280"
+           TextAlignment="Center"
+           Margin="0,0,0,30"/>
+
+            <!-- Form Fields -->
+            <StackPanel Grid.Row="3" Margin="0,0,0,25">
+                <!-- Mã bài thi -->
+                <TextBlock Text="Mã bài thi" Style="{StaticResource FieldLabelStyle}"/>
+                <TextBox x:Name="MaBaiThiTextBox" 
+            Style="{StaticResource ModernTextBoxStyle}"
+            Text="{Binding ExamCode, Mode=TwoWay}"
+            IsReadOnly="True"
+            Background="#F9FAFB"
+            Margin="0,0,0,20"/>
+
+                <!-- OTP bài thi -->
+                <TextBlock Text="OTP bài thi" Style="{StaticResource FieldLabelStyle}"/>
+                <Grid Margin="0,0,0,0">
+                    <PasswordBox x:Name="OTPPasswordBox" 
+                    Style="{StaticResource ModernPasswordBoxStyle}"
+                    Visibility="Visible"
+                    PasswordChanged="OTPPasswordBox_PasswordChanged"/>
+                    <TextBox x:Name="OTPTextBox" 
+                Style="{StaticResource ModernTextBoxStyle}"
+                Visibility="Collapsed"
+                TextChanged="OTPTextBox_TextChanged"/>
+                </Grid>
+            </StackPanel>
+
+            <!-- Info Note -->
+            <Border Grid.Row="4" Background="#F0F9FF" BorderBrush="#BAE6FD" BorderThickness="1" 
+       CornerRadius="8" Padding="15" Margin="0,0,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="ℹ️" FontSize="16" VerticalAlignment="Top" Margin="0,0,10,0"/>
+                    <TextBlock FontSize="13" Foreground="#0369A1" TextWrapping="Wrap" LineHeight="18" TextAlignment="Center">
+            <Run Text="Mã bài thi và OTP được cung cấp bởi giáo viên của bạn."/>
+            <LineBreak/>
+            <Run Text="Vui lòng kiểm tra kỹ thông tin trước khi xác nhận."/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                <Button Content="Hủy" Style="{StaticResource CancelButtonStyle}" 
+                       Margin="0,0,20,0" 
+                       Command="{Binding CancelCommand}"/>
+                <Button Content="Xác nhận" Style="{StaticResource ConfirmButtonStyle}" 
+                       Command="{Binding ConfirmCommand}"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

@@ -1,7 +1,11 @@
 ﻿using SEP490_G18_GESS_DESKTOPAPP.Helpers;
 using SEP490_G18_GESS_DESKTOPAPP.Models.DanhSachBaiThiSinhVienDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interface;
+using SEP490_G18_GESS_DESKTOPAPP.Services.Interfaces;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels.Base;
+using SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog;
+using SEP490_G18_GESS_DESKTOPAPP.Views;
+using SEP490_G18_GESS_DESKTOPAPP.Views.Dialog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,6 +14,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Xaml;
+using SEP490_G18_GESS_DESKTOPAPP.Models.Enum;
 
 namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 {
@@ -17,6 +23,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
     {
         private readonly IDanhSachBaiThiService _danhSachBaiThiService;
         private readonly INavigationService _navigationService;
+        private readonly ILamBaiThiService _lamBaiThiService;
+
 
         #region Properties
         private ObservableCollection<ExamListOfStudentResponse> _examList;
@@ -54,6 +62,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             set => SetProperty(ref _errorMessage, value);
         }
 
+        // Thêm property để xác định loại thi hiện tại
+        public ExamType CurrentExamType => IsMultiExamSelected ? ExamType.MultipleChoice : ExamType.Practice;
+
+
         // Temporary StudentId - trong thực tế sẽ lấy từ session/login
         // f4ed4675-fe72-413f-b178-08ddb30066ed cuoi ky
         // 17d4a105-511d-41aa-b177-08ddb30066ed giua ky
@@ -67,15 +79,18 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         public ICommand LoadPracticeExamCommand { get; }
         public ICommand JoinExamCommand { get; }
         public ICommand RefreshCommand { get; }
+        // Thêm vào Commands section
+        public ICommand BackCommand { get; }
         #endregion
 
         public DanhSachBaiThiSinhVienViewModel(
     IDanhSachBaiThiService danhSachBaiThiService,
-    INavigationService navigationService)
+    INavigationService navigationService,
+    ILamBaiThiService lamBaiThiService)
         {
             _danhSachBaiThiService = danhSachBaiThiService;
             _navigationService = navigationService;
-
+            _lamBaiThiService = lamBaiThiService;
             ExamList = new ObservableCollection<ExamListOfStudentResponse>();
 
             // Commands không có parameter
@@ -99,6 +114,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 execute: JoinExam,
                 canExecute: exam => exam != null && !IsLoading
             );
+            BackCommand = new RelayCommand(() => _navigationService.NavigateWithFade<DanhSachBaiThiView, HomePageView>());
             // SỬA: Load dữ liệu mặc định đúng cách
             LoadInitialData();
         }
@@ -218,36 +234,28 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             }
         }
 
+        // Cập nhật JoinExam method
         private void JoinExam(ExamListOfStudentResponse exam)
         {
             if (exam == null) return;
 
             try
             {
-                // TODO: Implement navigation to exam view
-                // Ví dụ: Navigate tới màn hình làm bài thi với ExamId
+                // Truyền thêm CurrentExamType dựa trên tab đang được chọn
+                var dialogViewModel = new DialogNhapMaBaiThiViewModel(
+                    _lamBaiThiService,
+                    exam,
+                    _currentStudentId,
+                    CurrentExamType); // Truyền loại thi từ tab hiện tại
 
-                // Option 1: Nếu có NavigationService
-                // _navigationService.NavigateToExam(exam.ExamId, _currentStudentId);
-
-                // Option 2: Nếu cần show dialog xác nhận trước
-                // var confirmResult = MessageBox.Show(
-                //     $"Bạn có muốn vào thi '{exam.ExamName}'?", 
-                //     "Xác nhận", 
-                //     MessageBoxButton.YesNo);
-                // if (confirmResult == MessageBoxResult.Yes)
-                // {
-                //     // Navigate
-                // }
-
-                System.Windows.MessageBox.Show(
-                    $"Đang vào thi: {exam.ExamName}\nMôn: {exam.SubjectName}\nThời gian: {exam.Duration} phút",
-                    "Thông báo"
-                );
+             
+                var dialog = new DialogNhapMaBaiThiView(dialogViewModel);
+                dialog.ShowDialog(); 
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Lỗi khi vào thi: {ex.Message}";
+                ErrorMessage = $"Lỗi khi mở dialog: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine($"JoinExam Error: {ex}");
             }
         }
         #endregion

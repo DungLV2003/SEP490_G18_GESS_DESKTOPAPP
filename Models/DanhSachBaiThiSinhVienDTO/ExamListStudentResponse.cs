@@ -12,6 +12,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.DanhSachBaiThiSinhVienDTO
         public string ExamName { get; set; }
         public string SubjectName { get; set; }
         public int Duration { get; set; }
+        public DateTime ExamDay { get; set; }
         public string? Status { get; set; }
         public string? RoomName { get; set; }
         public string? ExamSlotName { get; set; }

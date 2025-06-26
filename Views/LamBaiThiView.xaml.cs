@@ -24,6 +24,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         public LamBaiThiView(LamBaiThiViewModel lbtViewModel)
         {
             InitializeComponent();
+            this.ResizeMode = ResizeMode.CanMinimize;
+            this.WindowStyle = WindowStyle.SingleBorderWindow;
             this.DataContext = lbtViewModel;
             AnimationHelper.ApplyFadeIn(this);
         }
