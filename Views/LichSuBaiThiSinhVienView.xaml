@@ -163,6 +163,47 @@
 
         <!-- Converter để xử lý background cho selected subject -->
         <local:SubjectSelectionConverter x:Key="SubjectSelectionConverter"/>
+        <Style x:Key="BackButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#343A40"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ToolTip" Value="Quay lại"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                Background="{TemplateBinding Background}" 
+                CornerRadius="20"
+                BorderThickness="1"
+                BorderBrush="Transparent">
+                            <Path x:Name="ArrowIcon"
+                  Data="M15,7 L9,1 L7.5,2.5 L11.25,6.25 L1,6.25 L1,7.75 L11.25,7.75 L7.5,11.5 L9,13 Z"
+                  Fill="#343A40"
+                  Width="16"
+                  Height="16"
+                  Stretch="Uniform"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <RotateTransform Angle="180"/>
+                                </Path.RenderTransform>
+                            </Path>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F8F9FA"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#DEE2E6"/>
+                                <Setter TargetName="ArrowIcon" Property="Fill" Value="#007BFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -172,13 +213,32 @@
         </Grid.RowDefinitions>
 
         <!-- Header với gradient -->
+        <!-- Header với gradient và Back button -->
         <Border Grid.Row="0" Background="{StaticResource HeaderGradient}">
-            <TextBlock Text="Lịch sử bài thi" 
-                       Foreground="White" 
-                       FontSize="28" 
-                       FontWeight="Bold" 
-                       VerticalAlignment="Center" 
-                       Margin="36,0"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Back Button -->
+                <Button Grid.Column="0"
+                Style="{StaticResource BackButtonStyle}"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Margin="20,0,0,0"
+                Command="{Binding BackCommand}"/>
+
+                <!-- Title -->
+                <TextBlock Grid.Column="1" 
+                   Text="Lịch sử bài thi" 
+                   Foreground="White" 
+                   FontSize="28" 
+                   FontWeight="Bold" 
+                   VerticalAlignment="Center" 
+                   Margin="0,0,56,0"
+                   HorizontalAlignment="Center"/>
+            </Grid>
         </Border>
 
         <!-- Loading Indicator -->

@@ -241,16 +241,24 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             try
             {
-                // Truyền thêm CurrentExamType dựa trên tab đang được chọn
                 var dialogViewModel = new DialogNhapMaBaiThiViewModel(
                     _lamBaiThiService,
                     exam,
                     _currentStudentId,
-                    CurrentExamType); // Truyền loại thi từ tab hiện tại
+                    CurrentExamType);
 
-             
                 var dialog = new DialogNhapMaBaiThiView(dialogViewModel);
-                dialog.ShowDialog(); 
+
+                // Tìm window hiện tại làm Owner
+                var currentWindow = Application.Current.Windows.OfType<Window>()
+                    .FirstOrDefault(w => w.IsActive);
+
+                if (currentWindow != null)
+                {
+                    dialog.Owner = currentWindow;
+                }
+
+                dialog.ShowDialog();
             }
             catch (Exception ex)
             {
