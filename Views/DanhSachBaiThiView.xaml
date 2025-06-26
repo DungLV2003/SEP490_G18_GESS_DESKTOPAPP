@@ -7,6 +7,47 @@
         mc:Ignorable="d"
         Title="DanhSachBaiThiView" Background="#F8FAFC" WindowState="Maximized">
     <Window.Resources>
+        <Style x:Key="BackButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#343A40"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ToolTip" Value="Quay lại"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                        Background="{TemplateBinding Background}" 
+                        CornerRadius="20"
+                        BorderThickness="1"
+                        BorderBrush="Transparent">
+                            <Path x:Name="ArrowIcon"
+                          Data="M15,7 L9,1 L7.5,2.5 L11.25,6.25 L1,6.25 L1,7.75 L11.25,7.75 L7.5,11.5 L9,13 Z"
+                          Fill="#343A40"
+                          Width="16"
+                          Height="16"
+                          Stretch="Uniform"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform>
+                                    <RotateTransform Angle="180"/>
+                                </Path.RenderTransform>
+                            </Path>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F8F9FA"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#DEE2E6"/>
+                                <Setter TargetName="ArrowIcon" Property="Fill" Value="#007BFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <!-- Solid Brushes -->
         <SolidColorBrush x:Key="HeaderBackground" Color="#E9ECEF"/>
         <SolidColorBrush x:Key="TabBackground" Color="#6C757D"/>
@@ -130,20 +171,36 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header Section với Title -->
+        <!-- Header Section với Title và Back Button -->
         <Border Grid.Row="0" Background="{StaticResource HeaderBackground}" 
-                CornerRadius="12,12,0,0"
-                Margin="20,20,20,20">
+        CornerRadius="12,12,0,0"
+        Margin="20,20,20,20">
             <Border.Effect>
                 <DropShadowEffect Color="Black" Opacity="0.1" 
-                                ShadowDepth="2" BlurRadius="8"/>
+                        ShadowDepth="2" BlurRadius="8"/>
             </Border.Effect>
             <Grid Margin="20,15">
-                <TextBlock Text="Danh sách bài thi" 
-                         FontSize="24" 
-                         FontWeight="Bold" 
-                         Foreground="#343A40" 
-                         HorizontalAlignment="Center"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Back Button -->
+                <Button Grid.Column="0"
+                Style="{StaticResource BackButtonStyle}"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Margin="0,0,15,0"
+                Command="{Binding BackCommand}"/>
+
+                <!-- Title -->
+                <TextBlock Grid.Column="1"
+                   Text="Danh sách bài thi" 
+                   FontSize="24" 
+                   FontWeight="Bold" 
+                   Foreground="#343A40" 
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
             </Grid>
         </Border>
 
@@ -316,9 +373,9 @@
 
                                                     <!-- Ngày thi -->
                                                     <TextBlock Grid.Column="4" 
-                                                             Text="{Binding StartTime, StringFormat='dd/MM/yyyy'}" 
-                                                             FontSize="14" Foreground="#495057"
-                                                             HorizontalAlignment="Center" TextAlignment="Center"/>
+           Text="{Binding SubmittedDateTime, StringFormat='dd/MM/yyyy', TargetNullValue='-', FallbackValue='-'}"
+           FontSize="14" Foreground="#495057"
+           HorizontalAlignment="Center" TextAlignment="Center"/>
 
                                                     <!-- Ca thi: nếu null thì chỉ hiển thị "-" -->
                                                     <Grid Grid.Column="5">
@@ -387,12 +444,12 @@
 
                                                     <!-- Button Vào Thi -->
                                                     <Button Grid.Column="7" 
-                                                            Content="Vào Thi" 
-                                                            Style="{StaticResource ActionButtonStyle}"
-                                                            HorizontalAlignment="Center"
-                                                            Command="{Binding DataContext.JoinExamCommand, 
-                                                                     RelativeSource={RelativeSource AncestorType=Window}}"
-                                                            CommandParameter="{Binding}"/>
+                                                        Content="Vào Thi" 
+                                                        Style="{StaticResource ActionButtonStyle}"
+                                                        HorizontalAlignment="Center"
+                                                        Command="{Binding DataContext.JoinExamCommand, 
+                                                                 RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                                        CommandParameter="{Binding}"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>

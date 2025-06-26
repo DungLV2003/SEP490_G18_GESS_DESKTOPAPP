@@ -194,11 +194,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 System.Diagnostics.Debug.WriteLine($"Step 4: Loading semesters for year {currentYear}...");
                 var currentSemesters = await _lichSuBaiThiService.GetSemestersByYearAsync(currentYear, _currentStudentId);
 
-                //// BƯỚC 5: Load danh sách môn học theo kỳ hiện tại
-                //System.Diagnostics.Debug.WriteLine($"Step 5: Loading subjects for semester {currentSemesterId}, year {currentYear}...");
-                //var currentSubjects = await _lichSuBaiThiService.GetAllSubjectBySemesterOfStudentAsync(
-                //    _currentStudentId, currentSemesterId, currentYear);
-
                 // BƯỚC 6: Update UI
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
@@ -232,8 +227,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     // Set selected values (không trigger events)
                     SelectedYear = currentYear;
                     SelectedSemester = SemesterList.FirstOrDefault(s => s.SemesterId == currentSemesterId);
-
-                    System.Diagnostics.Debug.WriteLine($"Step 6: UI Updated - Years: {YearList.Count}, Semesters: {SemesterList.Count}, Subjects: {SubjectList.Count}");
                 });
             }
             catch (Exception ex)

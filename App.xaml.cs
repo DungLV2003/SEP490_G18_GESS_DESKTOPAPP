@@ -36,14 +36,18 @@ namespace SEP490_G18_GESS_DESKTOPAPP
                     services.AddSingleton<DanhSachBaiThiSinhVienViewModel>();
                     services.AddSingleton<LamBaiThiViewModel>();
                     services.AddSingleton<LichSuBaiThiSinhVienViewModel>();
-                    services.AddSingleton<DialogXacNhanNopBaiThiViewModel>();
 
                     services.AddSingleton<MainWindow>();
                     services.AddSingleton<HomePageView>();
                     services.AddSingleton<DanhSachBaiThiView>();
                     services.AddSingleton<LamBaiThiView>();
                     services.AddSingleton<LichSuBaiThiSinhVienView>();
-                    services.AddSingleton<DialogXacNhanBaiThiView>();
+
+                    services.AddTransient<DialogXacNhanBaiThiView>();
+                    services.AddTransient<DialogNhapMaBaiThiView>();
+
+                    services.AddTransient<DialogNhapMaBaiThiViewModel>();
+                    services.AddTransient<DialogXacNhanNopBaiThiViewModel>();
 
                 })
                 .Build();

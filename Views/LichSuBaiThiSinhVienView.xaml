@@ -7,26 +7,153 @@
         mc:Ignorable="d"
         Title="Lịch sử bài thi" Background="#F5F6FA" WindowState="Maximized">
     <Window.Resources>
-        <!-- Styles -->
-        <Style x:Key="HeaderStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Margin" Value="10,8"/>
+        <!-- Gradient cho header -->
+        <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#1976D2" Offset="0"/>
+            <GradientStop Color="#2196F3" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Style cho panels với shadow -->
+        <Style x:Key="ShadowPanel" TargetType="Border">
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Margin" Value="20,0,20,0"/>
+            <Setter Property="Padding" Value="28"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#1976D2" BlurRadius="16" ShadowDepth="0" Opacity="0.08"/>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <Style x:Key="FilterHeaderStyle" TargetType="TextBlock">
+        <!-- Style cho ComboBox đã sửa -->
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="0,10,0,5"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="Border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8">
+                                <Grid>
+                                    <ContentPresenter x:Name="ContentSite"
+                                                    Margin="12,0,30,0"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Left"
+                                                    Content="{TemplateBinding SelectionBoxItem}"
+                                                    ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                    ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                    IsHitTestVisible="False"/>
+
+                                    <ToggleButton x:Name="ToggleButton"
+                                                Grid.Column="2"
+                                                Focusable="false"
+                                                IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                ClickMode="Press"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                HorizontalAlignment="Right"
+                                                Width="30">
+                                        <Path x:Name="Arrow"
+                                            Data="M 0 0 L 4 4 L 8 0 Z"
+                                            Fill="#6B7280"
+                                            Width="8" Height="6"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+
+                            <Popup x:Name="Popup"
+                                Placement="Bottom"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                PopupAnimation="Slide">
+                                <Grid x:Name="DropDown"
+                                    SnapsToDevicePixels="True"
+                                    MinWidth="{TemplateBinding ActualWidth}"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder"
+                                        Background="White"
+                                        BorderThickness="1"
+                                        BorderBrush="#D1D5DB"
+                                        CornerRadius="8"
+                                        Margin="0,2,0,0">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="Black" Opacity="0.1" BlurRadius="10" ShadowDepth="2"/>
+                                        </Border.Effect>
+                                        <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#2196F3"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter TargetName="Arrow" Property="Data" Value="M 0 4 L 4 0 L 8 4 Z"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
+        <!-- Style cho ComboBoxItem -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                CornerRadius="6"
+                                Margin="2">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#E3F2FD"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#2196F3"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style cho môn học items -->
         <Style x:Key="SubjectItemStyle" TargetType="Border">
-            <Setter Property="Background" Value="#E3F2FD"/>
-            <Setter Property="Margin" Value="0,2"/>
-            <Setter Property="Padding" Value="15,10"/>
-            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Margin" Value="0,3"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="#E3F2FD"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#BBDEFB"/>
@@ -34,112 +161,28 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="SelectedSubjectItemStyle" TargetType="Border">
-            <Setter Property="Background" Value="#2196F3"/>
-            <Setter Property="Margin" Value="0,2"/>
-            <Setter Property="Padding" Value="15,10"/>
-            <Setter Property="CornerRadius" Value="5"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-
-        <Style x:Key="ExamHeaderStyle" TargetType="TextBlock">
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="FontSize" Value="12"/>
-        </Style>
-
-        <Style x:Key="ExamCellStyle" TargetType="TextBlock">
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="5"/>
-        </Style>
-
-        <Style x:Key="ScoreStyle" TargetType="TextBlock">
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="FontSize" Value="12"/>
-        </Style>
-
-        <!-- Style dùng chung cho ComboBox -->
-        <Style x:Key="RoundedComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="Black"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ComboBox">
-                        <Grid>
-                            <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4">
-                                <Grid>
-                                    <ContentPresenter Margin="10,0,30,0"
-                                                  VerticalAlignment="Center"
-                                                  HorizontalAlignment="Left"
-                                                  Content="{TemplateBinding SelectionBoxItem}" />
-                                    <ToggleButton DockPanel.Dock="Right"
-                                              IsChecked="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
-                                              Background="Transparent"
-                                              BorderThickness="0"
-                                              Focusable="False"
-                                              HorizontalAlignment="Right"
-                                              Width="30">
-                                        <Path VerticalAlignment="Center" HorizontalAlignment="Center"
-                                          Data="M 0 0 L 4 4 L 8 0 Z"
-                                          Fill="#6B7280"
-                                          Width="8" Height="6" />
-                                    </ToggleButton>
-                                </Grid>
-                            </Border>
-
-                            <Popup Name="Popup"
-                               Placement="Bottom"
-                               IsOpen="{TemplateBinding IsDropDownOpen}"
-                               AllowsTransparency="True"
-                               Focusable="False"
-                               PopupAnimation="Slide">
-                                <Border Background="White"
-                                    BorderBrush="#D1D5DB"
-                                    BorderThickness="1"
-                                    CornerRadius="4"
-                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                    SnapsToDevicePixels="True"
-                                    Margin="0,2,0,0">
-                                    <ScrollViewer SnapsToDevicePixels="True">
-                                        <StackPanel IsItemsHost="True"
-                                                KeyboardNavigation.DirectionalNavigation="Contained" />
-                                    </ScrollViewer>
-                                </Border>
-                            </Popup>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <!-- Converter để xử lý background cho selected subject -->
+        <local:SubjectSelectionConverter x:Key="SubjectSelectionConverter"/>
     </Window.Resources>
 
     <Grid>
-        <!-- Header -->
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
+            <RowDefinition Height="90"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Blue Header -->
-        <Border Grid.Row="0" Background="#2196F3">
-            <TextBlock Text="Lịch sử bài thi" Style="{StaticResource HeaderStyle}"/>
+        <!-- Header với gradient -->
+        <Border Grid.Row="0" Background="{StaticResource HeaderGradient}">
+            <TextBlock Text="Lịch sử bài thi" 
+                       Foreground="White" 
+                       FontSize="28" 
+                       FontWeight="Bold" 
+                       VerticalAlignment="Center" 
+                       Margin="36,0"/>
         </Border>
 
         <!-- Loading Indicator -->
-        <Border Grid.Row="1" Background="#80FFFFFF">
+        <Border Grid.Row="1" Background="#80FFFFFF" Panel.ZIndex="100">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -162,302 +205,260 @@
         </Border>
 
         <!-- Main Content -->
-        <Grid Grid.Row="1" Background="#F5F5F5">
+        <Grid Grid.Row="1" Margin="0,24,0,24">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="350"/>
+                <ColumnDefinition Width="450"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left Panel - Filters and Subject List -->
-            <Border Grid.Column="0" Background="White" Margin="10" CornerRadius="8">
-                <Border.Effect>
-                    <DropShadowEffect Color="Gray" Direction="270" ShadowDepth="2" Opacity="0.3"/>
-                </Border.Effect>
-                <StackPanel Margin="20">
-                    <!-- Filters Header -->
-                    <TextBlock Text="Bộ lọc" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+            <!-- Left Panel - Bộ lọc và danh sách môn học -->
+            <Border Grid.Column="0" Style="{StaticResource ShadowPanel}">
+                <StackPanel>
+                    <TextBlock Text="Bộ lọc" 
+                               FontSize="19" 
+                               FontWeight="Bold" 
+                               Margin="0,0,0,20"/>
 
-                    <!-- Semester Filter -->
-                    <TextBlock Text="Kỳ học" Style="{StaticResource FilterHeaderStyle}"/>
-                    <ComboBox Height="35" Margin="0,0,0,15"
-                              Style="{StaticResource RoundedComboBoxStyle}"
-                              ItemsSource="{Binding SemesterList}"
-                              SelectedItem="{Binding SelectedSemester}"
-                              DisplayMemberPath="SemesterName">
-                        <ComboBox.ItemContainerStyle>
-                            <Style TargetType="ComboBoxItem">
-                                <Setter Property="Padding" Value="10,8"/>
-                            </Style>
-                        </ComboBox.ItemContainerStyle>
-                    </ComboBox>
+                    <!-- Kỳ học filter -->
+                    <TextBlock Text="Kỳ học" 
+                               FontWeight="SemiBold" 
+                               Margin="0,0,0,6"/>
+                    <ComboBox ItemsSource="{Binding SemesterList}" 
+                              SelectedItem="{Binding SelectedSemester}" 
+                              DisplayMemberPath="SemesterName"
+                              Style="{StaticResource ModernComboBox}"/>
 
-                    <!-- Year Filter -->
-                    <TextBlock Text="Năm học" Style="{StaticResource FilterHeaderStyle}"/>
-                    <ComboBox Height="35" Margin="0,0,0,20"
-                              Style="{StaticResource RoundedComboBoxStyle}"
-                              ItemsSource="{Binding YearList}"
-                              SelectedItem="{Binding SelectedYear}">
+                    <!-- Năm học filter -->
+                    <TextBlock Text="Năm học" 
+                               FontWeight="SemiBold" 
+                               Margin="0,0,0,6"/>
+                    <ComboBox ItemsSource="{Binding YearList}" 
+                              SelectedItem="{Binding SelectedYear}"
+                              Style="{StaticResource ModernComboBox}"
+                              Margin="0,0,0,22">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock>
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="{}Năm {0}">
-                                            <Binding/>
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
+                                <TextBlock Text="{Binding StringFormat=Năm {0}}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
-                        <ComboBox.ItemContainerStyle>
-                            <Style TargetType="ComboBoxItem">
-                                <Setter Property="Padding" Value="10,8"/>
-                            </Style>
-                        </ComboBox.ItemContainerStyle>
                     </ComboBox>
 
-                    <!-- Subject List -->
-                    <TextBlock Text="Danh sách môn học" Style="{StaticResource FilterHeaderStyle}"/>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="400">
+                    <!-- Danh sách môn học -->
+                    <TextBlock Text="Danh sách môn học" 
+                               FontWeight="SemiBold" 
+                               Margin="0,0,0,10"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="350">
                         <ItemsControl ItemsSource="{Binding SubjectList}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Margin="0,2" Padding="15,10" CornerRadius="5" Cursor="Hand"
+                                    <Border Style="{StaticResource SubjectItemStyle}"
                                             MouseLeftButtonUp="SubjectItem_MouseLeftButtonUp">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Background" Value="#E3F2FD"/>
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="#BBDEFB"/>
-                                                    </Trigger>
-                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ItemsControl}, Path=DataContext.SelectedSubject.Id}" 
-                                                               Value="{Binding Id}">
-                                                        <Setter Property="Background" Value="#2196F3"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
+                                        <Border.Background>
+                                            <MultiBinding Converter="{StaticResource SubjectSelectionConverter}">
+                                                <Binding Path="DataContext.SelectedSubject" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                                <Binding Path="."/>
+                                            </MultiBinding>
+                                        </Border.Background>
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="📘" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                            <TextBlock FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap">
-                                                <TextBlock.Text>
-                                                    <MultiBinding StringFormat="{}{0} - {1}">
-                                                        <Binding Path="Code"/>
-                                                        <Binding Path="Name"/>
-                                                    </MultiBinding>
-                                                </TextBlock.Text>
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Foreground" Value="Black"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ItemsControl}, Path=DataContext.SelectedSubject.Id}" 
-                                                                       Value="{Binding Id}">
-                                                                <Setter Property="Foreground" Value="White"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
+                                            <TextBlock Text="📘" 
+                                                       FontSize="17" 
+                                                       Margin="0,0,10,0"/>
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Code}" 
+                                                               FontWeight="Bold" 
+                                                               Foreground="#1976D2" 
+                                                               FontSize="15"/>
+                                                    <TextBlock Text=" - " FontSize="15"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Name}" 
+                                                           FontSize="15"
+                                                           TextWrapping="Wrap"/>
+                                            </StackPanel>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-
-                    <!-- No subjects message -->
-                    <TextBlock Text="Không có môn học nào" 
-                               FontSize="14" 
-                               Foreground="Gray"
-                               HorizontalAlignment="Center"
-                               Margin="0,20">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SubjectList.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
                 </StackPanel>
             </Border>
 
-            <!-- Right Panel - Exam Details -->
-            <Border Grid.Column="1" Background="White" Margin="10" CornerRadius="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Border.Effect>
-                    <DropShadowEffect Color="Gray" Direction="270" ShadowDepth="2" Opacity="0.3"/>
-                </Border.Effect>
-                <StackPanel Margin="20" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <!-- Right Panel - Chi tiết lịch sử bài thi -->
+            <Border Grid.Column="1" Style="{StaticResource ShadowPanel}" Margin="0,0,36,0">
+                <StackPanel>
                     <!-- Subject Header -->
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <TextBlock FontSize="20" FontWeight="Bold" VerticalAlignment="Center">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0} - {1}">
-                                    <Binding Path="SelectedSubject.Code" FallbackValue=""/>
-                                    <Binding Path="SelectedSubject.Name" FallbackValue="Chọn môn học để xem lịch sử thi"/>
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                    </StackPanel>
-                    <TextBlock FontSize="14" Foreground="Gray" Margin="0,0,0,20">
+                    <TextBlock FontSize="22" FontWeight="Bold" Margin="0,0,0,2">
                         <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0}, {1}">
-                                <Binding Path="SelectedSemester.SemesterName" FallbackValue=""/>
-                                <Binding Path="SelectedYear" FallbackValue="">
-                                    <Binding.StringFormat>Năm {0}</Binding.StringFormat>
-                                </Binding>
+                            <MultiBinding StringFormat="{}{0} - {1}">
+                                <Binding Path="SelectedSubject.Code" FallbackValue=""/>
+                                <Binding Path="SelectedSubject.Name" FallbackValue="Chọn môn học để xem lịch sử thi"/>
                             </MultiBinding>
                         </TextBlock.Text>
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedSubject}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
                     </TextBlock>
 
-                    <!-- No selection message -->
-                    <TextBlock Text="Vui lòng chọn một môn học để xem lịch sử bài thi"
-                               FontSize="16"
-                               Foreground="Gray"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Margin="0,100">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedSubject}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
+                    <TextBlock FontSize="15" Foreground="Gray" Margin="0,0,0,22">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}Học kỳ {0}, năm {1}">
+                                <Binding Path="SelectedSemester.SemesterName" FallbackValue=""/>
+                                <Binding Path="SelectedYear" FallbackValue=""/>
+                            </MultiBinding>
+                        </TextBlock.Text>
                     </TextBlock>
 
-                    <!-- Exam Table -->
-                    <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedSubject}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <!-- Exam Table với cột NGÀY THI -->
+                    <Border BorderBrush="#E3E3E3" 
+                            BorderThickness="1" 
+                            CornerRadius="12" 
+                            Padding="0" 
+                            Margin="0,0,0,22">
+                        <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="45"/>
+                                <RowDefinition Height="44"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="25*"/>
-                                <ColumnDefinition Width="15*"/>
-                                <ColumnDefinition Width="15*"/>
-                                <ColumnDefinition Width="15*"/>
-                                <ColumnDefinition Width="15*"/>
-                                <ColumnDefinition Width="15*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="1*"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Header Row -->
-                            <Border Grid.Row="0" Grid.Column="0" Background="#2196F3" CornerRadius="5,0,0,0">
-                                <TextBlock Text="TÊN BÀI THI" Style="{StaticResource ExamHeaderStyle}"/>
+                            <!-- Table Headers -->
+                            <Border Grid.Row="0" Grid.Column="0" Background="#1976D2" CornerRadius="12,0,0,0">
+                                <TextBlock Text="TÊN BÀI THI" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           FontSize="15" 
+                                           VerticalAlignment="Center" 
+                                           HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="1" Background="#2196F3">
-                                <TextBlock Text="LOẠI BÀI THI" Style="{StaticResource ExamHeaderStyle}"/>
+                            <Border Grid.Row="0" Grid.Column="1" Background="#1976D2">
+                                <TextBlock Text="LOẠI BÀI THI" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           FontSize="15" 
+                                           VerticalAlignment="Center" 
+                                           HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="2" Background="#2196F3">
-                                <TextBlock Text="LOẠI ĐỀ THI" Style="{StaticResource ExamHeaderStyle}"/>
+                            <Border Grid.Row="0" Grid.Column="2" Background="#1976D2">
+                                <TextBlock Text="LOẠI ĐỀ THI" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           FontSize="15" 
+                                           VerticalAlignment="Center" 
+                                           HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="3" Background="#2196F3">
-                                <TextBlock Text="THỜI GIAN THI" Style="{StaticResource ExamHeaderStyle}"/>
+                            <Border Grid.Row="0" Grid.Column="3" Background="#1976D2">
+                                <TextBlock Text="THỜI GIAN THI" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           FontSize="15" 
+                                           VerticalAlignment="Center" 
+                                           HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="4" Background="#2196F3">
-                                <TextBlock Text="NGÀY THI" Style="{StaticResource ExamHeaderStyle}"/>
+                            <Border Grid.Row="0" Grid.Column="4" Background="#1976D2">
+                                <TextBlock Text="NGÀY THI" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           FontSize="15" 
+                                           VerticalAlignment="Center" 
+                                           HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="5" Background="#2196F3" CornerRadius="0,5,0,0">
-                                <TextBlock Text="ĐIỂM SỐ" Style="{StaticResource ExamHeaderStyle}"/>
+                            <Border Grid.Row="0" Grid.Column="5" Background="#1976D2" CornerRadius="0,12,0,0">
+                                <TextBlock Text="ĐIỂM SỐ" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           FontSize="15" 
+                                           VerticalAlignment="Center" 
+                                           HorizontalAlignment="Center"/>
                             </Border>
 
                             <!-- Data Rows -->
-                            <ScrollViewer Grid.Row="1" Grid.ColumnSpan="6" VerticalScrollBarVisibility="Auto">
-                                <ItemsControl ItemsSource="{Binding ExamHistoryList}" AlternationCount="2">
+                            <ScrollViewer Grid.Row="1" Grid.ColumnSpan="6" VerticalScrollBarVisibility="Auto" Height="300">
+                                <ItemsControl ItemsSource="{Binding ExamHistoryList}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid>
-                                                <Grid.Style>
-                                                    <Style TargetType="Grid">
-                                                        <Setter Property="Background" Value="White"/>
-                                                        <Style.Triggers>
-                                                            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                                                                <Setter Property="Background" Value="#F8F9FA"/>
-                                                            </Trigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Grid.Style>
+                                            <Grid Margin="0,8,0,8">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="25*"/>
-                                                    <ColumnDefinition Width="15*"/>
-                                                    <ColumnDefinition Width="15*"/>
-                                                    <ColumnDefinition Width="15*"/>
-                                                    <ColumnDefinition Width="15*"/>
-                                                    <ColumnDefinition Width="15*"/>
+                                                    <ColumnDefinition Width="2*"/>
+                                                    <ColumnDefinition Width="1.2*"/>
+                                                    <ColumnDefinition Width="1.2*"/>
+                                                    <ColumnDefinition Width="1.2*"/>
+                                                    <ColumnDefinition Width="1.2*"/>
+                                                    <ColumnDefinition Width="1*"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <Border Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="0,0,1,1" Height="45">
-                                                    <TextBlock Text="{Binding ExamName}" Style="{StaticResource ExamCellStyle}"/>
+                                                <!-- Tên bài thi -->
+                                                <TextBlock Grid.Column="0" 
+                                                           Text="{Binding ExamName}" 
+                                                           VerticalAlignment="Center" 
+                                                           HorizontalAlignment="Center" 
+                                                           FontSize="14"/>
+
+                                                <!-- Loại bài thi với badge -->
+                                                <Border Grid.Column="1" 
+                                                        Background="#E3F2FD" 
+                                                        CornerRadius="12" 
+                                                        Padding="8,4" 
+                                                        Margin="8,0" 
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding ExamType}" 
+                                                               Foreground="#1976D2" 
+                                                               FontWeight="Bold" 
+                                                               FontSize="13" 
+                                                               TextAlignment="Center"/>
                                                 </Border>
-                                                <Border Grid.Column="1" BorderBrush="#E0E0E0" BorderThickness="0,0,1,1" Height="45">
-                                                    <TextBlock Text="{Binding ExamType}" Style="{StaticResource ExamCellStyle}" Foreground="#2196F3"/>
-                                                </Border>
-                                                <Border Grid.Column="2" BorderBrush="#E0E0E0" BorderThickness="0,0,1,1" Height="45">
-                                                    <TextBlock Text="{Binding CategoryExamName}" Style="{StaticResource ExamCellStyle}" Foreground="#9C27B0"/>
-                                                </Border>
-                                                <Border Grid.Column="3" BorderBrush="#E0E0E0" BorderThickness="0,0,1,1" Height="45">
-                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Duration}" Style="{StaticResource ExamCellStyle}"/>
-                                                        <TextBlock Text=" phút" Style="{StaticResource ExamCellStyle}"/>
-                                                    </StackPanel>
-                                                </Border>
-                                                <Border Grid.Column="4" BorderBrush="#E0E0E0" BorderThickness="0,0,1,1" Height="45">
-                                                    <TextBlock Text="{Binding SubmittedDateTime, StringFormat=dd/MM/yyyy}" Style="{StaticResource ExamCellStyle}"/>
-                                                </Border>
-                                                <Border Grid.Column="5" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Height="45">
-                                                    <TextBlock Text="{Binding Score}" Style="{StaticResource ScoreStyle}" Foreground="#4CAF50"/>
+
+                                                <!-- Loại đề thi -->
+                                                <TextBlock Grid.Column="2" 
+                                                           Text="{Binding CategoryExamName}" 
+                                                           VerticalAlignment="Center" 
+                                                           HorizontalAlignment="Center" 
+                                                           FontSize="14"/>
+
+                                                <!-- Thời gian thi -->
+                                                <TextBlock Grid.Column="3" 
+                                                           VerticalAlignment="Center" 
+                                                           HorizontalAlignment="Center" 
+                                                           FontSize="14">
+                                                    <TextBlock.Text>
+                                                        <MultiBinding StringFormat="{}{0} phút">
+                                                            <Binding Path="Duration"/>
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+
+                                                <!-- Ngày thi -->
+                                                <TextBlock Grid.Column="4" 
+                                                           Text="{Binding SubmittedDateTime, StringFormat='dd/MM/yyyy'}" 
+                                                           VerticalAlignment="Center" 
+                                                           HorizontalAlignment="Center" 
+                                                           FontSize="14"/>
+
+                                                <!-- Điểm số với badge -->
+                                                <Border Grid.Column="5" 
+                                                        Background="#E8F5E9" 
+                                                        CornerRadius="16" 
+                                                        Padding="12,4" 
+                                                        Margin="8,0" 
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        MinWidth="50">
+                                                    <TextBlock Text="{Binding Score}" 
+                                                               Foreground="#43A047" 
+                                                               FontWeight="Bold" 
+                                                               FontSize="15" 
+                                                               HorizontalAlignment="Center"/>
                                                 </Border>
                                             </Grid>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </ScrollViewer>
-
-                            <!-- No exams message -->
-                            <TextBlock Grid.Row="1" Grid.ColumnSpan="6"
-                                       Text="Không có lịch sử thi nào cho môn học này"
-                                       FontSize="14"
-                                       Foreground="Gray"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding ExamHistoryList.Count}" Value="0">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
                         </Grid>
                     </Border>
                 </StackPanel>

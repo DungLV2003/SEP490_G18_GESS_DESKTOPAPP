@@ -15,7 +15,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
     public class NavigationService : INavigationService
     {
 
-
         private readonly IServiceProvider _serviceProvider;
 
         public NavigationService(IServiceProvider serviceProvider)
@@ -27,14 +26,52 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
             where TCurrent : Window
             where TNext : Window
         {
-            var current = Application.Current.Windows.OfType<TCurrent>().FirstOrDefault();
-            var next = _serviceProvider.GetRequiredService<TNext>();
-
-            if (current != null && next != null)
+            try
             {
-                AnimationHelper.FadeOutAndSwitch(current, next);
+                // Lấy window hiện tại
+                var current = Application.Current.Windows.OfType<TCurrent>().FirstOrDefault();
+                if (current == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Current window {typeof(TCurrent).Name} not found");
+                    return;
+                }
+
+                // Tạo window mới trước khi đóng window cũ
+                var next = _serviceProvider.GetRequiredService<TNext>();
+                if (next == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Could not create {typeof(TNext).Name}");
+                    return;
+                }
+
+                // Sử dụng Dispatcher để đảm bảo chạy trên UI thread
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    try
+                    {
+                        // Hiển thị window mới trước
+                        next.Show();
+
+                        // Đóng window cũ
+                        current.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error in navigation: {ex.Message}");
+                        // Nếu có lỗi, ít nhất cũng hiển thị window mới
+                        if (!next.IsVisible)
+                        {
+                            next.Show();
+                        }
+                    }
+                }));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"NavigationService Error: {ex}");
             }
         }
+
         public void CloseApplication()
         {
             Application.Current.Shutdown();

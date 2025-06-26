@@ -25,6 +25,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         public DanhSachBaiThiView(DanhSachBaiThiSinhVienViewModel dsbtViewModel)
         {
             InitializeComponent();
+            this.ResizeMode = ResizeMode.CanMinimize;
+            this.WindowStyle = WindowStyle.SingleBorderWindow;
             this.DataContext = dsbtViewModel;
             AnimationHelper.ApplyFadeIn(this);
         }
