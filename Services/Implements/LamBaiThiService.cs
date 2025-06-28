@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Xps;
 
 namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
 {
@@ -39,23 +40,41 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 );
 
                 var response = await _httpClient.PostAsync(url, content);
+                var json = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
+                // Parse response trong mọi trường hợp để lấy message
+                APIResponse<ExamInfoResponseDTO> apiResponse = null;
+                try
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"CheckExamNameAndCodeME Error: {response.StatusCode} - {errorContent}");
-                    return null;
+                    apiResponse = JsonSerializer.Deserialize<APIResponse<ExamInfoResponseDTO>>(json, _jsonOptions);
+                }
+                catch (JsonException)
+                {
+                    // Nếu không parse được, có thể response không đúng format
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new APIException($"Lỗi server: {response.StatusCode}");
+                    }
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<APIResponse<ExamInfoResponseDTO>>(json, _jsonOptions);
+                // Kiểm tra response
+                if (!response.IsSuccessStatusCode || apiResponse?.Success == false)
+                {
+                    var errorMessage = apiResponse?.Message ?? $"Lỗi server: {response.StatusCode}";
+                    System.Diagnostics.Debug.WriteLine($"CheckExamNameAndCodeME Error: {errorMessage}");
+                    throw new APIException(errorMessage);
+                }
 
                 return apiResponse?.Data;
+            }
+            catch (APIException)
+            {
+                throw; // Re-throw APIException
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"CheckExamNameAndCodeME Exception: {ex}");
-                return null;
+                throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
 
@@ -63,26 +82,41 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
         {
             try
             {
-                var url = $"{BASE_URL}GetAllQuestionMultiExam/{multiExamId}";
+                var url = $"{BASE_URL}/GetAllQuestionMultiExam/{multiExamId}";
 
                 var response = await _httpClient.GetAsync(url);
+                var json = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
+                APIResponse<List<QuestionMultiExamSimpleDTO>> apiResponse = null;
+                try
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"GetAllQuestionMultiExam Error: {response.StatusCode} - {errorContent}");
-                    return null;
+                    apiResponse = JsonSerializer.Deserialize<APIResponse<List<QuestionMultiExamSimpleDTO>>>(json, _jsonOptions);
+                }
+                catch (JsonException)
+                {
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new APIException($"Lỗi server: {response.StatusCode}");
+                    }
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<APIResponse<List<QuestionMultiExamSimpleDTO>>>(json, _jsonOptions);
+                if (!response.IsSuccessStatusCode || apiResponse?.Success == false)
+                {
+                    var errorMessage = apiResponse?.Message ?? $"Lỗi server: {response.StatusCode}";
+                    System.Diagnostics.Debug.WriteLine($"GetAllQuestionMultiExam Error: {errorMessage}");
+                    throw new APIException(errorMessage);
+                }
 
                 return apiResponse?.Data;
+            }
+            catch (APIException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"GetAllQuestionMultiExam Exception: {ex}");
-                return null;
+                throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
 
@@ -93,23 +127,38 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 var url = $"{BASE_URL}/GetAllMultiAnswerOfQuestion/{multiQuestionId}";
 
                 var response = await _httpClient.GetAsync(url);
+                var json = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
+                APIResponse<List<MultiAnswerOfQuestionDTO>> apiResponse = null;
+                try
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"GetAllMultiAnswerOfQuestion Error: {response.StatusCode} - {errorContent}");
-                    return null;
+                    apiResponse = JsonSerializer.Deserialize<APIResponse<List<MultiAnswerOfQuestionDTO>>>(json, _jsonOptions);
+                }
+                catch (JsonException)
+                {
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new APIException($"Lỗi server: {response.StatusCode}");
+                    }
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<APIResponse<List<MultiAnswerOfQuestionDTO>>>(json, _jsonOptions);
+                if (!response.IsSuccessStatusCode || apiResponse?.Success == false)
+                {
+                    var errorMessage = apiResponse?.Message ?? $"Lỗi server: {response.StatusCode}";
+                    System.Diagnostics.Debug.WriteLine($"GetAllMultiAnswerOfQuestion Error: {errorMessage}");
+                    throw new APIException(errorMessage);
+                }
 
                 return apiResponse?.Data;
+            }
+            catch (APIException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"GetAllMultiAnswerOfQuestion Exception: {ex}");
-                return null;
+                throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
 
@@ -126,23 +175,33 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 );
 
                 var response = await _httpClient.PostAsync(url, content);
+                var json = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"UpdateProgress Error: {response.StatusCode} - {errorContent}");
-                    return null;
+                    // Try to parse error message
+                    try
+                    {
+                        var errorResponse = JsonSerializer.Deserialize<APIResponse>(json, _jsonOptions);
+                        throw new APIException(errorResponse?.Message ?? $"Lỗi server: {response.StatusCode}");
+                    }
+                    catch (JsonException)
+                    {
+                        throw new APIException($"Lỗi server: {response.StatusCode}");
+                    }
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<UpdateMultiExamProgressResponseDTO>(json, _jsonOptions);
-
                 return result;
+            }
+            catch (APIException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"UpdateProgress Exception: {ex}");
-                return null;
+                throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
 
@@ -159,27 +218,36 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 );
 
                 var response = await _httpClient.PostAsync(url, content);
+                var json = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"SubmitExam Error: {response.StatusCode} - {errorContent}");
-                    return null;
+                    try
+                    {
+                        var errorResponse = JsonSerializer.Deserialize<APIResponse>(json, _jsonOptions);
+                        throw new APIException(errorResponse?.Message ?? $"Lỗi server: {response.StatusCode}");
+                    }
+                    catch (JsonException)
+                    {
+                        throw new APIException($"Lỗi server: {response.StatusCode}");
+                    }
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<SubmitExamResponseDTO>(json, _jsonOptions);
-
                 return result;
+            }
+            catch (APIException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"SubmitExam Exception: {ex}");
-                return null;
+                throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
 
-        #region Practice Exam Methods (Methods mới)
+        #region Practice Exam Methods
 
         public async Task<PracticeExamInfoResponseDTO?> CheckExamNameAndCodePEAsync(CheckPracticeExamRequestDTO request)
         {
@@ -194,23 +262,38 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 );
 
                 var response = await _httpClient.PostAsync(url, content);
+                var json = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
+                APIResponse<PracticeExamInfoResponseDTO> apiResponse = null;
+                try
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"CheckExamNameAndCodePE Error: {response.StatusCode} - {errorContent}");
-                    return null;
+                    apiResponse = JsonSerializer.Deserialize<APIResponse<PracticeExamInfoResponseDTO>>(json, _jsonOptions);
+                }
+                catch (JsonException)
+                {
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new APIException($"Lỗi server: {response.StatusCode}");
+                    }
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<APIResponse<PracticeExamInfoResponseDTO>>(json, _jsonOptions);
+                if (!response.IsSuccessStatusCode || apiResponse?.Success == false)
+                {
+                    var errorMessage = apiResponse?.Message ?? $"Lỗi server: {response.StatusCode}";
+                    System.Diagnostics.Debug.WriteLine($"CheckExamNameAndCodePE Error: {errorMessage}");
+                    throw new APIException(errorMessage);
+                }
 
                 return apiResponse?.Data;
+            }
+            catch (APIException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"CheckExamNameAndCodePE Exception: {ex}");
-                return null;
+                throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
 
@@ -221,23 +304,32 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 var url = $"{BASE_URL}/GetQuestionAndAnswerByPracExamId/{pracExamId}";
 
                 var response = await _httpClient.GetAsync(url);
+                var json = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"GetQuestionAndAnswerByPracExamId Error: {response.StatusCode} - {errorContent}");
-                    return null;
+                    try
+                    {
+                        var errorResponse = JsonSerializer.Deserialize<APIResponse>(json, _jsonOptions);
+                        throw new APIException(errorResponse?.Message ?? $"Lỗi server: {response.StatusCode}");
+                    }
+                    catch (JsonException)
+                    {
+                        throw new APIException($"Lỗi server: {response.StatusCode}");
+                    }
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<List<QuestionOrderDTO>>(json, _jsonOptions);
-
                 return result;
+            }
+            catch (APIException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"GetQuestionAndAnswerByPracExamId Exception: {ex}");
-                return null;
+                throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
 
@@ -248,23 +340,32 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 var url = $"{BASE_URL}/GetPracticeAnswerOfQuestion/{pracExamId}";
 
                 var response = await _httpClient.GetAsync(url);
+                var json = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"GetPracticeAnswerOfQuestion Error: {response.StatusCode} - {errorContent}");
-                    return null;
+                    try
+                    {
+                        var errorResponse = JsonSerializer.Deserialize<APIResponse>(json, _jsonOptions);
+                        throw new APIException(errorResponse?.Message ?? $"Lỗi server: {response.StatusCode}");
+                    }
+                    catch (JsonException)
+                    {
+                        throw new APIException($"Lỗi server: {response.StatusCode}");
+                    }
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<List<PracticeAnswerOfQuestionDTO>>(json, _jsonOptions);
-
                 return result;
+            }
+            catch (APIException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"GetPracticeAnswerOfQuestion Exception: {ex}");
-                return null;
+                throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
 
@@ -284,17 +385,28 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"UpdatePEEach5minutes Error: {response.StatusCode} - {errorContent}");
-                    return false;
+                    var json = await response.Content.ReadAsStringAsync();
+                    try
+                    {
+                        var errorResponse = JsonSerializer.Deserialize<APIResponse>(json, _jsonOptions);
+                        throw new APIException(errorResponse?.Message ?? $"Lỗi server: {response.StatusCode}");
+                    }
+                    catch (JsonException)
+                    {
+                        throw new APIException($"Lỗi server: {response.StatusCode}");
+                    }
                 }
 
                 return true;
             }
+            catch (APIException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"UpdatePEEach5minutes Exception: {ex}");
-                return false;
+                throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
 
@@ -311,23 +423,38 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 );
 
                 var response = await _httpClient.PostAsync(url, content);
+                var json = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
+                APIResponse<SubmitPracticeExamResponseDTO> apiResponse = null;
+                try
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"SubmitPracticeExam Error: {response.StatusCode} - {errorContent}");
-                    return null;
+                    apiResponse = JsonSerializer.Deserialize<APIResponse<SubmitPracticeExamResponseDTO>>(json, _jsonOptions);
+                }
+                catch (JsonException)
+                {
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new APIException($"Lỗi server: {response.StatusCode}");
+                    }
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<APIResponse<SubmitPracticeExamResponseDTO>>(json, _jsonOptions);
+                if (!response.IsSuccessStatusCode || apiResponse?.Success == false)
+                {
+                    var errorMessage = apiResponse?.Message ?? $"Lỗi server: {response.StatusCode}";
+                    System.Diagnostics.Debug.WriteLine($"SubmitPracticeExam Error: {errorMessage}");
+                    throw new APIException(errorMessage);
+                }
 
                 return apiResponse?.Data;
+            }
+            catch (APIException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"SubmitPracticeExam Exception: {ex}");
-                return null;
+                throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
 

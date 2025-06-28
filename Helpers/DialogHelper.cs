@@ -13,7 +13,9 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Helpers
         /// </summary>
         public static void ShowErrorDialog(string title, string message, string detail, Action onRetryAction = null, Window owner = null)
         {
-            var viewModel = new DialogThongBaoLoiViewModel(title, message, detail, "Nhập lại", onRetryAction);
+            var buttonText = onRetryAction != null ? "Nhập lại" : "Đóng";
+
+            var viewModel = new DialogThongBaoLoiViewModel(title, message, detail, buttonText, onRetryAction);
             var dialog = new DialogThongBaoLoiView(viewModel);
 
             if (owner != null)

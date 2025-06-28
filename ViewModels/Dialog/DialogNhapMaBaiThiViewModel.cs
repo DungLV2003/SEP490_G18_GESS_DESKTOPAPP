@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Xps;
 
 namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
 {
@@ -106,7 +107,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             }
         }
 
-        // Trong method HandleMultipleChoiceExamAsync(), thay thế phần TODO:
         private async System.Threading.Tasks.Task HandleMultipleChoiceExamAsync()
         {
             var request = new CheckExamRequestDTO
@@ -116,55 +116,110 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                 StudentId = _studentId
             };
 
-            var result = await _lamBaiThiService.CheckExamNameAndCodeMEAsync(request);
-
-            if (result != null)
+            try
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                var result = await _lamBaiThiService.CheckExamNameAndCodeMEAsync(request);
+
+                if (result != null)
                 {
-                    // Show success dialog
-                    var successViewModel = new DialogThongBaoThanhCongViewModel(
-                        "Xác thực thành công",
-                        "Vào thi trắc nghiệm thành công!",
-                        result.Message,
-                        async () => {
-                            // Navigate to LamBaiThiView after success dialog closes
-                            var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
-                            var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
-
-                            // Initialize exam data
-                            await lamBaiThiViewModel.InitializeExam(ExamType.MultipleChoice, result, _examInfo.ExamId);
-
-                            lamBaiThiView.DataContext = lamBaiThiViewModel;
-                            lamBaiThiView.Show();
-
-                            // Close all dialogs and parent window
-                            Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
-                            Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault()?.Close();
-                        }
-                    );
-
-                    var successDialog = new DialogThongBaoThanhCongView(successViewModel)
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        Owner = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()
-                    };
+                        // Show success dialog
+                        var successViewModel = new DialogThongBaoThanhCongViewModel(
+                            "Xác thực thành công",
+                            "Vào thi trắc nghiệm thành công!",
+                            result.Message,
+                            async () => {
+                                // Navigate to LamBaiThiView after success dialog closes
+                                var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
+                                var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
 
-                    successDialog.ShowDialog();
-                });
+                                // Initialize exam data
+                                await lamBaiThiViewModel.InitializeExam(ExamType.MultipleChoice, result, _examInfo.ExamId);
+
+                                lamBaiThiView.DataContext = lamBaiThiViewModel;
+                                lamBaiThiView.Show();
+
+                                // Close all dialogs and parent window
+                                Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
+                                Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault()?.Close();
+                            }
+                        );
+
+                        var successDialog = new DialogThongBaoThanhCongView(successViewModel)
+                        {
+                            Owner = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()
+                        };
+
+                        successDialog.ShowDialog();
+                    });
+                }
             }
-            else
+            catch (APIException apiEx)
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
-                    DialogHelper.ShowOTPErrorDialog(() => OTPCode = string.Empty, currentDialog);
+
+                    // Xử lý message lỗi cụ thể từ API
+                    string errorTitle = "Xác thực thất bại";
+                    string errorMessage = apiEx.Message;
+                    string errorDetail = "";
+                    Action retryAction = () => OTPCode = string.Empty;
+
+                    // Map error messages to user-friendly messages
+                    switch (apiEx.Message)
+                    {
+                        case "Tên bài thi không đúng.":
+                            errorMessage = "Tên bài thi không đúng!";
+                            errorDetail = "Vui lòng kiểm tra lại thông tin bài thi và thử lại.";
+                            break;
+
+                        case "Mã thi không đúng.":
+                            errorMessage = "Mã OTP không chính xác!";
+                            errorDetail = "Vui lòng kiểm tra lại mã OTP được cung cấp và thử lại. Mã OTP có phân biệt chữ hoa chữ thường.";
+                            break;
+
+                        case "Bài thi chưa được mở.":
+                            errorMessage = "Bài thi chưa được mở!";
+                            errorDetail = "Bài thi này chưa đến thời gian mở. Vui lòng quay lại sau.";
+                            retryAction = null; // Không cho retry
+                            break;
+
+                        case "Bạn không thuộc lớp của bài thi này.":
+                            errorTitle = "Không có quyền truy cập";
+                            errorMessage = "Bạn không thuộc lớp của bài thi này@";
+                            errorDetail = "Vui lòng liên hệ với giáo viên để được hỗ trợ.";
+                            retryAction = null;
+                            break;
+
+                        case "Bạn chưa được điểm danh.":
+                            errorTitle = "Chưa điểm danh";
+                            errorMessage = "Bạn chưa được điểm danh!";
+                            errorDetail = "Vui lòng liên hệ với giáo viên để được điểm danh trước khi vào thi.";
+                            retryAction = null;
+                            break;
+
+                        default:
+                            // Giữ nguyên message từ API nếu không match
+                            errorMessage = "Hiện hệ thống đang lỗi (T_T)";
+                            errorDetail = "Hãy báo cho đội ngũ hỗ trợ và xin vui lòng chờ thời gian để khắc phục hệ thống.";
+                            break;
+                    }
+
+                    DialogHelper.ShowErrorDialog(errorTitle, errorMessage, errorDetail, retryAction, currentDialog);
+                });
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
+                    DialogHelper.ShowGeneralErrorDialog(ex.Message, currentDialog);
                 });
             }
         }
 
-
-
-        // Trong method HandlePracticeExamAsync(), thay thế phần TODO:
         private async System.Threading.Tasks.Task HandlePracticeExamAsync()
         {
             var request = new CheckPracticeExamRequestDTO
@@ -174,43 +229,105 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                 StudentId = _studentId
             };
 
-            var result = await _lamBaiThiService.CheckExamNameAndCodePEAsync(request);
-
-            if (result != null)
+            try
             {
-                // Show success dialog
-                var successViewModel = new DialogThongBaoThanhCongViewModel(
-                    "Xác thực thành công",
-                    "Vào thi tự luận thành công!",
-                    result.Message,
-                    async () => {
-                        // Navigate to LamBaiThiView after success dialog closes
-                        var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
-                        var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
+                var result = await _lamBaiThiService.CheckExamNameAndCodePEAsync(request);
 
-                        // Initialize exam data
-                        await lamBaiThiViewModel.InitializeExam(ExamType.Practice, result, _examInfo.ExamId);
-
-                        lamBaiThiView.DataContext = lamBaiThiViewModel;
-                        lamBaiThiView.Show();
-
-                        // Close all dialogs and parent window
-                        Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
-                        Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault()?.Close();
-                    }
-                );
-
-                var successDialog = new DialogThongBaoThanhCongView(successViewModel)
+                if (result != null)
                 {
-                    Owner = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()
-                };
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        // Show success dialog
+                        var successViewModel = new DialogThongBaoThanhCongViewModel(
+                            "Xác thực thành công",
+                            "Vào thi tự luận thành công!",
+                            result.Message,
+                            async () => {
+                                // Navigate to LamBaiThiView after success dialog closes
+                                var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
+                                var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
 
-                successDialog.ShowDialog();
+                                // Initialize exam data
+                                await lamBaiThiViewModel.InitializeExam(ExamType.Practice, result, _examInfo.ExamId);
+
+                                lamBaiThiView.DataContext = lamBaiThiViewModel;
+                                lamBaiThiView.Show();
+
+                                // Close all dialogs and parent window
+                                Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
+                                Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault()?.Close();
+                            }
+                        );
+
+                        var successDialog = new DialogThongBaoThanhCongView(successViewModel)
+                        {
+                            Owner = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()
+                        };
+
+                        successDialog.ShowDialog();
+                    });
+                }
             }
-            else
+            catch (APIException apiEx)
             {
-                var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
-                DialogHelper.ShowOTPErrorDialog(() => OTPCode = string.Empty, currentDialog);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
+
+                    // Xử lý message lỗi cụ thể từ API cho bài thi tự luận
+                    string errorTitle = "Xác thực thất bại";
+                    string errorMessage = apiEx.Message;
+                    string errorDetail = "";
+                    Action retryAction = () => OTPCode = string.Empty;
+
+                    // Map error messages cho practice exam
+                    switch (apiEx.Message)
+                    {
+                        case "Tên bài thi không đúng.":
+                            errorMessage = "Tên bài thi không đúng";
+                            errorDetail = "Vui lòng kiểm tra lại thông tin bài thi tự luận và thử lại.";
+                            break;
+
+                        case "Mã thi không đúng.":
+                            errorMessage = "Mã OTP không chính xác";
+                            errorDetail = "Vui lòng kiểm tra lại mã OTP được cung cấp và thử lại. Mã OTP có phân biệt chữ hoa chữ thường.";
+                            break;
+
+                        case "Bài thi chưa được mở.":
+                            errorMessage = "Bài thi chưa được mở";
+                            errorDetail = "Bài thi tự luận này chưa đến thời gian mở. Vui lòng quay lại sau.";
+                            retryAction = null;
+                            break;
+
+                        case "Bạn không thuộc lớp của bài thi này.":
+                            errorTitle = "Không có quyền truy cập";
+                            errorMessage = "Bạn không thuộc lớp của bài thi này";
+                            errorDetail = "Vui lòng liên hệ với giáo viên để được hỗ trợ.";
+                            retryAction = null;
+                            break;
+
+                        case "Bạn chưa được điểm danh.":
+                            errorTitle = "Chưa điểm danh";
+                            errorMessage = "Bạn chưa được điểm danh";
+                            errorDetail = "Vui lòng liên hệ với giáo viên để được điểm danh trước khi vào thi.";
+                            retryAction = null;
+                            break;
+
+                        default:
+                            errorDetail = "Vui lòng thử lại hoặc liên hệ với giáo viên để được hỗ trợ.";
+                            break;
+                    }
+
+                    DialogHelper.ShowErrorDialog(errorTitle, errorMessage, errorDetail, retryAction, currentDialog);
+                });
+            }
+            catch (Exception ex)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
+                    DialogHelper.ShowGeneralErrorDialog(ex.Message, currentDialog);
+                });
             }
         }
 
@@ -223,6 +340,5 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
         {
             Application.Current.Windows.OfType<Views.Dialog.DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
         }
-
     }
 }
