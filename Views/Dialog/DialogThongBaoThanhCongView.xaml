@@ -1,0 +1,109 @@
+﻿<Window x:Class="SEP490_G18_GESS_DESKTOPAPP.Views.Dialog.DialogThongBaoThanhCongView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.Dialog"
+        mc:Ignorable="d"
+        Title="Thông báo thành công" 
+        Height="450" Width="500"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+
+    <Window.Resources>
+        <!-- Gradient Background for Success -->
+        <LinearGradientBrush x:Key="SuccessGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#10B981" Offset="0"/>
+            <GradientStop Color="#059669" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Resources>
+
+    <Border Background="White" CornerRadius="20" BorderBrush="#E5F7F0" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" Direction="270" ShadowDepth="10" 
+                            Opacity="0.15" BlurRadius="20"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header with gradient background -->
+            <Border Grid.Row="0" Background="{StaticResource SuccessGradient}" 
+                    CornerRadius="20,20,0,0" Height="140">
+                <Grid>
+                    <!-- Success Icon -->
+                    <Border Width="80" Height="80" CornerRadius="40" 
+                            Background="White" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" Opacity="0.1" 
+                                            BlurRadius="10" ShadowDepth="2"/>
+                        </Border.Effect>
+                        <Grid>
+                            <Ellipse Width="70" Height="70" Fill="#10B981"/>
+                            <Path Data="M10,17 L15,22 L25,12"
+                                  Stroke="White"
+                                  StrokeThickness="4"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Content -->
+            <StackPanel Grid.Row="1" Margin="40,30,40,40">
+                <!-- Success Title -->
+                <TextBlock Text="{Binding SuccessTitle}" 
+                         FontSize="24" 
+                         FontWeight="Bold" 
+                         Foreground="#065F46"
+                         HorizontalAlignment="Center"
+                         Margin="0,0,0,12"/>
+
+                <!-- Success Message -->
+                <TextBlock Text="{Binding SuccessMessage}" 
+                         FontSize="18" 
+                         FontWeight="SemiBold"
+                         Foreground="#047857"
+                         HorizontalAlignment="Center"
+                         TextAlignment="Center"
+                         TextWrapping="Wrap"
+                         Margin="0,0,0,8"/>
+
+                <!-- Success Detail -->
+                <TextBlock Text="{Binding SuccessDetail}" 
+                         FontSize="14" 
+                         Foreground="#6B7280"
+                         HorizontalAlignment="Center"
+                         TextAlignment="Center"
+                         TextWrapping="Wrap"
+                         Margin="0,0,0,25"/>
+
+                <!-- Auto-close countdown -->
+                <Border Background="#F0FDF4" 
+                        CornerRadius="20" 
+                        Padding="16,8"
+                        HorizontalAlignment="Center">
+                    <TextBlock FontSize="14" 
+                             Foreground="#065F46"
+                             HorizontalAlignment="Center">
+                        <Run Text="Tự động chuyển sau"/>
+                        <Run Text="{Binding Countdown}" FontWeight="Bold" FontSize="16"/>
+                        <Run Text="giây"/>
+                    </TextBlock>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

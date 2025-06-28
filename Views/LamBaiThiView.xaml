@@ -4,9 +4,826 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
+        xmlns:controls="clr-namespace:WpfMath.Controls;assembly=WpfMath"
         mc:Ignorable="d"
-        Title="LamBaiThiView" Height="450" Width="800">
+        Title="{Binding WindowTitle}" Background="#FFFDF4" WindowState="Maximized">
+
+    <Window.Resources>
+        <!-- Converters -->
+        <local:ExamTypeToVisibilityConverter x:Key="ExamTypeToVisibilityConverter"/>
+        <local:QuestionButtonStyleConverter x:Key="QuestionButtonStyleConverter"/>
+        <local:IsMarkedToTextConverter x:Key="IsMarkedToTextConverter"/>
+        <local:IndexToAlphabetConverter x:Key="IndexToAlphabetConverter"/>
+        <local:AddOneConverter x:Key="AddOneConverter"/>
+        <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <local:BoolToVisibilityParameterConverter x:Key="BoolToVisibilityConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <!-- Colors -->
+        <SolidColorBrush x:Key="PrimaryBlue" Color="#007BFF"/>
+        <SolidColorBrush x:Key="SuccessGreen" Color="#28A745"/>
+        <SolidColorBrush x:Key="WarningYellow" Color="#FFC107"/>
+        <SolidColorBrush x:Key="DangerRed" Color="#DC3545"/>
+        <SolidColorBrush x:Key="LightGray" Color="#F8F9FA"/>
+        <SolidColorBrush x:Key="BorderGray" Color="#E9ECEF"/>
+
+        <!-- Button Styles -->
+        <Style x:Key="NumberButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D1D5DB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#F3F4F6"/>
+                                <Setter Property="BorderBrush" Value="#9CA3AF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CurrentButtonStyle" TargetType="Button" BasedOn="{StaticResource NumberButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBlue}"/>
+        </Style>
+
+        <Style x:Key="AnsweredButtonStyle" TargetType="Button" BasedOn="{StaticResource NumberButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource SuccessGreen}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SuccessGreen}"/>
+        </Style>
+
+        <Style x:Key="MarkedButtonStyle" TargetType="Button" BasedOn="{StaticResource NumberButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource WarningYellow}"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="{StaticResource WarningYellow}"/>
+        </Style>
+
+        <!-- Radio Button Style for Single Choice -->
+        <Style x:Key="AnswerRadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="Margin" Value="0,6,0,6"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="border" 
+                                Background="#F8F9FA" 
+                                BorderBrush="#E9ECEF" 
+                                BorderThickness="2" 
+                                CornerRadius="12"
+                                Padding="16,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Radio Circle -->
+                                <Grid Grid.Column="0" Width="24" Height="24" Margin="0,0,12,0">
+                                    <Ellipse x:Name="outerEllipse" 
+                                            Fill="White" 
+                                            Stroke="#6B7280" 
+                                            StrokeThickness="2"/>
+                                    <Ellipse x:Name="innerEllipse" 
+                                            Width="12" Height="12" 
+                                            Fill="#3B82F6" 
+                                            Visibility="Collapsed"/>
+                                </Grid>
+
+                                <!-- Answer Label (A, B, C, D) -->
+                                <Border Grid.Column="1" 
+                                        Background="#E5E7EB" 
+                                        CornerRadius="6" 
+                                        Width="32" Height="32" 
+                                        Margin="0,0,12,0">
+                                    <TextBlock Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" 
+                                             HorizontalAlignment="Center" 
+                                             VerticalAlignment="Center"
+                                             FontWeight="Bold"
+                                             Foreground="#374151"/>
+                                </Border>
+
+                                <!-- Content -->
+                                <ContentPresenter Grid.Column="2" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="innerEllipse" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="border" Property="Background" Value="#DBEAFE"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#3B82F6"/>
+                                <Setter TargetName="outerEllipse" Property="Stroke" Value="#3B82F6"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#F3F4F6"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#9CA3AF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- CheckBox Style for Multiple Choice -->
+        <Style x:Key="AnswerCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="Margin" Value="0,6,0,6"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="border" 
+                                Background="#F8F9FA" 
+                                BorderBrush="#E9ECEF" 
+                                BorderThickness="2" 
+                                CornerRadius="12"
+                                Padding="16,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- CheckBox Square -->
+                                <Border Grid.Column="0" Width="24" Height="24" 
+                                        Margin="0,0,12,0"
+                                        BorderThickness="2"
+                                        BorderBrush="#6B7280"
+                                        Background="White"
+                                        CornerRadius="6">
+                                    <Path x:Name="checkMark"
+                                          Data="M4,10 L9,15 L20,4"
+                                          Stroke="#3B82F6"
+                                          StrokeThickness="3"
+                                          Visibility="Collapsed"/>
+                                </Border>
+
+                                <!-- Answer Label (A, B, C, D) -->
+                                <Border Grid.Column="1" 
+                                        Background="#E5E7EB" 
+                                        CornerRadius="6" 
+                                        Width="32" Height="32" 
+                                        Margin="0,0,12,0">
+                                    <TextBlock Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" 
+                                             HorizontalAlignment="Center" 
+                                             VerticalAlignment="Center"
+                                             FontWeight="Bold"
+                                             Foreground="#374151"/>
+                                </Border>
+
+                                <!-- Content -->
+                                <ContentPresenter Grid.Column="2" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="border" Property="Background" Value="#DBEAFE"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#3B82F6"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#F3F4F6"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#9CA3AF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Navigation Button Styles -->
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Padding" Value="24,0"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrevButtonStyle" TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+            <Setter Property="Background" Value="#6B7280"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4B5563"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#E5E7EB"/>
+                    <Setter Property="Foreground" Value="#9CA3AF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="NextButtonStyle" TargetType="Button" BasedOn="{StaticResource NavButtonStyle}">
+            <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2563EB"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#E5E7EB"/>
+                    <Setter Property="Foreground" Value="#9CA3AF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Submit Button Style -->
+        <Style x:Key="SubmitButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource SuccessGreen}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#218838"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Mark Button Style -->
+        <Style x:Key="MarkButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource WarningYellow}"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="16"
+                                Padding="{TemplateBinding Padding}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="⭐" FontSize="14" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FFA000"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Tab Style for Practice Exam -->
+        <Style x:Key="ModernTabStyle" TargetType="TabItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Border" 
+                                Background="Transparent" 
+                                BorderThickness="0,0,0,3"
+                                BorderBrush="Transparent"
+                                Padding="16,8"
+                                Margin="0,0,16,0">
+                            <ContentPresenter x:Name="ContentSite"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            ContentSource="Header"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryBlue}"/>
+                                <Setter Property="Foreground" Value="{StaticResource PrimaryBlue}"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#F3F4F6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Timer Style -->
+        <Style x:Key="TimerBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="20,12"/>
+        </Style>
+
+        <!-- Progress Bar Style -->
+        <Style x:Key="RoundedProgressBar" TargetType="ProgressBar">
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Border Background="#E0E0E0" CornerRadius="4" Height="8">
+                            <Border x:Name="PART_Track" Background="Transparent">
+                                <Border x:Name="PART_Indicator" 
+                                       Background="{StaticResource SuccessGreen}" 
+                                       CornerRadius="4"
+                                       HorizontalAlignment="Left"/>
+                            </Border>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Main Grid -->
     <Grid>
-        
+        <!-- Main Content -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="340"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel -->
+            <Border Grid.Column="0" Background="White" 
+                    BorderBrush="#E5E7EB" BorderThickness="0,0,1,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <TextBlock Grid.Row="0" Text="Thông Tin Sinh Viên" 
+                                FontSize="20" FontWeight="Bold" 
+                                Foreground="#1F2937" Margin="0,0,0,20"/>
+
+                        <!-- Student Info -->
+                        <Border Grid.Row="1" Background="{StaticResource LightGray}" 
+                                CornerRadius="8" Padding="16" Margin="0,0,0,20">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Họ tên:" 
+                                        FontSize="14" Margin="0,4" Foreground="#6B7280"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding StudentFullName}" 
+                                        FontSize="14" FontWeight="SemiBold" Margin="0,4"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="MSSV:" 
+                                        FontSize="14" Margin="0,4" Foreground="#6B7280"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding StudentCode}" 
+                                        FontSize="14" FontWeight="SemiBold" Margin="0,4"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Môn thi:" 
+                                        FontSize="14" Margin="0,4" Foreground="#6B7280"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SubjectName}" 
+                                        FontSize="14" FontWeight="SemiBold" Margin="0,4" TextWrapping="Wrap"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Thể loại:" 
+                                        FontSize="14" Margin="0,4" Foreground="#6B7280"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ExamCategoryName}" 
+                                        FontSize="14" FontWeight="SemiBold" Margin="0,4"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Timer -->
+                        <StackPanel Grid.Row="2" Margin="0,0,0,20">
+                            <TextBlock Text="Thời gian còn lại" FontSize="16" FontWeight="Bold" 
+                                    Foreground="#1F2937" Margin="0,0,0,10"/>
+                            <Border Style="{StaticResource TimerBorderStyle}">
+                                <TextBlock x:Name="TimerText" Text="{Binding TimerText}" 
+                                        FontSize="32" FontWeight="Bold" 
+                                        Foreground="{StaticResource PrimaryBlue}" 
+                                        HorizontalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Progress -->
+                        <StackPanel Grid.Row="3" Margin="0,0,0,20">
+                            <TextBlock Text="Tiến trình làm bài" FontSize="14" FontWeight="Bold" 
+                                    Foreground="#1F2937" Margin="0,0,0,6"/>
+                            <TextBlock Text="{Binding ProgressText}" FontSize="13" 
+                                    Foreground="#6B7280" Margin="0,0,0,8"/>
+                            <ProgressBar Value="{Binding ProgressValue}" 
+                                        Style="{StaticResource RoundedProgressBar}"/>
+                        </StackPanel>
+
+                        <!-- Question Numbers Header -->
+                        <TextBlock Grid.Row="4" Text="Danh sách câu hỏi" FontSize="14" FontWeight="Bold" 
+                                Foreground="#1F2937" Margin="0,0,0,12"/>
+
+                        <!-- Question Numbers Grid -->
+                        <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Auto" MaxHeight="250">
+                            <ItemsControl ItemsSource="{Binding QuestionNumbers}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="5"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding Number}" 
+                                                Command="{Binding DataContext.GoToQuestionCommand, 
+                                                         RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding Number}">
+                                            <Button.Style>
+                                                <MultiBinding Converter="{StaticResource QuestionButtonStyleConverter}">
+                                                    <Binding Path="IsAnswered"/>
+                                                    <Binding Path="IsCurrent"/>
+                                                    <Binding Path="IsMarked"/>
+                                                </MultiBinding>
+                                            </Button.Style>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <!-- Submit Button -->
+                        <Button Grid.Row="6" Content="✓ Nộp Bài" 
+                                Style="{StaticResource SubmitButtonStyle}" 
+                                Margin="0,20,0,0" 
+                                Command="{Binding SubmitExamCommand}"/>
+                    </Grid>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Right Panel - Question Content -->
+            <Grid Grid.Column="1" Background="#FFFDF4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Multiple Choice Content -->
+                <Border Grid.Row="0" Background="White" Margin="24,24,24,0" CornerRadius="12" 
+                        BorderBrush="{StaticResource BorderGray}" BorderThickness="1"
+                        Visibility="{Binding ExamType, Converter={StaticResource ExamTypeToVisibilityConverter}, ConverterParameter=MultipleChoice}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32">
+                        <StackPanel>
+                            <!-- Question Header -->
+                            <Grid Margin="0,0,0,24">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" FontSize="22" FontWeight="Bold" 
+                                        Foreground="#1F2937" VerticalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="Câu hỏi {0}/{1}">
+                                            <Binding Path="CurrentQuestionIndex" Converter="{StaticResource AddOneConverter}"/>
+                                            <Binding Path="TotalQuestions"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+
+                                <Button Grid.Column="1" 
+                                        Style="{StaticResource MarkButtonStyle}" 
+                                        Command="{Binding MarkQuestionCommand}">
+                                    <Button.Content>
+                                        <Binding Path="CurrentQuestionNumberItem.IsMarked" 
+                                                 Converter="{StaticResource IsMarkedToTextConverter}"/>
+                                    </Button.Content>
+                                </Button>
+                            </Grid>
+
+                            <!-- Question Content -->
+                            <TextBlock Text="{Binding CurrentQuestion.Content}" 
+                                    FontSize="18" Foreground="#374151" 
+                                    TextWrapping="Wrap" 
+                                    Margin="0,0,0,24" 
+                                    LineHeight="28"/>
+
+                            <!-- Question Image (if exists) -->
+                            <Image Source="{Binding CurrentQuestion.ImageUrl}" 
+                                MaxHeight="300" 
+                                Margin="0,0,0,24"
+                                HorizontalAlignment="Left"
+                                Visibility="{Binding CurrentQuestion.ImageUrl, 
+                                            Converter={StaticResource NullToVisibilityConverter}}"/>
+
+                            <!-- Answer Options for Single Choice -->
+                            <ItemsControl ItemsSource="{Binding CurrentQuestion.Answers}"
+                                        Visibility="{Binding CurrentQuestion.IsMultipleChoice, 
+                                                    Converter={StaticResource BoolToVisibilityConverter}, 
+                                                    ConverterParameter=Inverse}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <RadioButton Style="{StaticResource AnswerRadioButtonStyle}"
+                                                    GroupName="SingleChoice"
+                                                    IsChecked="{Binding IsSelected}"
+                                                    Command="{Binding DataContext.SelectAnswerCommand, 
+                                                             RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding AnswerId}">
+                                            <RadioButton.Tag>
+                                                <MultiBinding Converter="{StaticResource IndexToAlphabetConverter}">
+                                                    <Binding RelativeSource="{RelativeSource AncestorType=ItemsControl}" 
+                                                           Path="ItemsSource"/>
+                                                    <Binding/>
+                                                </MultiBinding>
+                                            </RadioButton.Tag>
+                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+                                        </RadioButton>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Answer Options for Multiple Choice -->
+                            <ItemsControl ItemsSource="{Binding CurrentQuestion.Answers}"
+                                        Visibility="{Binding CurrentQuestion.IsMultipleChoice, 
+                                                    Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Style="{StaticResource AnswerCheckBoxStyle}"
+                                                IsChecked="{Binding IsSelected}"
+                                                Command="{Binding DataContext.ToggleAnswerCommand, 
+                                                         RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding AnswerId}">
+                                            <CheckBox.Tag>
+                                                <MultiBinding Converter="{StaticResource IndexToAlphabetConverter}">
+                                                    <Binding RelativeSource="{RelativeSource AncestorType=ItemsControl}" 
+                                                           Path="ItemsSource"/>
+                                                    <Binding/>
+                                                </MultiBinding>
+                                            </CheckBox.Tag>
+                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+                                        </CheckBox>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Practice Exam Content -->
+                <Border Grid.Row="0" Background="White" Margin="24,24,24,0" CornerRadius="12" 
+                        BorderBrush="{StaticResource BorderGray}" BorderThickness="1"
+                        Visibility="{Binding ExamType, Converter={StaticResource ExamTypeToVisibilityConverter}, ConverterParameter=Practice}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Question Header -->
+                        <Border Grid.Row="0" Padding="32,32,32,24">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock FontSize="22" FontWeight="Bold" 
+                                            Foreground="#1F2937" Margin="0,0,0,8">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="Câu hỏi {0}/{1}">
+                                                <Binding Path="CurrentQuestionIndex" Converter="{StaticResource AddOneConverter}"/>
+                                                <Binding Path="TotalQuestions"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+
+                                    <TextBlock Text="{Binding CurrentPracticeQuestion.Content}" 
+                                            FontSize="18" Foreground="#374151" 
+                                            TextWrapping="Wrap" 
+                                            LineHeight="28"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Border Background="#E0F2FE" CornerRadius="8" Padding="12,6" Margin="0,0,12,0">
+                                        <TextBlock FontSize="14" Foreground="#0369A1">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0} điểm">
+                                                    <Binding Path="CurrentPracticeQuestion.Score"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </Border>
+
+                                    <Button Style="{StaticResource MarkButtonStyle}" 
+                                            Command="{Binding MarkQuestionCommand}">
+                                        <Button.Content>
+                                            <Binding Path="CurrentQuestionNumberItem.IsMarked" 
+                                                     Converter="{StaticResource IsMarkedToTextConverter}"/>
+                                        </Button.Content>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Answer Tabs -->
+                        <TabControl Grid.Row="1" 
+                                    SelectedIndex="{Binding CurrentPracticeQuestion.SelectedTabIndex}"
+                                    Margin="32,0,32,32">
+                            <TabControl.Template>
+                                <ControlTemplate TargetType="TabControl">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <TabPanel Grid.Row="0" 
+                                                IsItemsHost="True" 
+                                                Background="Transparent"
+                                                Margin="0,0,0,16"/>
+                                        <Border Grid.Row="1" 
+                                                Background="{StaticResource LightGray}"
+                                                BorderBrush="{StaticResource BorderGray}"
+                                                BorderThickness="1"
+                                                CornerRadius="8">
+                                            <ContentPresenter ContentSource="SelectedContent"/>
+                                        </Border>
+                                    </Grid>
+                                </ControlTemplate>
+                            </TabControl.Template>
+
+                            <!-- Rich Text Tab -->
+                            <TabItem Header="📝 Văn bản" Style="{StaticResource ModernTabStyle}">
+                                <RichTextBox x:Name="RichTextAnswer" 
+                                           VerticalScrollBarVisibility="Auto"
+                                           FontSize="16"
+                                           Padding="16"
+                                           BorderThickness="0"
+                                           Background="Transparent">
+                                    <RichTextBox.Resources>
+                                        <Style TargetType="{x:Type Paragraph}">
+                                            <Setter Property="Margin" Value="0,0,0,10"/>
+                                        </Style>
+                                    </RichTextBox.Resources>
+                                    <FlowDocument>
+                                        <Paragraph>
+                                            <Run Text="{Binding CurrentPracticeQuestion.RichTextAnswer, Mode=TwoWay}"/>
+                                        </Paragraph>
+                                    </FlowDocument>
+                                </RichTextBox>
+                            </TabItem>
+
+                            <!-- Math Tab -->
+                            <TabItem Header="🔢 Toán học" Style="{StaticResource ModernTabStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBox Grid.Row="0" 
+                                           Text="{Binding CurrentPracticeQuestion.MathAnswer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                           AcceptsReturn="True"
+                                           TextWrapping="Wrap"
+                                           VerticalScrollBarVisibility="Auto"
+                                           FontSize="16"
+                                           FontFamily="Consolas"
+                                           Padding="16"
+                                           BorderThickness="0"
+                                           Background="Transparent"/>
+
+                                    <Border Grid.Row="1" 
+                                            Background="White" 
+                                            BorderBrush="{StaticResource BorderGray}"
+                                            BorderThickness="0,1,0,0"
+                                            Padding="16">
+                                        <StackPanel>
+                                            <TextBlock Text="Xem trước:" 
+                                                     FontWeight="Bold" 
+                                                     Margin="0,0,0,8"
+                                                     Foreground="#6B7280"/>
+                                            <controls:FormulaControl Formula="{Binding CurrentPracticeQuestion.MathAnswer}" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </TabItem>
+
+                            <!-- Code Tab -->
+                            <TabItem Header="💻 Code" Style="{StaticResource ModernTabStyle}">
+                                <avalonedit:TextEditor x:Name="CodeEditor"
+                                                     FontFamily="Consolas"
+                                                     FontSize="14"
+                                                     ShowLineNumbers="True"
+                                                     SyntaxHighlighting="C#"
+                                                     Padding="8"
+                                                     BorderThickness="0"
+                                                     Background="Transparent">
+                                    <avalonedit:TextEditor.Options>
+                                        <avalonedit:TextEditorOptions 
+                                            EnableHyperlinks="False"
+                                            EnableEmailHyperlinks="False"
+                                            ShowSpaces="False"
+                                            ShowTabs="False"/>
+                                    </avalonedit:TextEditor.Options>
+                                </avalonedit:TextEditor>
+                            </TabItem>
+                        </TabControl>
+                    </Grid>
+                </Border>
+
+                <!-- Navigation Footer -->
+                <Border Grid.Row="1" Background="Transparent" Padding="24,16">
+                    <Grid>
+                        <Button x:Name="PrevButton" Content="◀ Câu trước" 
+                                Style="{StaticResource PrevButtonStyle}" 
+                                HorizontalAlignment="Left" 
+                                Command="{Binding PreviousQuestionCommand}"/>
+                        <Button x:Name="NextButton" Content="Câu tiếp theo ▶" 
+                                Style="{StaticResource NextButtonStyle}" 
+                                HorizontalAlignment="Right" 
+                                Command="{Binding NextQuestionCommand}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Loading Overlay -->
+        <Border Background="#80000000" 
+                Grid.ColumnSpan="2"
+                Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Panel.ZIndex="100">
+            <Border Background="White" 
+                    CornerRadius="12" 
+                    Padding="32"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel>
+                    <ProgressBar IsIndeterminate="True" 
+                               Width="200" Height="4" 
+                               Margin="0,0,0,16"/>
+                    <TextBlock Text="Đang tải bài thi..." 
+                             FontSize="16" 
+                             Foreground="#6B7280"
+                             HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </Window>
