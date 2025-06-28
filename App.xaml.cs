@@ -34,7 +34,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP
                     services.AddSingleton<MainViewModel>();
                     services.AddSingleton<HomePageViewModel>();
                     services.AddSingleton<DanhSachBaiThiSinhVienViewModel>();
-                    services.AddSingleton<LamBaiThiViewModel>();
                     services.AddSingleton<LichSuBaiThiSinhVienViewModel>();
 
                     services.AddTransient<MainWindow>();
@@ -46,9 +45,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP
 
                     services.AddTransient<DialogXacNhanBaiThiView>();
                     services.AddTransient<DialogNhapMaBaiThiView>();
+                    services.AddTransient<DialogThongBaoLoiView>();
+                    services.AddTransient<DialogThongBaoThanhCongView>();
 
                     services.AddTransient<DialogNhapMaBaiThiViewModel>();
                     services.AddTransient<DialogXacNhanNopBaiThiViewModel>();
+                    services.AddTransient<DialogThongBaoLoiViewModel>(); 
+                    services.AddTransient<DialogThongBaoThanhCongViewModel>();
+                    services.AddTransient<LamBaiThiViewModel>();
 
                 })
                 .Build();

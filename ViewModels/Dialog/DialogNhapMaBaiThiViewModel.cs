@@ -1,9 +1,12 @@
-﻿using SEP490_G18_GESS_DESKTOPAPP.Helpers;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SEP490_G18_GESS_DESKTOPAPP.Helpers;
 using SEP490_G18_GESS_DESKTOPAPP.Models.DanhSachBaiThiSinhVienDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Models.Enum;
 using SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interfaces;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels.Base;
+using SEP490_G18_GESS_DESKTOPAPP.Views;
+using SEP490_G18_GESS_DESKTOPAPP.Views.Dialog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -103,6 +106,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             }
         }
 
+        // Trong method HandleMultipleChoiceExamAsync(), thay thế phần TODO:
         private async System.Threading.Tasks.Task HandleMultipleChoiceExamAsync()
         {
             var request = new CheckExamRequestDTO
@@ -116,19 +120,51 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
 
             if (result != null)
             {
-                MessageBox.Show($"Vào thi trắc nghiệm thành công!\n{result.Message}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    // Show success dialog
+                    var successViewModel = new DialogThongBaoThanhCongViewModel(
+                        "Xác thực thành công",
+                        "Vào thi trắc nghiệm thành công!",
+                        result.Message,
+                        async () => {
+                            // Navigate to LamBaiThiView after success dialog closes
+                            var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
+                            var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
 
-                // TODO: Navigate to Multiple Choice Exam view
-                System.Diagnostics.Debug.WriteLine($"Navigating to Multiple Choice Exam with data: {result.SubjectName}");
+                            // Initialize exam data
+                            await lamBaiThiViewModel.InitializeExam(ExamType.MultipleChoice, result, _examInfo.ExamId);
 
-                CloseDialog();
+                            lamBaiThiView.DataContext = lamBaiThiViewModel;
+                            lamBaiThiView.Show();
+
+                            // Close all dialogs and parent window
+                            Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
+                            Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault()?.Close();
+                        }
+                    );
+
+                    var successDialog = new DialogThongBaoThanhCongView(successViewModel)
+                    {
+                        Owner = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()
+                    };
+
+                    successDialog.ShowDialog();
+                });
             }
             else
             {
-                MessageBox.Show("Mã OTP không đúng hoặc bài thi trắc nghiệm không tồn tại!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
+                    DialogHelper.ShowOTPErrorDialog(() => OTPCode = string.Empty, currentDialog);
+                });
             }
         }
 
+
+
+        // Trong method HandlePracticeExamAsync(), thay thế phần TODO:
         private async System.Threading.Tasks.Task HandlePracticeExamAsync()
         {
             var request = new CheckPracticeExamRequestDTO
@@ -142,16 +178,39 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
 
             if (result != null)
             {
-                MessageBox.Show($"Vào thi tự luận thành công!\n{result.Message}", "Thành công", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Show success dialog
+                var successViewModel = new DialogThongBaoThanhCongViewModel(
+                    "Xác thực thành công",
+                    "Vào thi tự luận thành công!",
+                    result.Message,
+                    async () => {
+                        // Navigate to LamBaiThiView after success dialog closes
+                        var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
+                        var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
 
-                // TODO: Navigate to Practice Exam view
-                System.Diagnostics.Debug.WriteLine($"Navigating to Practice Exam with data: {result.SubjectName}");
+                        // Initialize exam data
+                        await lamBaiThiViewModel.InitializeExam(ExamType.Practice, result, _examInfo.ExamId);
 
-                CloseDialog();
+                        lamBaiThiView.DataContext = lamBaiThiViewModel;
+                        lamBaiThiView.Show();
+
+                        // Close all dialogs and parent window
+                        Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
+                        Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault()?.Close();
+                    }
+                );
+
+                var successDialog = new DialogThongBaoThanhCongView(successViewModel)
+                {
+                    Owner = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()
+                };
+
+                successDialog.ShowDialog();
             }
             else
             {
-                MessageBox.Show("Mã OTP không đúng hoặc bài thi tự luận không tồn tại!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
+                DialogHelper.ShowOTPErrorDialog(() => OTPCode = string.Empty, currentDialog);
             }
         }
 
