@@ -8,13 +8,16 @@ using System.Windows.Media.Effects;
 
 namespace SEP490_G18_GESS_DESKTOPAPP.Views.Dialog
 {
-    public partial class DialogThongBaoThanhCongView : Window
+    /// <summary>
+    /// Interaction logic for DialogXacNhanNopBaiThiView.xaml
+    /// </summary>
+    public partial class DialogXacNhanNopBaiThiView : Window
     {
-
         private Window _parentWindow;
         private Effect _originalEffect;
         private Border _darkOverlay;
-        public DialogThongBaoThanhCongView(DialogThongBaoThanhCongViewModel viewModel)
+
+        public DialogXacNhanNopBaiThiView(DialogXacNhanNopBaiThiViewModel viewModel)
         {
             InitializeComponent();
             this.DataContext = viewModel;
@@ -25,6 +28,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views.Dialog
 
             AnimationHelper.ApplyFadeIn(this, 300);
         }
+
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
@@ -38,13 +42,12 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views.Dialog
                 // Lưu effect gốc
                 _originalEffect = _parentWindow.Effect;
 
-                // Thêm Blur effect nhẹ hơn
+                // Thêm Blur effect
                 _parentWindow.Effect = new BlurEffect
                 {
                     Radius = 5,
                     KernelType = KernelType.Gaussian
                 };
-                // Tạo dark overlay
                 CreateDarkOverlay();
             }
         }
@@ -87,6 +90,17 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views.Dialog
                     return result;
             }
             return null;
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            // Khôi phục parent window
+            if (_parentWindow != null)
+            {
+                _parentWindow.Effect = _originalEffect;
+            }
+
+            base.OnClosed(e);
         }
     }
 }

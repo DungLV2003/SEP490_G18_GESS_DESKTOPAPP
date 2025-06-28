@@ -43,12 +43,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP
                     services.AddTransient<LichSuBaiThiSinhVienView>();
 
 
-                    services.AddTransient<DialogXacNhanBaiThiView>();
+                    services.AddTransient<DialogXacNhanNopBaiThiView>();
                     services.AddTransient<DialogNhapMaBaiThiView>();
                     services.AddTransient<DialogThongBaoLoiView>();
                     services.AddTransient<DialogThongBaoThanhCongView>();
 
                     services.AddTransient<DialogNhapMaBaiThiViewModel>();
+                    services.AddTransient<DialogXacNhanNopBaiThiViewModel>();
                     services.AddTransient<DialogXacNhanNopBaiThiViewModel>();
                     services.AddTransient<DialogThongBaoLoiViewModel>(); 
                     services.AddTransient<DialogThongBaoThanhCongViewModel>();

@@ -1,4 +1,5 @@
-﻿using SEP490_G18_GESS_DESKTOPAPP.Helpers;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SEP490_G18_GESS_DESKTOPAPP.Helpers;
 using SEP490_G18_GESS_DESKTOPAPP.Models.Enum;
 using SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interface;
@@ -14,6 +15,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Windows.Xps;
 
 namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 {
@@ -549,10 +551,21 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
                 if (!isAutoSubmit)
                 {
-                    var result = MessageBox.Show("Bạn có chắc chắn muốn nộp bài?", "Xác nhận nộp bài",
-                        MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    // Tính toán thông tin để hiển thị trong dialog
+                    var answeredCount = QuestionNumbers.Count(q => q.IsAnswered);
+                    var totalCount = TotalQuestions;
+                    var timeSpent = CalculateTimeSpent();
 
-                    if (result != MessageBoxResult.Yes)
+                    // Hiển thị dialog xác nhận
+                    var confirmViewModel = new DialogXacNhanNopBaiThiViewModel(answeredCount, totalCount, timeSpent);
+                    var confirmDialog = new DialogXacNhanNopBaiThiView(confirmViewModel)
+                    {
+                        Owner = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault()
+                    };
+
+                    confirmDialog.ShowDialog();
+
+                    if (!confirmViewModel.IsConfirmed)
                     {
                         _timer?.Start();
                         _autoSaveTimer?.Start();
@@ -571,16 +584,96 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     await SubmitPracticeExam();
                 }
             }
+            catch (APIException apiEx)
+            {
+                // Xử lý lỗi từ API
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var currentWindow = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
+
+                    string errorTitle = "Nộp bài thất bại";
+                    string errorMessage = apiEx.Message;
+                    string errorDetail = "";
+
+                    // Map error messages cho submit exam
+                    switch (apiEx.Message)
+                    {
+                        case "Bài thi đã hết thời gian.":
+                            errorMessage = "Bài thi đã hết thời gian";
+                            errorDetail = "Thời gian làm bài đã kết thúc. Bài thi sẽ được nộp với các câu trả lời hiện tại.";
+                            break;
+
+                        case "Bài thi đã được nộp trước đó.":
+                            errorMessage = "Bài thi đã được nộp";
+                            errorDetail = "Bạn đã nộp bài thi này trước đó. Không thể nộp lại.";
+                            break;
+
+                        case "Không tìm thấy bài thi.":
+                            errorMessage = "Không tìm thấy bài thi";
+                            errorDetail = "Có lỗi xảy ra khi tìm kiếm bài thi. Vui lòng liên hệ giáo viên.";
+                            break;
+
+                        default:
+                            errorDetail = "Vui lòng thử lại hoặc liên hệ với giáo viên để được hỗ trợ.";
+                            break;
+                    }
+
+                    var lamBaiThiView = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
+                    lamBaiThiView?.Close();
+
+                    // Hiển thị dialog lỗi với owner là DanhSachBaiThiView
+                    var danhSachView = Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault();
+                    DialogHelper.ShowErrorDialog(errorTitle, errorMessage, errorDetail, null, danhSachView);
+                });
+
+            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi nộp bài: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                // Xử lý lỗi chung - thoát ra ngoài và báo lỗi
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    // Đóng màn hình làm bài
+                    var lamBaiThiView = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
+                    lamBaiThiView?.Close();
+
+                    // Hiển thị dialog lỗi
+                    var danhSachView = Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault();
+                    if (danhSachView == null)
+                    {
+                        // Nếu đã đóng, mở lại
+                        danhSachView = App.AppHost.Services.GetRequiredService<DanhSachBaiThiView>();
+                        danhSachView.Show();
+                    }
+                    DialogHelper.ShowErrorDialog(
+                        "Lỗi nộp bài",
+                        "Có lỗi xảy ra khi nộp bài",
+                        ex.Message,
+                        null,
+                        danhSachView
+                            );
+                });
             }
             finally
             {
                 IsLoading = false;
             }
         }
+        // Thêm method helper để tính thời gian đã làm
+        private string CalculateTimeSpent()
+        {
+            var totalSecondsSpent = (Duration * 60) - _totalSeconds;
+            var minutes = totalSecondsSpent / 60;
+            var seconds = totalSecondsSpent % 60;
 
+            if (minutes > 0)
+            {
+                return $"{minutes} phút {seconds} giây";
+            }
+            else
+            {
+                return $"{seconds} giây";
+            }
+        }
         private async Task SubmitMultipleChoiceExam()
         {
             var submitDto = new UpdateMultiExamProgressDTO
@@ -629,29 +722,36 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
         private void ShowExamResult(SubmitExamResponseDTO result)
         {
-            var message = $"Bài thi: {result.ExamName}\n" +
-                         $"Môn: {result.SubjectName}\n" +
-                         $"Thời gian làm bài: {result.TimeTaken}\n" +
-                         $"Số câu đúng: {result.CorrectCount}/{result.TotalCount}\n" +
-                         $"Điểm: {result.FinalScore}";
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                // Đóng màn hình làm bài
+                var lamBaiThiView = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
+                lamBaiThiView?.Close();
 
-            MessageBox.Show(message, "Kết quả thi", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Mở màn hình kết quả
+                var ketQuaViewModel = App.AppHost.Services.GetRequiredService<KetQuaNopBaiViewModel>();
+                ketQuaViewModel.InitializeFromSubmitResult(result);
 
-            // Navigate back to exam list
-            _navigationService.NavigateWithFade<LamBaiThiView, DanhSachBaiThiView>();
+                var ketQuaView = new KetQuaNopBaiView(ketQuaViewModel);
+                ketQuaView.Show();
+            });
         }
 
         private void ShowPracticeExamResult(SubmitPracticeExamResponseDTO result)
         {
-            var message = $"Bài thi: {result.ExamName}\n" +
-                         $"Môn: {result.SubjectName}\n" +
-                         $"Thời gian làm bài: {result.TimeTaken}\n" +
-                         $"Bài thi tự luận đã được nộp thành công!";
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                // Đóng màn hình làm bài
+                var lamBaiThiView = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
+                lamBaiThiView?.Close();
 
-            MessageBox.Show(message, "Kết quả thi", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Mở màn hình kết quả
+                var ketQuaViewModel = App.AppHost.Services.GetRequiredService<KetQuaNopBaiViewModel>();
+                ketQuaViewModel.InitializeFromPracticeResult(result);
 
-            // Navigate back to exam list
-            _navigationService.NavigateWithFade<LamBaiThiView, DanhSachBaiThiView>();
+                var ketQuaView = new KetQuaNopBaiView(ketQuaViewModel);
+                ketQuaView.Show();
+            });
         }
         #endregion
 

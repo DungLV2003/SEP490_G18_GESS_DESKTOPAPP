@@ -43,6 +43,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views.Dialog
                     Radius = 5,
                     KernelType = KernelType.Gaussian
                 };
+
             }
         }
 
