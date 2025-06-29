@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
+        xmlns:uc="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
         mc:Ignorable="d"
         Title="Lịch sử bài thi" Background="#F5F6FA" WindowState="Maximized">
     <Window.Resources>
@@ -219,6 +220,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Back Button -->
@@ -236,8 +238,13 @@
                    FontSize="28" 
                    FontWeight="Bold" 
                    VerticalAlignment="Center" 
-                   Margin="0,0,56,0"
                    HorizontalAlignment="Center"/>
+
+                <!-- User Profile Control -->
+                <uc:UserProfileControl Grid.Column="2" 
+                                     HorizontalAlignment="Right" 
+                                     VerticalAlignment="Center"
+                                     Margin="0,0,20,0"/>
             </Grid>
         </Border>
 

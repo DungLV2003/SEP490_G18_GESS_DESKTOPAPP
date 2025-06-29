@@ -131,6 +131,19 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             set => SetProperty(ref _questionNumbers, value);
         }
 
+        // Current Question Number Item
+        public QuestionNumberItem CurrentQuestionNumberItem
+        {
+            get
+            {
+                if (QuestionNumbers != null && CurrentQuestionIndex >= 0 && CurrentQuestionIndex < QuestionNumbers.Count)
+                {
+                    return QuestionNumbers[CurrentQuestionIndex];
+                }
+                return null;
+            }
+        }
+
         // Current Question (Multiple Choice)
         private QuestionViewModel _currentQuestion;
         public QuestionViewModel CurrentQuestion
@@ -290,6 +303,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             // Show first question
             CurrentQuestionIndex = 0;
+            UpdateCurrentQuestion(); // Explicitly call to ensure CurrentQuestion is set
         }
 
         private async Task InitializePracticeExam(PracticeExamInfoResponseDTO examInfo)
@@ -345,6 +359,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             // Show first question
             CurrentQuestionIndex = 0;
+            UpdateCurrentQuestion(); // Explicitly call to ensure CurrentQuestion is set
         }
         #endregion
 
@@ -365,6 +380,9 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 item.IsCurrent = item.Number == CurrentQuestionIndex + 1;
             }
+
+            // Notify CurrentQuestionNumberItem changed
+            OnPropertyChanged(nameof(CurrentQuestionNumberItem));
         }
 
         private void PreviousQuestion()
@@ -411,40 +429,67 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         #region Answer Methods
         private void SelectAnswer(string answerId)
         {
+            System.Diagnostics.Debug.WriteLine($"SelectAnswer called with answerId: {answerId}");
+            
             if (CurrentQuestion != null && !CurrentQuestion.IsMultipleChoice)
             {
+                System.Diagnostics.Debug.WriteLine($"Processing single choice answer for question {CurrentQuestion.QuestionId}");
+                
                 // Single choice - clear other selections
                 foreach (var answer in CurrentQuestion.Answers)
                 {
+                    bool wasSelected = answer.IsSelected;
                     answer.IsSelected = answer.AnswerId.ToString() == answerId;
+                    System.Diagnostics.Debug.WriteLine($"Answer {answer.AnswerId}: {wasSelected} -> {answer.IsSelected}");
                 }
 
                 // Mark question as answered
                 var questionItem = QuestionNumbers[CurrentQuestionIndex];
                 questionItem.IsAnswered = true;
+                System.Diagnostics.Debug.WriteLine($"Question {CurrentQuestionIndex + 1} marked as answered");
 
                 // Auto save progress
                 _ = SaveProgressAsync();
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"CurrentQuestion is null or is multiple choice: {CurrentQuestion?.IsMultipleChoice}");
             }
         }
 
         private void ToggleAnswer(string answerId)
         {
+            System.Diagnostics.Debug.WriteLine($"ToggleAnswer called with answerId: {answerId}");
+            
             if (CurrentQuestion != null && CurrentQuestion.IsMultipleChoice)
             {
+                System.Diagnostics.Debug.WriteLine($"Processing multiple choice answer for question {CurrentQuestion.QuestionId}");
+                
                 // Multiple choice - toggle selection
                 var answer = CurrentQuestion.Answers.FirstOrDefault(a => a.AnswerId.ToString() == answerId);
                 if (answer != null)
                 {
+                    bool wasSelected = answer.IsSelected;
                     answer.IsSelected = !answer.IsSelected;
+                    System.Diagnostics.Debug.WriteLine($"Answer {answer.AnswerId}: {wasSelected} -> {answer.IsSelected}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Answer with ID {answerId} not found");
                 }
 
                 // Mark question as answered if at least one answer is selected
                 var questionItem = QuestionNumbers[CurrentQuestionIndex];
-                questionItem.IsAnswered = CurrentQuestion.Answers.Any(a => a.IsSelected);
+                bool hasSelected = CurrentQuestion.Answers.Any(a => a.IsSelected);
+                questionItem.IsAnswered = hasSelected;
+                System.Diagnostics.Debug.WriteLine($"Question {CurrentQuestionIndex + 1} answered status: {hasSelected}");
 
                 // Auto save progress
                 _ = SaveProgressAsync();
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"CurrentQuestion is null or is not multiple choice: {CurrentQuestion?.IsMultipleChoice}");
             }
         }
         #endregion

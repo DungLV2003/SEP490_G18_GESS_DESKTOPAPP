@@ -1,6 +1,7 @@
 ﻿using SEP490_G18_GESS_DESKTOPAPP.Helpers;
 using SEP490_G18_GESS_DESKTOPAPP.Models.Enum;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels;
+using static SEP490_G18_GESS_DESKTOPAPP.ViewModels.LamBaiThiViewModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -128,6 +129,94 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
 
             base.OnClosing(e);
         }
+
+        private void RadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("RadioButton_Click event fired");
+            
+            if (sender is RadioButton radioButton && radioButton.DataContext is AnswerViewModel answer)
+            {
+                System.Diagnostics.Debug.WriteLine($"RadioButton clicked for answer: {answer.AnswerId}");
+                
+                // Manually trigger the SelectAnswer command
+                if (_viewModel.SelectAnswerCommand.CanExecute(answer.AnswerId.ToString()))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Executing SelectAnswer command with parameter: {answer.AnswerId}");
+                    _viewModel.SelectAnswerCommand.Execute(answer.AnswerId.ToString());
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("SelectAnswer command cannot execute");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("RadioButton click: sender or DataContext is not valid");
+            }
+        }
+
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("CheckBox_Click event fired");
+            
+            if (sender is CheckBox checkBox && checkBox.DataContext is AnswerViewModel answer)
+            {
+                System.Diagnostics.Debug.WriteLine($"CheckBox clicked for answer: {answer.AnswerId}");
+                
+                // Manually trigger the ToggleAnswer command
+                if (_viewModel.ToggleAnswerCommand.CanExecute(answer.AnswerId.ToString()))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Executing ToggleAnswer command with parameter: {answer.AnswerId}");
+                    _viewModel.ToggleAnswerCommand.Execute(answer.AnswerId.ToString());
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("ToggleAnswer command cannot execute");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("CheckBox click: sender or DataContext is not valid");
+            }
+        }
+
+        private void RadioButton_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("RadioButton_MouseDown event fired");
+            
+            if (sender is RadioButton radioButton && radioButton.DataContext is AnswerViewModel answer)
+            {
+                System.Diagnostics.Debug.WriteLine($"RadioButton mouse down for answer: {answer.AnswerId}");
+                
+                // Force selection
+                answer.IsSelected = true;
+                
+                // Also execute command
+                if (_viewModel.SelectAnswerCommand.CanExecute(answer.AnswerId.ToString()))
+                {
+                    _viewModel.SelectAnswerCommand.Execute(answer.AnswerId.ToString());
+                }
+            }
+        }
+
+        private void CheckBox_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("CheckBox_MouseDown event fired");
+            
+            if (sender is CheckBox checkBox && checkBox.DataContext is AnswerViewModel answer)
+            {
+                System.Diagnostics.Debug.WriteLine($"CheckBox mouse down for answer: {answer.AnswerId}");
+                
+                // Force toggle
+                answer.IsSelected = !answer.IsSelected;
+                
+                // Also execute command
+                if (_viewModel.ToggleAnswerCommand.CanExecute(answer.AnswerId.ToString()))
+                {
+                    _viewModel.ToggleAnswerCommand.Execute(answer.AnswerId.ToString());
+                }
+            }
+        }
     }
 
     #region Converters
@@ -157,22 +246,34 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values.Length >= 3)
+            if (values.Length >= 4)
             {
                 bool isAnswered = values[0] is bool answered && answered;
                 bool isCurrent = values[1] is bool current && current;
                 bool isMarked = values[2] is bool marked && marked;
+                FrameworkElement element = values[3] as FrameworkElement;
 
-                if (isCurrent)
-                    return Application.Current.FindResource("CurrentButtonStyle");
-                else if (isMarked)
-                    return Application.Current.FindResource("MarkedButtonStyle");
-                else if (isAnswered)
-                    return Application.Current.FindResource("AnsweredButtonStyle");
-                else
-                    return Application.Current.FindResource("NumberButtonStyle");
+                if (element != null)
+                {
+                    try
+                    {
+                        if (isCurrent)
+                            return element.FindResource("CurrentButtonStyle");
+                        else if (isMarked)
+                            return element.FindResource("MarkedButtonStyle");
+                        else if (isAnswered)
+                            return element.FindResource("AnsweredButtonStyle");
+                        else
+                            return element.FindResource("NumberButtonStyle");
+                    }
+                    catch
+                    {
+                        // Fallback to default style if resource not found
+                        return DependencyProperty.UnsetValue;
+                    }
+                }
             }
-            return Application.Current.FindResource("NumberButtonStyle");
+            return DependencyProperty.UnsetValue;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

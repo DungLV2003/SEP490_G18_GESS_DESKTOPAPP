@@ -30,7 +30,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP
                     services.AddHttpClient<ILamBaiThiService, LamBaiThiService>();
                     services.AddHttpClient<ILichSuBaiThiSinhVienService, LichSuBaiThiSinhVienService>();
                     services.AddSingleton<INavigationService, NavigationService>();
-                    services.AddSingleton<IUserService, UserService>();
                     // ======= Đăng ký Authentication & User Services =======
                     services.AddSingleton<IGoogleAuthService>(provider =>
                         new GoogleAuthService(
@@ -44,12 +43,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP
                     services.AddSingleton<HomePageViewModel>();
                     services.AddSingleton<DanhSachBaiThiSinhVienViewModel>();
                     services.AddSingleton<LichSuBaiThiSinhVienViewModel>();
+                    services.AddTransient<KetQuaNopBaiViewModel>();
 
                     services.AddTransient<MainWindow>();
                     services.AddTransient<HomePageView>();
                     services.AddTransient<DanhSachBaiThiView>();
                     services.AddTransient<LamBaiThiView>();
                     services.AddTransient<LichSuBaiThiSinhVienView>();
+                    services.AddTransient<KetQuaNopBaiView>();
 
 
                     services.AddTransient<DialogXacNhanNopBaiThiView>();
