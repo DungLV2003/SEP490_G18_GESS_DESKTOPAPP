@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Implement;
+using SEP490_G18_GESS_DESKTOPAPP.Services.Implements;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interface;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interfaces;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels;
@@ -29,6 +30,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP
                     services.AddHttpClient<ILamBaiThiService, LamBaiThiService>();
                     services.AddHttpClient<ILichSuBaiThiSinhVienService, LichSuBaiThiSinhVienService>();
                     services.AddSingleton<INavigationService, NavigationService>();
+                    // ======= Đăng ký Authentication & User Services =======
+                    services.AddSingleton<IGoogleAuthService>(provider =>
+                        new GoogleAuthService(
+                            "681921066846-ik7ck90m1i5t3t4mv22lu65mfldp3s23.apps.googleusercontent.com",
+                            "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"
+                        ));
+                    services.AddSingleton<IUserService, UserService>();
 
                     // ======= Đăng ký ViewModel =======
                     services.AddSingleton<MainViewModel>();
@@ -54,6 +62,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP
                     services.AddTransient<DialogThongBaoLoiViewModel>(); 
                     services.AddTransient<DialogThongBaoThanhCongViewModel>();
                     services.AddTransient<LamBaiThiViewModel>();
+                    services.AddTransient<DangNhapView>();
 
                 })
                 .Build();
@@ -61,7 +70,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            var mainWindow =  AppHost.Services.GetRequiredService<MainWindow>();
+            //var mainWindow =  AppHost.Services.GetRequiredService<MainWindow>();
+            var mainWindow =  AppHost.Services.GetRequiredService<DangNhapView>();
             mainWindow.Show();
         }
 
