@@ -4,9 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
+        xmlns:uc="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
         mc:Ignorable="d"
         Title="HomePageView" WindowState="Maximized" Background="#F8F9FA">
+    
     <Window.Resources>
+        
         <!-- Định nghĩa màu sắc -->
         <SolidColorBrush x:Key="PrimaryBlue" Color="#6366F1"/>
         <SolidColorBrush x:Key="PrimaryBlueHover" Color="#5B5DEF"/>
@@ -184,7 +187,9 @@
     </Window.Resources>
 
     <Grid>
-        <!-- Background gradient -->
+        <!-- User Profile Control at Top Right -->
+
+
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                 <GradientStop Color="#F8FAFC" Offset="0"/>

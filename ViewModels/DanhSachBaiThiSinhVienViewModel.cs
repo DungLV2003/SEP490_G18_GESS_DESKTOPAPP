@@ -1,5 +1,7 @@
 ﻿using SEP490_G18_GESS_DESKTOPAPP.Helpers;
 using SEP490_G18_GESS_DESKTOPAPP.Models.DanhSachBaiThiSinhVienDTO;
+using SEP490_G18_GESS_DESKTOPAPP.Models.Enum;
+using SEP490_G18_GESS_DESKTOPAPP.Services.Implements;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interface;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interfaces;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels.Base;
@@ -15,7 +17,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Xaml;
-using SEP490_G18_GESS_DESKTOPAPP.Models.Enum;
 
 namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 {
@@ -24,6 +25,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         private readonly IDanhSachBaiThiService _danhSachBaiThiService;
         private readonly INavigationService _navigationService;
         private readonly ILamBaiThiService _lamBaiThiService;
+        private readonly IUserService _userService;
 
 
         #region Properties
@@ -71,7 +73,19 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         // 17d4a105-511d-41aa-b177-08ddb30066ed giua ky
         // 59e9f29d-ff3a-4917-b179-08ddb30066ed ca 2
 
-        private readonly Guid _currentStudentId = Guid.Parse("59e9f29d-ff3a-4917-b179-08ddb30066ed");
+        private Guid _currentStudentId
+        {
+            get
+            {
+                var studentIdString = _userService.GetStudentId();
+                if (Guid.TryParse(studentIdString, out Guid studentId))
+                {
+                    return studentId;
+                }
+                // Fallback nếu chưa có thông tin
+                return Guid.Parse("59e9f29d-ff3a-4917-b179-08ddb30066ed");
+            }
+        }
         #endregion
 
         #region Commands
@@ -86,10 +100,12 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         public DanhSachBaiThiSinhVienViewModel(
     IDanhSachBaiThiService danhSachBaiThiService,
     INavigationService navigationService,
-    ILamBaiThiService lamBaiThiService)
+    ILamBaiThiService lamBaiThiService,
+    IUserService userService)
         {
             _danhSachBaiThiService = danhSachBaiThiService;
             _navigationService = navigationService;
+                _userService = userService; 
             _lamBaiThiService = lamBaiThiService;
             ExamList = new ObservableCollection<ExamListOfStudentResponse>();
 

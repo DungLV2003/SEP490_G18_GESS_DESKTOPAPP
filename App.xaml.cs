@@ -30,6 +30,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP
                     services.AddHttpClient<ILamBaiThiService, LamBaiThiService>();
                     services.AddHttpClient<ILichSuBaiThiSinhVienService, LichSuBaiThiSinhVienService>();
                     services.AddSingleton<INavigationService, NavigationService>();
+                    services.AddSingleton<IUserService, UserService>();
                     // ======= Đăng ký Authentication & User Services =======
                     services.AddSingleton<IGoogleAuthService>(provider =>
                         new GoogleAuthService(

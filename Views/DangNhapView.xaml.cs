@@ -1,7 +1,9 @@
-﻿using SEP490_G18_GESS_DESKTOPAPP.Models.LoginDTO;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SEP490_G18_GESS_DESKTOPAPP.Models.LoginDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Models.UserDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interfaces;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -175,12 +177,21 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
 
         private void ShowSuccessMessage(UserInfo userInfo)
         {
-            MessageBox.Show(
-                $"Đăng nhập thành công!\n\nXin chào: {userInfo.StudentName}\nMã sinh viên: {userInfo.StudentCode} \nID: {userInfo.StudentId}",
-                "Thành công",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information
-            );
+            // Navigate to HomePage directly after successful login
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                try
+                {
+                    var homePageView = App.AppHost.Services.GetRequiredService<HomePageView>();
+                    homePageView.Show();
+                    this.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi chuyển trang: {ex.Message}", "Lỗi",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            });
 
             ClearErrorMessage();
         }

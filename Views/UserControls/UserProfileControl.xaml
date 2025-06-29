@@ -1,0 +1,162 @@
+﻿<UserControl x:Class="SEP490_G18_GESS_DESKTOPAPP.Views.UserControls.UserProfileControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="60" d:DesignWidth="60">
+
+    <UserControl.Resources>
+        <!-- Style cho Avatar Button -->
+        <Style x:Key="AvatarButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <!-- Avatar Circle với gradient -->
+                            <Ellipse Width="40" Height="40">
+                                <Ellipse.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#667EEA" Offset="0"/>
+                                        <GradientStop Color="#764BA2" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Ellipse.Fill>
+                            </Ellipse>
+
+                            <!-- Icon người dùng -->
+                            <Path Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                                  Fill="White"
+                                  Width="20" Height="20"
+                                  Stretch="Uniform"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+
+                            <!-- Hover Effect -->
+                            <Ellipse x:Name="HoverOverlay" 
+                                     Fill="White" 
+                                     Opacity="0"
+                                     Width="40" Height="40"/>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HoverOverlay" Property="Opacity" Value="0.2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style cho Dropdown Menu -->
+        <Style x:Key="DropdownMenuStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" 
+                                      Direction="270" 
+                                      ShadowDepth="8" 
+                                      Opacity="0.15" 
+                                      BlurRadius="20"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style cho Menu Item -->
+        <Style x:Key="MenuItemStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#F3F4F6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- Avatar Button -->
+        <Button x:Name="AvatarButton" 
+                Style="{StaticResource AvatarButtonStyle}"
+                Click="AvatarButton_Click"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Right"/>
+
+        <!-- Dropdown Menu -->
+        <Popup x:Name="UserMenuPopup" 
+               Placement="Bottom" 
+               PlacementTarget="{Binding ElementName=AvatarButton}"
+               StaysOpen="False"
+               AllowsTransparency="True"
+               HorizontalOffset="-160"
+               VerticalOffset="8">
+
+            <Border Style="{StaticResource DropdownMenuStyle}"
+                    Width="200">
+                <StackPanel>
+                    <!-- User Info Header -->
+                    <Border Background="#F9FAFB" 
+                            CornerRadius="12,12,0,0"
+                            Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="{Binding StudentName}" 
+                                       FontWeight="Bold" 
+                                       FontSize="16"
+                                       Foreground="#111827"
+                                       Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding StudentCode}" 
+                                       FontSize="13"
+                                       Foreground="#6B7280"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Separator -->
+                    <Rectangle Height="1" 
+                               Fill="#E5E7EB" 
+                               Margin="0,8"/>
+
+                    <!-- Menu Items -->
+                    <Button Style="{StaticResource MenuItemStyle}"
+                            Click="Logout_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🚪" FontSize="16" Margin="0,0,12,0"/>
+                            <TextBlock Text="Đăng xuất" Foreground="#EF4444"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Popup>
+
+        <!-- System Name at Bottom Right Corner -->
+        <TextBlock Text="NAEM Exam" 
+                   FontSize="12" 
+                   Foreground="#9CA3AF"
+                   FontWeight="Medium"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Bottom"
+                   Margin="0,0,0,0"/>
+    </Grid>
+</UserControl>

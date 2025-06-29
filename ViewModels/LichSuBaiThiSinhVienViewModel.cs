@@ -1,6 +1,7 @@
 ﻿using SEP490_G18_GESS_DESKTOPAPP.Helpers;
 using SEP490_G18_GESS_DESKTOPAPP.Models.LichSuBaiThiSinhVienDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interface;
+using SEP490_G18_GESS_DESKTOPAPP.Services.Interfaces;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels.Base;
 using SEP490_G18_GESS_DESKTOPAPP.Views;
 using System;
@@ -17,6 +18,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         private readonly ILichSuBaiThiSinhVienService _lichSuBaiThiService;
         // Thêm vào phần Properties
         private readonly INavigationService _navigationService;
+        private readonly IUserService _userService;
 
         #region Properties
         private ObservableCollection<int> _yearList;
@@ -109,7 +111,19 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         private bool _isInitializing = false;
 
         // Temporary StudentId
-        private readonly Guid _currentStudentId = Guid.Parse("59e9f29d-ff3a-4917-b179-08ddb30066ed");
+        private Guid _currentStudentId
+        {
+            get
+            {
+                var studentIdString = _userService.GetStudentId();
+                if (Guid.TryParse(studentIdString, out Guid studentId))
+                {
+                    return studentId;
+                }
+                // Fallback nếu chưa có thông tin
+                return Guid.Parse("59e9f29d-ff3a-4917-b179-08ddb30066ed");
+            }
+        }
         #endregion
 
         #region Commands
@@ -118,10 +132,11 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         public ICommand RefreshCommand { get; }
         #endregion
 
-        public LichSuBaiThiSinhVienViewModel(ILichSuBaiThiSinhVienService lichSuBaiThiService, INavigationService navigationService)
+        public LichSuBaiThiSinhVienViewModel(ILichSuBaiThiSinhVienService lichSuBaiThiService, INavigationService navigationService, IUserService userService)
         {
             _lichSuBaiThiService = lichSuBaiThiService;
             _navigationService = navigationService;
+            _userService = userService; 
             YearList = new ObservableCollection<int>();
             SemesterList = new ObservableCollection<SemesterResponse>();
             SubjectList = new ObservableCollection<AllSubjectBySemesterOfStudentDTOResponse>();
