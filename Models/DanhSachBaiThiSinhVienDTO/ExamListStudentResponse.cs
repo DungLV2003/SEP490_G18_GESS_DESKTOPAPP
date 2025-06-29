@@ -16,7 +16,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.DanhSachBaiThiSinhVienDTO
         public string? Status { get; set; }
         public string? RoomName { get; set; }
         public string? ExamSlotName { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
     }
 }

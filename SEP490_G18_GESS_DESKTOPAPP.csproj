@@ -17,5 +17,7 @@
 	  <PackageReference Include="AvalonEdit" Version="6.3.0.90" />
 	  <PackageReference Include="WpfMath" Version="2.1.0" />
   </ItemGroup>
-
+<ItemGroup>
+    <Resource Include="Assets\web_light_rd_na@4x.png" />
+  </ItemGroup>
 </Project>
