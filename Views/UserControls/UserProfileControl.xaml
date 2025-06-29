@@ -10,42 +10,36 @@
     <UserControl.Resources>
         <!-- Style cho Avatar Button -->
         <Style x:Key="AvatarButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="50"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <!-- Avatar Circle với gradient -->
-                            <Ellipse Width="40" Height="40">
-                                <Ellipse.Fill>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#667EEA" Offset="0"/>
-                                        <GradientStop Color="#764BA2" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Ellipse.Fill>
-                            </Ellipse>
+                            <!-- Avatar Circle với nền xám nhẹ -->
+                            <Ellipse Width="50" Height="50" Fill="#F5F5F5"/>
 
-                            <!-- Icon người dùng -->
-                            <Path Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
-                                  Fill="White"
-                                  Width="20" Height="20"
-                                  Stretch="Uniform"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"/>
+                            <!-- Chữ cái đầu của tên -->
+                            <TextBlock x:Name="AvatarLetter"
+                                       Text="{Binding AvatarLetter}"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Foreground="#333333"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
 
                             <!-- Hover Effect -->
                             <Ellipse x:Name="HoverOverlay" 
                                      Fill="White" 
                                      Opacity="0"
-                                     Width="40" Height="40"/>
+                                     Width="50" Height="50"/>
                         </Grid>
 
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HoverOverlay" Property="Opacity" Value="0.2"/>
+                                <Setter TargetName="HoverOverlay" Property="Opacity" Value="0.1"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -56,16 +50,16 @@
         <!-- Style cho Dropdown Menu -->
         <Style x:Key="DropdownMenuStyle" TargetType="Border">
             <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Setter Property="BorderBrush" Value="#E1E5E9"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Effect">
                 <Setter.Value>
                     <DropShadowEffect Color="Black" 
                                       Direction="270" 
-                                      ShadowDepth="8" 
+                                      ShadowDepth="12" 
                                       Opacity="0.15" 
-                                      BlurRadius="20"/>
+                                      BlurRadius="25"/>
                 </Setter.Value>
             </Setter>
         </Style>
@@ -75,20 +69,130 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Padding" Value="16,14"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="52"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
-                                Padding="{TemplateBinding Padding}">
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="8"
+                                Margin="6,2">
                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                             VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F3F4F6"/>
+                                <Setter Property="Background" Value="#F5F7FA"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style cho Language ComboBox -->
+        <Style x:Key="LanguageComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton"
+                                        Grid.Column="2"
+                                        Focusable="false"
+                                        IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                        ClickMode="Press"
+                                        Background="Transparent"
+                                        BorderThickness="0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{TemplateBinding SelectionBoxItem}" 
+                                               VerticalAlignment="Center"
+                                               Foreground="#6B7280"/>
+                                    <Path Data="M 0 0 L 4 4 L 8 0 Z"
+                                          Fill="#6B7280"
+                                          Width="8" Height="6"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </ToggleButton>
+
+                            <Popup x:Name="Popup"
+                                   Placement="Bottom"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   AllowsTransparency="True"
+                                   Focusable="False">
+                                <Border Background="White"
+                                        BorderBrush="#E1E5E9"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        MinWidth="100">
+                                    <ScrollViewer>
+                                        <StackPanel IsItemsHost="True"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style cho Toggle Switch -->
+        <Style x:Key="ToggleSwitchStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid>
+                            <!-- Background -->
+                            <Border x:Name="Background"
+                                    CornerRadius="12"
+                                    Background="#E5E7EB"/>
+                            
+                            <!-- Thumb -->
+                            <Border x:Name="Thumb"
+                                    Width="20"
+                                    Height="20"
+                                    CornerRadius="10"
+                                    Background="White"
+                                    HorizontalAlignment="Left"
+                                    Margin="2">
+                                <Border.RenderTransform>
+                                    <TranslateTransform x:Name="ThumbTransform"/>
+                                </Border.RenderTransform>
+                            </Border>
+                        </Grid>
+                        
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Background" Property="Background" Value="#4A90E2"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ThumbTransform"
+                                                           Storyboard.TargetProperty="X"
+                                                           To="20"
+                                                           Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ThumbTransform"
+                                                           Storyboard.TargetProperty="X"
+                                                           To="0"
+                                                           Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -111,24 +215,23 @@
                PlacementTarget="{Binding ElementName=AvatarButton}"
                StaysOpen="False"
                AllowsTransparency="True"
-               HorizontalOffset="-160"
+               HorizontalOffset="-290"
                VerticalOffset="8">
 
             <Border Style="{StaticResource DropdownMenuStyle}"
-                    Width="200">
-                <StackPanel>
+                    Width="340">
+                <StackPanel Margin="8">
                     <!-- User Info Header -->
-                    <Border Background="#F9FAFB" 
-                            CornerRadius="12,12,0,0"
-                            Padding="16">
+                    <Border Background="Transparent" 
+                            Padding="16,16,16,16">
                         <StackPanel>
                             <TextBlock Text="{Binding StudentName}" 
                                        FontWeight="Bold" 
-                                       FontSize="16"
-                                       Foreground="#111827"
+                                       FontSize="18"
+                                       Foreground="#1F2937"
                                        Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding StudentCode}" 
-                                       FontSize="13"
+                            <TextBlock Text="{Binding StudentEmail}" 
+                                       FontSize="14"
                                        Foreground="#6B7280"/>
                         </StackPanel>
                     </Border>
@@ -136,27 +239,123 @@
                     <!-- Separator -->
                     <Rectangle Height="1" 
                                Fill="#E5E7EB" 
-                               Margin="0,8"/>
+                               Margin="8,0"/>
 
                     <!-- Menu Items -->
+                    <!-- Hướng dẫn -->
                     <Button Style="{StaticResource MenuItemStyle}"
-                            Click="Logout_Click">
+                            Click="Guide_Click">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🚪" FontSize="16" Margin="0,0,12,0"/>
-                            <TextBlock Text="Đăng xuất" Foreground="#EF4444"/>
+                            <Border Background="#F3F4F6" 
+                                    CornerRadius="8" 
+                                    Width="36" Height="36"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="📖" FontSize="18" 
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Hướng dẫn" 
+                                       Foreground="#374151"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Ngôn ngữ -->
+                    <Border Background="Transparent" 
+                            Padding="16,14"
+                            Height="52">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Background="#F3F4F6" 
+                                    CornerRadius="8" 
+                                    Width="36" Height="36"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="🌐" FontSize="18" 
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                            </Border>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="Ngôn ngữ" 
+                                       Foreground="#374151"
+                                       VerticalAlignment="Center"/>
+
+                            <ComboBox Grid.Column="2"
+                                      x:Name="LanguageComboBox"
+                                      Style="{StaticResource LanguageComboBoxStyle}"
+                                      SelectedIndex="0"
+                                      VerticalAlignment="Center">
+                                <ComboBoxItem Content="Vietnamese 🇻🇳"/>
+                                <ComboBoxItem Content="English 🇺🇸"/>
+                            </ComboBox>
+                        </Grid>
+                    </Border>
+
+                    <!-- Dark Mode -->
+                    <Border Background="Transparent" 
+                            Padding="16,14"
+                            Height="52">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Background="#F3F4F6" 
+                                    CornerRadius="8" 
+                                    Width="36" Height="36"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="🌙" FontSize="18" 
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                            </Border>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="Dark Mode" 
+                                       Foreground="#374151"
+                                       VerticalAlignment="Center"/>
+
+                            <ToggleButton Grid.Column="2"
+                                          x:Name="DarkModeToggle"
+                                          Style="{StaticResource ToggleSwitchStyle}"
+                                          VerticalAlignment="Center"
+                                          Click="DarkMode_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Separator -->
+                    <Rectangle Height="1" 
+                               Fill="#E5E7EB" 
+                               Margin="8,8"/>
+
+                    <!-- Đăng xuất -->
+                    <Button Style="{StaticResource MenuItemStyle}"
+                            Click="Logout_Click"
+                            Margin="0,0,0,8">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Background="#FEF2F2" 
+                                    CornerRadius="8" 
+                                    Width="36" Height="36"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="🚪" FontSize="18" 
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Đăng xuất" 
+                                       Foreground="#DC2626"
+                                       VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
             </Border>
         </Popup>
-
-        <!-- System Name at Bottom Right Corner -->
-        <TextBlock Text="NAEM Exam" 
-                   FontSize="12" 
-                   Foreground="#9CA3AF"
-                   FontWeight="Medium"
-                   HorizontalAlignment="Right"
-                   VerticalAlignment="Bottom"
-                   Margin="0,0,0,0"/>
     </Grid>
 </UserControl>

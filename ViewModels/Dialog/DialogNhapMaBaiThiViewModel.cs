@@ -224,7 +224,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
         {
             var request = new CheckPracticeExamRequestDTO
             {
-                ExamName = _examInfo.ExamName,
+                ExamId = _examInfo.ExamId,
                 Code = OTPCode,
                 StudentId = _studentId
             };

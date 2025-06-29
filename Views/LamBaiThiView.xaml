@@ -87,6 +87,7 @@
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="IsHitTestVisible" Value="True"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
@@ -95,8 +96,9 @@
                                 BorderBrush="#E9ECEF" 
                                 BorderThickness="2" 
                                 CornerRadius="12"
-                                Padding="16,14">
-                            <Grid>
+                                Padding="16,14"
+                                IsHitTestVisible="True">
+                            <Grid IsHitTestVisible="True">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -104,15 +106,17 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Radio Circle -->
-                                <Grid Grid.Column="0" Width="24" Height="24" Margin="0,0,12,0">
+                                <Grid Grid.Column="0" Width="24" Height="24" Margin="0,0,12,0" IsHitTestVisible="False">
                                     <Ellipse x:Name="outerEllipse" 
                                             Fill="White" 
                                             Stroke="#6B7280" 
-                                            StrokeThickness="2"/>
+                                            StrokeThickness="2"
+                                            IsHitTestVisible="False"/>
                                     <Ellipse x:Name="innerEllipse" 
                                             Width="12" Height="12" 
                                             Fill="#3B82F6" 
-                                            Visibility="Collapsed"/>
+                                            Visibility="Collapsed"
+                                            IsHitTestVisible="False"/>
                                 </Grid>
 
                                 <!-- Answer Label (A, B, C, D) -->
@@ -120,16 +124,18 @@
                                         Background="#E5E7EB" 
                                         CornerRadius="6" 
                                         Width="32" Height="32" 
-                                        Margin="0,0,12,0">
+                                        Margin="0,0,12,0"
+                                        IsHitTestVisible="False">
                                     <TextBlock Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" 
                                              HorizontalAlignment="Center" 
                                              VerticalAlignment="Center"
                                              FontWeight="Bold"
-                                             Foreground="#374151"/>
+                                             Foreground="#374151"
+                                             IsHitTestVisible="False"/>
                                 </Border>
 
                                 <!-- Content -->
-                                <ContentPresenter Grid.Column="2" VerticalAlignment="Center"/>
+                                <ContentPresenter Grid.Column="2" VerticalAlignment="Center" IsHitTestVisible="False"/>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -155,6 +161,7 @@
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="IsHitTestVisible" Value="True"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
@@ -163,8 +170,9 @@
                                 BorderBrush="#E9ECEF" 
                                 BorderThickness="2" 
                                 CornerRadius="12"
-                                Padding="16,14">
-                            <Grid>
+                                Padding="16,14"
+                                IsHitTestVisible="True">
+                            <Grid IsHitTestVisible="True">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -177,12 +185,14 @@
                                         BorderThickness="2"
                                         BorderBrush="#6B7280"
                                         Background="White"
-                                        CornerRadius="6">
+                                        CornerRadius="6"
+                                        IsHitTestVisible="False">
                                     <Path x:Name="checkMark"
                                           Data="M4,10 L9,15 L20,4"
                                           Stroke="#3B82F6"
                                           StrokeThickness="3"
-                                          Visibility="Collapsed"/>
+                                          Visibility="Collapsed"
+                                          IsHitTestVisible="False"/>
                                 </Border>
 
                                 <!-- Answer Label (A, B, C, D) -->
@@ -190,16 +200,18 @@
                                         Background="#E5E7EB" 
                                         CornerRadius="6" 
                                         Width="32" Height="32" 
-                                        Margin="0,0,12,0">
+                                        Margin="0,0,12,0"
+                                        IsHitTestVisible="False">
                                     <TextBlock Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Tag}" 
                                              HorizontalAlignment="Center" 
                                              VerticalAlignment="Center"
                                              FontWeight="Bold"
-                                             Foreground="#374151"/>
+                                             Foreground="#374151"
+                                             IsHitTestVisible="False"/>
                                 </Border>
 
                                 <!-- Content -->
-                                <ContentPresenter Grid.Column="2" VerticalAlignment="Center"/>
+                                <ContentPresenter Grid.Column="2" VerticalAlignment="Center" IsHitTestVisible="False"/>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -501,6 +513,7 @@
                                                     <Binding Path="IsAnswered"/>
                                                     <Binding Path="IsCurrent"/>
                                                     <Binding Path="IsMarked"/>
+                                                    <Binding RelativeSource="{RelativeSource Self}"/>
                                                 </MultiBinding>
                                             </Button.Style>
                                         </Button>
@@ -581,8 +594,10 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <RadioButton Style="{StaticResource AnswerRadioButtonStyle}"
-                                                    GroupName="SingleChoice"
-                                                    IsChecked="{Binding IsSelected}"
+                                                    GroupName="{Binding DataContext.CurrentQuestion.QuestionId, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                    Click="RadioButton_Click"
+                                                    MouseDown="RadioButton_MouseDown"
                                                     Command="{Binding DataContext.SelectAnswerCommand, 
                                                              RelativeSource={RelativeSource AncestorType=Window}}"
                                                     CommandParameter="{Binding AnswerId}">
@@ -606,7 +621,9 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <CheckBox Style="{StaticResource AnswerCheckBoxStyle}"
-                                                IsChecked="{Binding IsSelected}"
+                                                IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                Click="CheckBox_Click"
+                                                MouseDown="CheckBox_MouseDown"
                                                 Command="{Binding DataContext.ToggleAnswerCommand, 
                                                          RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding AnswerId}">
@@ -724,7 +741,7 @@
                                     </RichTextBox.Resources>
                                     <FlowDocument>
                                         <Paragraph>
-                                            <Run Text="{Binding CurrentPracticeQuestion.RichTextAnswer, Mode=TwoWay}"/>
+                                            <Run/>
                                         </Paragraph>
                                     </FlowDocument>
                                 </RichTextBox>

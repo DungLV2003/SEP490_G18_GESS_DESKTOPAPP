@@ -8,7 +8,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO
 {
     public class CheckPracticeExamRequestDTO
     {
-        public string ExamName { get; set; }
+        public int ExamId { get; set; }
         public string Code { get; set; }
         public Guid StudentId { get; set; }
     }

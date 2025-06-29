@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 
 namespace SEP490_G18_GESS_DESKTOPAPP.Views.UserControls
 {
@@ -14,19 +15,45 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views.UserControls
     /// </summary>
     public partial class UserProfileControl : UserControl, INotifyPropertyChanged
     {
-        private readonly IUserService _userService;
-        private readonly IGoogleAuthService _googleAuthService;
+        private readonly IUserService? _userService;
+        private readonly IGoogleAuthService? _googleAuthService;
 
         public string StudentName => _userService?.GetStudentName() ?? "Guest";
         public string StudentCode => _userService?.GetStudentCode() ?? "";
+        public string StudentEmail => _userService?.GetUserEmail() ?? "No email";
+
+        // Chữ cái đầu của tên để hiển thị trong avatar
+        public string AvatarLetter 
+        { 
+            get 
+            { 
+                var name = StudentName;
+                if (!string.IsNullOrEmpty(name) && name != "Guest")
+                {
+                    return name.Substring(0, 1).ToUpper();
+                }
+                return "D"; // Default letter
+            } 
+        }
 
         public UserProfileControl()
         {
             InitializeComponent();
 
-            // Get services from DI
-            _userService = App.AppHost.Services.GetRequiredService<IUserService>();
-            _googleAuthService = App.AppHost.Services.GetRequiredService<IGoogleAuthService>();
+            // Get services from DI safely
+            try
+            {
+                if (App.AppHost?.Services != null)
+                {
+                    _userService = App.AppHost.Services.GetRequiredService<IUserService>();
+                    _googleAuthService = App.AppHost.Services.GetRequiredService<IGoogleAuthService>();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error or handle gracefully
+                System.Diagnostics.Debug.WriteLine($"Error initializing UserProfileControl services: {ex.Message}");
+            }
 
             this.DataContext = this;
         }
@@ -34,6 +61,33 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views.UserControls
         private void AvatarButton_Click(object sender, RoutedEventArgs e)
         {
             UserMenuPopup.IsOpen = !UserMenuPopup.IsOpen;
+        }
+
+
+
+        private void Guide_Click(object sender, RoutedEventArgs e)
+        {
+            UserMenuPopup.IsOpen = false;
+            
+            // TODO: Open guide/help
+            MessageBox.Show("Chức năng hướng dẫn đang được phát triển", "Thông báo", 
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void DarkMode_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Implement dark mode toggle
+            var toggleButton = sender as ToggleButton;
+            if (toggleButton?.IsChecked == true)
+            {
+                MessageBox.Show("Dark Mode đã bật", "Thông báo", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("Dark Mode đã tắt", "Thông báo", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private async void Logout_Click(object sender, RoutedEventArgs e)
@@ -51,19 +105,25 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views.UserControls
                 try
                 {
                     // Clear user data
-                    await _googleAuthService.LogoutAsync();
-                    _userService.ClearCurrentUser();
+                    if (_googleAuthService != null)
+                        await _googleAuthService.LogoutAsync();
+                    
+                    if (_userService != null)
+                        _userService.ClearCurrentUser();
 
                     // Navigate to login
-                    var loginView = App.AppHost.Services.GetRequiredService<DangNhapView>();
-                    loginView.Show();
-
-                    // Close all other windows
-                    foreach (Window window in Application.Current.Windows)
+                    if (App.AppHost?.Services != null)
                     {
-                        if (window != loginView)
+                        var loginView = App.AppHost.Services.GetRequiredService<DangNhapView>();
+                        loginView.Show();
+
+                        // Close all other windows
+                        foreach (Window window in Application.Current.Windows)
                         {
-                            window.Close();
+                            if (window != loginView)
+                            {
+                                window.Close();
+                            }
                         }
                     }
                 }
