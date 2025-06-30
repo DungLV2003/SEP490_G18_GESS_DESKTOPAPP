@@ -130,143 +130,69 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             base.OnClosing(e);
         }
 
-        private void RadioButton_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("RadioButton_Click event fired");
-            
-            if (sender is RadioButton radioButton && radioButton.DataContext is AnswerViewModel answer)
-            {
-                System.Diagnostics.Debug.WriteLine($"RadioButton clicked for answer: {answer.AnswerId}");
-                
-                // Manually trigger the SelectAnswer command
-                if (_viewModel.SelectAnswerCommand.CanExecute(answer.AnswerId.ToString()))
-                {
-                    System.Diagnostics.Debug.WriteLine($"Executing SelectAnswer command with parameter: {answer.AnswerId}");
-                    _viewModel.SelectAnswerCommand.Execute(answer.AnswerId.ToString());
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("SelectAnswer command cannot execute");
-                }
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("RadioButton click: sender or DataContext is not valid");
-            }
-        }
-
-        private void RadioButton_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        // Event handlers - logic được xử lý qua PropertyChanged trong ViewModel
+        private void RadioButton_Checked(object sender, RoutedEventArgs e)
         {
             if (sender is RadioButton radioButton && radioButton.DataContext is AnswerViewModel answer)
             {
-                // Prevent default handling
-                e.Handled = true;
-
-                // Toggle the selection directly
-                if (!answer.IsSelected)
-                {
-                    // Clear other selections first (for single choice)
-                    if (_viewModel.CurrentQuestion != null)
-                    {
-                        foreach (var ans in _viewModel.CurrentQuestion.Answers)
-                        {
-                            ans.IsSelected = false;
-                        }
-                    }
-
-                    // Set this answer as selected
-                    answer.IsSelected = true;
-
-                    // Use command to save progress
-                    if (_viewModel.SelectAnswerCommand.CanExecute(answer.AnswerId.ToString()))
-                    {
-                        _viewModel.SelectAnswerCommand.Execute(answer.AnswerId.ToString());
-                    }
-                }
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] RadioButton_Checked: Answer {answer.AnswerId}");
+                System.Diagnostics.Debug.WriteLine($"  - CurrentQuestion: {_viewModel.CurrentQuestion?.QuestionId}");
+                System.Diagnostics.Debug.WriteLine($"  - IsMultipleChoice: {_viewModel.CurrentQuestion?.IsMultipleChoice}");
+                System.Diagnostics.Debug.WriteLine($"  - ⚠️ SHOULD NOT FIRE for Multiple Choice questions!");
             }
         }
 
-        private void CheckBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             if (sender is CheckBox checkBox && checkBox.DataContext is AnswerViewModel answer)
             {
-                // Prevent default handling
-                e.Handled = true;
-
-                // Toggle the selection
-                answer.IsSelected = !answer.IsSelected;
-
-                // Use command to save progress
-                if (_viewModel.ToggleAnswerCommand.CanExecute(answer.AnswerId.ToString()))
-                {
-                    _viewModel.ToggleAnswerCommand.Execute(answer.AnswerId.ToString());
-                }
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] CheckBox_Checked: Answer {answer.AnswerId}");
+                System.Diagnostics.Debug.WriteLine($"  - CurrentQuestion: {_viewModel.CurrentQuestion?.QuestionId}");
+                System.Diagnostics.Debug.WriteLine($"  - IsMultipleChoice: {_viewModel.CurrentQuestion?.IsMultipleChoice}");
+                System.Diagnostics.Debug.WriteLine($"  - ✅ Expected for Multiple Choice questions");
             }
         }
 
-        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("CheckBox_Click event fired");
-            
             if (sender is CheckBox checkBox && checkBox.DataContext is AnswerViewModel answer)
             {
-                System.Diagnostics.Debug.WriteLine($"CheckBox clicked for answer: {answer.AnswerId}");
-                
-                // Manually trigger the ToggleAnswer command
-                if (_viewModel.ToggleAnswerCommand.CanExecute(answer.AnswerId.ToString()))
-                {
-                    System.Diagnostics.Debug.WriteLine($"Executing ToggleAnswer command with parameter: {answer.AnswerId}");
-                    _viewModel.ToggleAnswerCommand.Execute(answer.AnswerId.ToString());
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("ToggleAnswer command cannot execute");
-                }
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("CheckBox click: sender or DataContext is not valid");
-            }
-        }
-
-        private void RadioButton_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("RadioButton_MouseDown event fired");
-            
-            if (sender is RadioButton radioButton && radioButton.DataContext is AnswerViewModel answer)
-            {
-                System.Diagnostics.Debug.WriteLine($"RadioButton mouse down for answer: {answer.AnswerId}");
-                
-                // Force selection
-                answer.IsSelected = true;
-                
-                // Also execute command
-                if (_viewModel.SelectAnswerCommand.CanExecute(answer.AnswerId.ToString()))
-                {
-                    _viewModel.SelectAnswerCommand.Execute(answer.AnswerId.ToString());
-                }
-            }
-        }
-
-        private void CheckBox_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("CheckBox_MouseDown event fired");
-            
-            if (sender is CheckBox checkBox && checkBox.DataContext is AnswerViewModel answer)
-            {
-                System.Diagnostics.Debug.WriteLine($"CheckBox mouse down for answer: {answer.AnswerId}");
-                
-                // Force toggle
-                answer.IsSelected = !answer.IsSelected;
-                
-                // Also execute command
-                if (_viewModel.ToggleAnswerCommand.CanExecute(answer.AnswerId.ToString()))
-                {
-                    _viewModel.ToggleAnswerCommand.Execute(answer.AnswerId.ToString());
-                }
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] CheckBox_Unchecked: Answer {answer.AnswerId}");
+                System.Diagnostics.Debug.WriteLine($"  - CurrentQuestion: {_viewModel.CurrentQuestion?.QuestionId}");
+                System.Diagnostics.Debug.WriteLine($"  - IsMultipleChoice: {_viewModel.CurrentQuestion?.IsMultipleChoice}");
             }
         }
     }
+
+    #region Template Selectors
+
+    public class AnswerTemplateSelector : DataTemplateSelector
+    {
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            if (container is FrameworkElement element && item is QuestionViewModel question)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] AnswerTemplateSelector: Question {question.QuestionId}, IsMultipleChoice={question.IsMultipleChoice}");
+                
+                if (question.IsMultipleChoice)
+                {
+                    var template = element.FindResource("MultipleChoiceTemplate") as DataTemplate;
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Selected MultipleChoiceTemplate for question {question.QuestionId}");
+                    return template;
+                }
+                else
+                {
+                    var template = element.FindResource("SingleChoiceTemplate") as DataTemplate;
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Selected SingleChoiceTemplate for question {question.QuestionId}");
+                    return template;
+                }
+            }
+            
+            return base.SelectTemplate(item, container);
+        }
+    }
+
+    #endregion
 
     #region Converters
 
@@ -443,6 +369,27 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool isInverse = parameter?.ToString() == "Inverse";
+
+            // Debug: Log conversion for IsMultipleChoice
+            var resultVisibility = Visibility.Collapsed;
+            if (value is bool boolVal)
+            {
+                if (isInverse)
+                {
+                    resultVisibility = boolVal ? Visibility.Collapsed : Visibility.Visible;
+                }
+                else
+                {
+                    resultVisibility = boolVal ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
+            else
+            {
+                resultVisibility = isInverse ? Visibility.Visible : Visibility.Collapsed;
+            }
+            
+            string templateType = isInverse ? "SingleChoice (RadioButton)" : "MultipleChoice (CheckBox)";
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] BoolToVisibilityConverter ({templateType}): IsMultipleChoice={value}, showing={resultVisibility}");
 
             if (value is bool boolValue)
             {

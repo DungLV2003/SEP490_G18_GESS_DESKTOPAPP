@@ -17,7 +17,7 @@
         <local:IndexToAlphabetConverter x:Key="IndexToAlphabetConverter"/>
         <local:AddOneConverter x:Key="AddOneConverter"/>
         <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
-        <local:BoolToVisibilityParameterConverter x:Key="BoolToVisibilityConverter"/>
+        <local:BoolToVisibilityParameterConverter x:Key="BoolToVisibilityParameterConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <!-- Colors -->
@@ -89,6 +89,7 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="IsHitTestVisible" Value="True"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
@@ -163,6 +164,7 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="IsHitTestVisible" Value="True"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
@@ -587,51 +589,62 @@
                                 Visibility="{Binding CurrentQuestion.ImageUrl, 
                                             Converter={StaticResource NullToVisibilityConverter}}"/>
 
-                            <!-- Answer Options for Single Choice -->
-                            <ItemsControl ItemsSource="{Binding CurrentQuestion.Answers}"
-                                        Visibility="{Binding CurrentQuestion.IsMultipleChoice, 
-                                                    Converter={StaticResource BoolToVisibilityConverter}, 
-                                                    ConverterParameter=Inverse}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <RadioButton Style="{StaticResource AnswerRadioButtonStyle}"
-                                                    GroupName="{Binding DataContext.CurrentQuestion.QuestionId, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                    PreviewMouseLeftButtonDown="RadioButton_PreviewMouseDown">
-                                            <RadioButton.Tag>
-                                                <MultiBinding Converter="{StaticResource IndexToAlphabetConverter}">
-                                                    <Binding RelativeSource="{RelativeSource AncestorType=ItemsControl}" 
-                                                           Path="ItemsSource"/>
-                                                    <Binding/>
-                                                </MultiBinding>
-                                            </RadioButton.Tag>
-                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
-                                        </RadioButton>
+                            <!-- Answer Options with proper template selection -->
+                            <ContentPresenter>
+                                <ContentPresenter.Content>
+                                    <Binding Path="CurrentQuestion"/>
+                                </ContentPresenter.Content>
+                                <ContentPresenter.ContentTemplateSelector>
+                                    <local:AnswerTemplateSelector/>
+                                </ContentPresenter.ContentTemplateSelector>
+                                <ContentPresenter.Resources>
+                                    <!-- Single Choice Template -->
+                                    <DataTemplate x:Key="SingleChoiceTemplate">
+                                        <ItemsControl ItemsSource="{Binding Answers}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <RadioButton Style="{StaticResource AnswerRadioButtonStyle}"
+                                                                GroupName="{Binding DataContext.CurrentQuestion.QuestionId, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                Checked="RadioButton_Checked">
+                                                        <RadioButton.Tag>
+                                                            <MultiBinding Converter="{StaticResource IndexToAlphabetConverter}">
+                                                                <Binding RelativeSource="{RelativeSource AncestorType=ItemsControl}" 
+                                                                       Path="ItemsSource"/>
+                                                                <Binding/>
+                                                            </MultiBinding>
+                                                        </RadioButton.Tag>
+                                                        <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+                                                    </RadioButton>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
                                     </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-
-                            <!-- Answer Options for Multiple Choice -->
-                            <ItemsControl ItemsSource="{Binding CurrentQuestion.Answers}"
-                                        Visibility="{Binding CurrentQuestion.IsMultipleChoice, 
-                                                    Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <CheckBox Style="{StaticResource AnswerCheckBoxStyle}"
-         IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-         PreviewMouseLeftButtonDown="CheckBox_PreviewMouseDown">
-                                            <CheckBox.Tag>
-                                                <MultiBinding Converter="{StaticResource IndexToAlphabetConverter}">
-                                                    <Binding RelativeSource="{RelativeSource AncestorType=ItemsControl}" 
-                   Path="ItemsSource"/>
-                                                    <Binding/>
-                                                </MultiBinding>
-                                            </CheckBox.Tag>
-                                            <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
-                                        </CheckBox>
+                                    
+                                    <!-- Multiple Choice Template -->
+                                    <DataTemplate x:Key="MultipleChoiceTemplate">
+                                        <ItemsControl ItemsSource="{Binding Answers}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox Style="{StaticResource AnswerCheckBoxStyle}"
+                                                              IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                              Checked="CheckBox_Checked"
+                                                              Unchecked="CheckBox_Unchecked">
+                                                        <CheckBox.Tag>
+                                                            <MultiBinding Converter="{StaticResource IndexToAlphabetConverter}">
+                                                                <Binding RelativeSource="{RelativeSource AncestorType=ItemsControl}" 
+                                                                       Path="ItemsSource"/>
+                                                                <Binding/>
+                                                            </MultiBinding>
+                                                        </CheckBox.Tag>
+                                                        <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+                                                    </CheckBox>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
                                     </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
