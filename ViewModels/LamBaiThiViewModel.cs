@@ -34,7 +34,11 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         public ExamType ExamType
         {
             get => _examType;
-            set => SetProperty(ref _examType, value);
+            set
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Setting ExamType to: {value}");
+                SetProperty(ref _examType, value);
+            }
         }
 
         // Student Info
@@ -64,14 +68,26 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         public string SubjectName
         {
             get => _subjectName;
-            set => SetProperty(ref _subjectName, value);
+            set
+            {
+                if (SetProperty(ref _subjectName, value))
+                {
+                    OnPropertyChanged(nameof(WindowTitle));
+                }
+            }
         }
 
         private string _examCategoryName;
         public string ExamCategoryName
         {
             get => _examCategoryName;
-            set => SetProperty(ref _examCategoryName, value);
+            set
+            {
+                if (SetProperty(ref _examCategoryName, value))
+                {
+                    OnPropertyChanged(nameof(WindowTitle));
+                }
+            }
         }
 
         private int _duration;
@@ -158,7 +174,11 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         public PracticeQuestionViewModel CurrentPracticeQuestion
         {
             get => _currentPracticeQuestion;
-            set => SetProperty(ref _currentPracticeQuestion, value);
+            set
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Setting CurrentPracticeQuestion: {value?.Content?.Substring(0, Math.Min(50, value?.Content?.Length ?? 0))}...");
+                SetProperty(ref _currentPracticeQuestion, value);
+            }
         }
 
         // IDs for API calls
@@ -177,6 +197,9 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
+
+        // Window Title
+        public string WindowTitle => $"Bài thi {SubjectName} - {ExamCategoryName}";
 
         // Marked questions
         private HashSet<int> _markedQuestions = new HashSet<int>();
@@ -219,25 +242,35 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] InitializeExam: Starting with ExamType={examType}, ExamId={examId}");
+                
                 IsLoading = true;
                 ExamType = examType;
                 _examId = examId;
 
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] InitializeExam: ExamType set to {ExamType}");
+
                 if (examType == ExamType.MultipleChoice)
                 {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] InitializeExam: Calling InitializeMultipleChoiceExam");
                     await InitializeMultipleChoiceExam(examData as ExamInfoResponseDTO);
                 }
                 else
                 {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] InitializeExam: Calling InitializePracticeExam");
                     await InitializePracticeExam(examData as PracticeExamInfoResponseDTO);
                 }
 
+                System.Diagnostics.Debug.WriteLine("[DEBUG] InitializeExam: Starting timers");
                 // Start timer
                 StartTimer();
                 StartAutoSave();
+                
+                System.Diagnostics.Debug.WriteLine("[DEBUG] InitializeExam: Completed successfully");
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[ERROR] InitializeExam failed: {ex.Message}");
                 MessageBox.Show($"Lỗi khởi tạo bài thi: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -419,7 +452,25 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
         private async Task InitializePracticeExam(PracticeExamInfoResponseDTO examInfo)
         {
-            if (examInfo == null) return;
+            if (examInfo == null) 
+            {
+                System.Diagnostics.Debug.WriteLine("[ERROR] InitializePracticeExam: examInfo is null");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] InitializePracticeExam: Starting...");
+            System.Diagnostics.Debug.WriteLine($"  - Exam ID: {_examId}");
+            System.Diagnostics.Debug.WriteLine($"  - Questions from examInfo: {examInfo.Questions?.Count ?? 0}");
+            
+            // Debug examInfo.Questions content
+            if (examInfo.Questions != null)
+            {
+                for (int i = 0; i < examInfo.Questions.Count; i++)
+                {
+                    var q = examInfo.Questions[i];
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ExamInfo Question {i}: Order={q.QuestionOrder}, Content='{q.Content?.Substring(0, Math.Min(50, q.Content?.Length ?? 0))}...', Score={q.Score}");
+                }
+            }
 
             // Set exam info
             _pracExamHistoryId = examInfo.PracExamHistoryId;
@@ -432,17 +483,57 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             // Get all questions
             var questionOrders = await _lamBaiThiService.GetQuestionAndAnswerByPracExamIdAsync(_examId);
-            if (questionOrders == null || questionOrders.Count == 0) return;
+            if (questionOrders == null || questionOrders.Count == 0) 
+            {
+                System.Diagnostics.Debug.WriteLine("[ERROR] InitializePracticeExam: No question orders found");
+                System.Diagnostics.Debug.WriteLine("[DEBUG] Trying to load directly from examInfo.Questions instead...");
+                
+                // Fallback: Load directly from examInfo if questionOrders is empty
+                if (examInfo.Questions != null && examInfo.Questions.Count > 0)
+                {
+                    LoadPracticeQuestionsFromExamInfo(examInfo);
+                    return;
+                }
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Found {questionOrders.Count} question orders");
+            
+            // Debug questionOrders content
+            foreach (var qo in questionOrders)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] QuestionOrder API: Order={qo.QuestionOrder}, PracticeQuestionId={qo.PracticeQuestionId}");
+            }
 
             TotalQuestions = questionOrders.Count;
+
+            // Clear existing data
+            _allPracticeQuestions.Clear();
+            QuestionNumbers.Clear();
 
             // Load all practice questions
             foreach (var questionOrder in questionOrders.OrderBy(q => q.QuestionOrder))
             {
-                var questionDetail = examInfo.Questions.FirstOrDefault(q => q.QuestionOrder == questionOrder.QuestionOrder);
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Processing question order {questionOrder.QuestionOrder}");
+                
+                // Handle API ordering inconsistency - try both 0-based and 1-based matching
+                var questionDetail = examInfo.Questions.FirstOrDefault(q => q.QuestionOrder == questionOrder.QuestionOrder) ??
+                                   examInfo.Questions.FirstOrDefault(q => q.QuestionOrder == questionOrder.QuestionOrder - 1);
+
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Trying to match QuestionOrder {questionOrder.QuestionOrder} with examInfo questions");
+                if (examInfo.Questions != null)
+                {
+                    foreach (var eq in examInfo.Questions)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] ExamInfo question: Order={eq.QuestionOrder}, Content='{eq.Content?.Substring(0, Math.Min(30, eq.Content?.Length ?? 0))}...'");
+                    }
+                }
 
                 if (questionDetail != null)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Found question detail: {questionDetail.Content?.Substring(0, Math.Min(50, questionDetail.Content?.Length ?? 0))}...");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Matched examInfo QuestionOrder {questionDetail.QuestionOrder} with API QuestionOrder {questionOrder.QuestionOrder}");
+                    
                     var practiceVm = new PracticeQuestionViewModel
                     {
                         PracticeQuestionId = questionOrder.PracticeQuestionId,
@@ -455,24 +546,92 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                         CodeAnswer = ""
                     };
 
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Created PracticeVM: ID={practiceVm.PracticeQuestionId}, Content='{practiceVm.Content}', Score={practiceVm.Score}");
+
                     _allPracticeQuestions.Add(practiceVm);
 
-                    // Add to navigation
+                    // Add to navigation - Use 1-based numbering for UI display
                     QuestionNumbers.Add(new QuestionNumberItem
                     {
-                        Number = questionOrder.QuestionOrder,
+                        Number = _allPracticeQuestions.Count, // Use sequential numbering for display
                         IsAnswered = !string.IsNullOrEmpty(questionDetail.AnswerContent),
                         IsMarked = false,
-                        IsCurrent = questionOrder.QuestionOrder == 1
+                        IsCurrent = _allPracticeQuestions.Count == 1 // First question should be current
                     });
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] No question detail found for order {questionOrder.QuestionOrder}");
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] Available examInfo question orders: {string.Join(", ", examInfo.Questions?.Select(q => q.QuestionOrder.ToString()) ?? new[] { "None" })}");
+                }
             }
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] InitializePracticeExam: Loaded {_allPracticeQuestions.Count} practice questions");
 
             // Show first question
             CurrentQuestionIndex = 0;
             UpdateCurrentQuestion(); // Explicitly call to ensure CurrentQuestion is set
+            
+            // Force UI refresh
+            OnPropertyChanged(nameof(ExamType));
+            OnPropertyChanged(nameof(CurrentPracticeQuestion));
+            OnPropertyChanged(nameof(TotalQuestions));
+            OnPropertyChanged(nameof(QuestionNumbers));
         }
 
+        private void LoadPracticeQuestionsFromExamInfo(PracticeExamInfoResponseDTO examInfo)
+        {
+            System.Diagnostics.Debug.WriteLine("[DEBUG] LoadPracticeQuestionsFromExamInfo: Starting fallback loading...");
+            
+            TotalQuestions = examInfo.Questions.Count;
+
+            // Clear existing data
+            _allPracticeQuestions.Clear();
+            QuestionNumbers.Clear();
+
+            // Load questions directly from examInfo
+            for (int i = 0; i < examInfo.Questions.Count; i++)
+            {
+                var questionDetail = examInfo.Questions[i];
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Loading question {i}: {questionDetail.Content?.Substring(0, Math.Min(50, questionDetail.Content?.Length ?? 0))}...");
+                
+                var practiceVm = new PracticeQuestionViewModel
+                {
+                    PracticeQuestionId = i + 1, // Use index as ID if not available
+                    QuestionOrder = questionDetail.QuestionOrder,
+                    Content = questionDetail.Content,
+                    Score = questionDetail.Score,
+                    RichTextAnswer = questionDetail.AnswerContent ?? "",
+                    MathAnswer = "",
+                    CodeAnswer = ""
+                };
+
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Fallback Created PracticeVM: ID={practiceVm.PracticeQuestionId}, Content='{practiceVm.Content}', Score={practiceVm.Score}");
+
+                _allPracticeQuestions.Add(practiceVm);
+
+                // Add to navigation - Convert 0-based to 1-based for UI display
+                QuestionNumbers.Add(new QuestionNumberItem
+                {
+                    Number = i + 1, // Use sequential numbering for display
+                    IsAnswered = !string.IsNullOrEmpty(questionDetail.AnswerContent),
+                    IsMarked = false,
+                    IsCurrent = i == 0 // First question should be current
+                });
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] LoadPracticeQuestionsFromExamInfo: Loaded {_allPracticeQuestions.Count} questions");
+
+            // Show first question
+            CurrentQuestionIndex = 0;
+            UpdateCurrentQuestion();
+            
+            // Force UI refresh
+            OnPropertyChanged(nameof(ExamType));
+            OnPropertyChanged(nameof(CurrentPracticeQuestion));
+            OnPropertyChanged(nameof(TotalQuestions));
+            OnPropertyChanged(nameof(QuestionNumbers));
+        }
 
         #endregion
 
@@ -488,13 +647,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     CurrentQuestion = questionReference;
 
                     // Debug: Log current question details
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdateCurrentQuestion - Practice:");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdateCurrentQuestion - Multiple Choice:");
                     System.Diagnostics.Debug.WriteLine($"  - Index: {CurrentQuestionIndex}");
-                    System.Diagnostics.Debug.WriteLine($"  - Total questions: {_allPracticeQuestions.Count}");
-                    System.Diagnostics.Debug.WriteLine($"  - Current question exists: {CurrentPracticeQuestion != null}");
-                    System.Diagnostics.Debug.WriteLine($"  - Question content: {CurrentPracticeQuestion?.Content}");
-                    System.Diagnostics.Debug.WriteLine($"  - Question ID: {CurrentPracticeQuestion?.PracticeQuestionId}");
-                    System.Diagnostics.Debug.WriteLine($"  - Question Order: {CurrentPracticeQuestion?.QuestionOrder}");
+                    System.Diagnostics.Debug.WriteLine($"  - Total questions: {_allQuestions.Count}");
+                    System.Diagnostics.Debug.WriteLine($"  - Current question exists: {CurrentQuestion != null}");
+                    System.Diagnostics.Debug.WriteLine($"  - Question content: {CurrentQuestion?.Content}");
+                    System.Diagnostics.Debug.WriteLine($"  - Question ID: {CurrentQuestion?.QuestionId}");
+                    System.Diagnostics.Debug.WriteLine($"  - Question Order: {CurrentQuestion?.QuestionOrder}");
 
 
                     // Force UI refresh for template binding
@@ -523,6 +682,16 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     var practiceReference = _allPracticeQuestions[CurrentQuestionIndex];
                     CurrentPracticeQuestion = practiceReference;
 
+                    // Debug: Log practice question details
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdateCurrentQuestion - Practice:");
+                    System.Diagnostics.Debug.WriteLine($"  - Index: {CurrentQuestionIndex}");
+                    System.Diagnostics.Debug.WriteLine($"  - Total practice questions: {_allPracticeQuestions.Count}");
+                    System.Diagnostics.Debug.WriteLine($"  - Current practice question exists: {CurrentPracticeQuestion != null}");
+                    System.Diagnostics.Debug.WriteLine($"  - Question content: {CurrentPracticeQuestion?.Content}");
+                    System.Diagnostics.Debug.WriteLine($"  - Question ID: {CurrentPracticeQuestion?.PracticeQuestionId}");
+                    System.Diagnostics.Debug.WriteLine($"  - Question Order: {CurrentPracticeQuestion?.QuestionOrder}");
+                    System.Diagnostics.Debug.WriteLine($"  - Question Score: {CurrentPracticeQuestion?.Score}");
+
                     // Update question status for practice questions
                     if (CurrentQuestionIndex < QuestionNumbers.Count)
                     {
@@ -532,6 +701,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     }
 
                     OnPropertyChanged(nameof(CurrentPracticeQuestion));
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] UpdateCurrentQuestion - Invalid state:");
+                    System.Diagnostics.Debug.WriteLine($"  - ExamType: {ExamType}");
+                    System.Diagnostics.Debug.WriteLine($"  - CurrentQuestionIndex: {CurrentQuestionIndex}");
+                    System.Diagnostics.Debug.WriteLine($"  - _allPracticeQuestions.Count: {_allPracticeQuestions.Count}");
+                    System.Diagnostics.Debug.WriteLine($"  - _allQuestions.Count: {_allQuestions.Count}");
                 }
 
                 // Update navigation buttons
@@ -943,9 +1120,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             var result = await _lamBaiThiService.SubmitExamAsync(submitDto);
 
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] SubmitMultipleChoiceExam result: {result != null}");
             if (result != null)
             {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Result - Subject: {result.SubjectName}, Score: {result.FinalScore}");
                 ShowExamResult(result);
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("[ERROR] Submit result is null!");
             }
         }
 
@@ -963,9 +1146,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             var result = await _lamBaiThiService.SubmitPracticeExamAsync(submitDto);
 
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] SubmitPracticeExam result: {result != null}");
             if (result != null)
             {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Practice Result - Subject: {result.SubjectName}, Time: {result.TimeTaken}");
                 ShowPracticeExamResult(result);
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("[ERROR] Submit practice result is null!");
             }
         }
 
@@ -973,22 +1162,50 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                // Set flag đã nộp bài
-                var lamBaiThiView = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
-                if (lamBaiThiView != null)
+                try
                 {
-                    lamBaiThiView.SetExamSubmitted();
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] ShowExamResult: Starting...");
+                    
+                    // Set flag đã nộp bài
+                    var lamBaiThiView = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
+                    if (lamBaiThiView != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("[DEBUG] Setting exam submitted flag");
+                        lamBaiThiView.SetExamSubmitted();
+                    }
+
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Creating KetQuaNopBaiViewModel...");
+                    
+                    // Mở màn hình kết quả
+                    var ketQuaViewModel = App.AppHost.Services.GetRequiredService<KetQuaNopBaiViewModel>();
+                    ketQuaViewModel.InitializeFromSubmitResult(result);
+
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Creating KetQuaNopBaiView...");
+                    var ketQuaView = new KetQuaNopBaiView(ketQuaViewModel);
+                    
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Showing KetQuaNopBaiView...");
+                    ketQuaView.Show();
+                    
+                    // Đảm bảo window được focus
+                    ketQuaView.Activate();
+                    ketQuaView.Topmost = true;
+                    ketQuaView.Topmost = false;
+
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Closing LamBaiThiView...");
+                    // Đóng màn hình làm bài sau khi đã tạo màn hình kết quả
+                    lamBaiThiView?.Close();
+                    
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] ShowExamResult: Completed successfully");
                 }
-
-                // Đóng màn hình làm bài
-                lamBaiThiView?.Close();
-
-                // Mở màn hình kết quả
-                var ketQuaViewModel = App.AppHost.Services.GetRequiredService<KetQuaNopBaiViewModel>();
-                ketQuaViewModel.InitializeFromSubmitResult(result);
-
-                var ketQuaView = new KetQuaNopBaiView(ketQuaViewModel);
-                ketQuaView.Show();
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] ShowExamResult failed: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
+                    
+                    // Hiển thị lỗi cho user
+                    MessageBox.Show($"Lỗi hiển thị kết quả: {ex.Message}", "Lỗi", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
         }
 
@@ -997,22 +1214,50 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                // Set flag đã nộp bài
-                var lamBaiThiView = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
-                if (lamBaiThiView != null)
+                try
                 {
-                    lamBaiThiView.SetExamSubmitted();
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] ShowPracticeExamResult: Starting...");
+                    
+                    // Set flag đã nộp bài
+                    var lamBaiThiView = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
+                    if (lamBaiThiView != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("[DEBUG] Setting practice exam submitted flag");
+                        lamBaiThiView.SetExamSubmitted();
+                    }
+
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Creating KetQuaNopBaiViewModel for practice...");
+                    
+                    // Mở màn hình kết quả
+                    var ketQuaViewModel = App.AppHost.Services.GetRequiredService<KetQuaNopBaiViewModel>();
+                    ketQuaViewModel.InitializeFromPracticeResult(result);
+
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Creating KetQuaNopBaiView for practice...");
+                    var ketQuaView = new KetQuaNopBaiView(ketQuaViewModel);
+                    
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Showing KetQuaNopBaiView for practice...");
+                    ketQuaView.Show();
+                    
+                    // Đảm bảo window được focus
+                    ketQuaView.Activate();
+                    ketQuaView.Topmost = true;
+                    ketQuaView.Topmost = false;
+
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Closing LamBaiThiView for practice...");
+                    // Đóng màn hình làm bài sau khi đã tạo màn hình kết quả
+                    lamBaiThiView?.Close();
+                    
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] ShowPracticeExamResult: Completed successfully");
                 }
-
-                // Đóng màn hình làm bài
-                lamBaiThiView?.Close();
-
-                // Mở màn hình kết quả
-                var ketQuaViewModel = App.AppHost.Services.GetRequiredService<KetQuaNopBaiViewModel>();
-                ketQuaViewModel.InitializeFromPracticeResult(result);
-
-                var ketQuaView = new KetQuaNopBaiView(ketQuaViewModel);
-                ketQuaView.Show();
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] ShowPracticeExamResult failed: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] Stack trace: {ex.StackTrace}");
+                    
+                    // Hiển thị lỗi cho user
+                    MessageBox.Show($"Lỗi hiển thị kết quả: {ex.Message}", "Lỗi", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             });
         }
         #endregion

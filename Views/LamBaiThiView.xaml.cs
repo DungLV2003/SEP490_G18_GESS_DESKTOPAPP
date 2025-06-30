@@ -284,14 +284,19 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            var result = Visibility.Collapsed;
+            
             if (value is ExamType examType && parameter is string expectedType)
             {
                 if (expectedType == "MultipleChoice")
-                    return examType == ExamType.MultipleChoice ? Visibility.Visible : Visibility.Collapsed;
+                    result = examType == ExamType.MultipleChoice ? Visibility.Visible : Visibility.Collapsed;
                 else if (expectedType == "Practice")
-                    return examType == ExamType.Practice ? Visibility.Visible : Visibility.Collapsed;
+                    result = examType == ExamType.Practice ? Visibility.Visible : Visibility.Collapsed;
             }
-            return Visibility.Collapsed;
+            
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] ExamTypeToVisibilityConverter: ExamType={value}, Expected={parameter}, Result={result}");
+            
+            return result;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
