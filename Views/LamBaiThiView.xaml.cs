@@ -1,13 +1,14 @@
-﻿using SEP490_G18_GESS_DESKTOPAPP.Helpers;
+﻿using ICSharpCode.AvalonEdit.Highlighting;
+using SEP490_G18_GESS_DESKTOPAPP.Helpers;
 using SEP490_G18_GESS_DESKTOPAPP.Models.Enum;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels;
-using static SEP490_G18_GESS_DESKTOPAPP.ViewModels.LamBaiThiViewModel;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,10 +16,11 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using ICSharpCode.AvalonEdit.Highlighting;
+using static SEP490_G18_GESS_DESKTOPAPP.ViewModels.LamBaiThiViewModel;
 
 namespace SEP490_G18_GESS_DESKTOPAPP.Views
 {
@@ -28,6 +30,16 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
     public partial class LamBaiThiView : Window
     {
         private LamBaiThiViewModel _viewModel;
+        private bool _isExamSubmitted = false;
+        // Windows API để chặn phím tắt
+        [DllImport("user32.dll")]
+        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll")]
+        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        private const int GWL_STYLE = -16;
+        private const int WS_SYSMENU = 0x80000;
 
         public LamBaiThiView(LamBaiThiViewModel lbtViewModel)
         {
@@ -36,9 +48,18 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             this.DataContext = _viewModel;
 
             // Full screen mode for exam
-            this.WindowState = WindowState.Maximized;
-            this.ResizeMode = ResizeMode.NoResize;
-            this.WindowStyle = WindowStyle.None;
+            // Full screen mode cho bài thi
+            //SetupExamMode();
+
+            AnimationHelper.ApplyFadeIn(this);
+
+       
+
+            // Bind RichTextBox for practice exam
+            //SetupRichTextBinding();
+
+            // Hook keyboard events
+            //this.PreviewKeyDown += OnPreviewKeyDown;
 
             AnimationHelper.ApplyFadeIn(this);
 
@@ -47,6 +68,18 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
 
             // Bind RichTextBox for practice exam
             SetupRichTextBinding();
+        }
+
+        private void SetupExamMode()
+        {
+            // Full screen
+            this.WindowState = WindowState.Maximized;
+            //this.WindowStyle = WindowStyle.None;
+            //this.ResizeMode = ResizeMode.NoResize;
+            this.Topmost = true; // Luôn ở trên cùng
+
+            // Ẩn taskbar
+            //this.ShowInTaskbar = false;
         }
 
         private void SetupCodeEditor()
@@ -112,24 +145,75 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             }
         }
 
-        protected override void OnClosing(CancelEventArgs e)
+        protected override void OnSourceInitialized(EventArgs e)
         {
-            // Prevent closing during exam
-            var result = MessageBox.Show(
-                "Bạn có chắc chắn muốn thoát khỏi bài thi?\nTất cả câu trả lời chưa nộp sẽ bị mất.",
-                "Xác nhận thoát",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning
-            );
+            base.OnSourceInitialized(e);
 
-            if (result != MessageBoxResult.Yes)
+            // Lấy handle của window
+            var hwnd = new WindowInteropHelper(this).Handle;
+
+            // Disable system menu (Alt+F4, Alt+Space)
+            var currentStyle = GetWindowLong(hwnd, GWL_STYLE);
+            SetWindowLong(hwnd, GWL_STYLE, currentStyle & ~WS_SYSMENU);
+        }
+        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Chặn Alt + F4
+            if (e.Key == Key.System && e.SystemKey == Key.F4)
             {
-                e.Cancel = true;
+                e.Handled = true;
+                return;
             }
 
-            base.OnClosing(e);
+            // Chặn Alt + Tab
+            if (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.Tab)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // Chặn Windows key
+            if (e.Key == Key.LWin || e.Key == Key.RWin)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // Chặn Ctrl + Alt + Del (khó chặn hoàn toàn, nhưng có thể cảnh báo)
+            if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt) && e.Key == Key.Delete)
+            {
+                e.Handled = true;
+                MessageBox.Show("Không được phép sử dụng phím tắt này trong khi thi!", "Cảnh báo",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
         }
 
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            //Nếu bài thi đã được nộp thì cho phép đóng
+            if (_isExamSubmitted)
+            {
+                base.OnClosing(e);
+                return;
+            }
+
+            // Ngăn chặn đóng window khi đang thi
+            e.Cancel = true;
+
+            MessageBox.Show(
+                "Không thể thoát trong khi đang làm bài thi!\nVui lòng nộp bài trước khi thoát.",
+                "Thông báo",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning
+            );
+        }
+
+        // Phương thức để set flag khi nộp bài
+        public void SetExamSubmitted()
+        {
+            _isExamSubmitted = true;
+        }
         // Event handlers - logic được xử lý qua PropertyChanged trong ViewModel
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
         {

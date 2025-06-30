@@ -380,7 +380,7 @@
 
                                                     <!-- Ngày thi -->
                                                     <TextBlock Grid.Column="4" 
-           Text="{Binding SubmittedDateTime, StringFormat='dd/MM/yyyy', TargetNullValue='-', FallbackValue='-'}"
+           Text="{Binding ExamDay, StringFormat='dd/MM/yyyy', TargetNullValue='-', FallbackValue='-'}"
            FontSize="14" Foreground="#495057"
            HorizontalAlignment="Center" TextAlignment="Center"/>
 
@@ -408,9 +408,9 @@
                                                                      TextAlignment="Center" FontWeight="SemiBold"/>
                                                             <!-- Khoảng thời gian -->
                                                             <TextBlock FontSize="12" Foreground="#6C757D" 
-                                                                     TextAlignment="Center" Margin="0,2,0,0">
+           TextAlignment="Center" Margin="0,2,0,0">
                                                                 <TextBlock.Text>
-                                                                    <MultiBinding StringFormat="({0:HH:mm} - {1:HH:mm})">
+                                                                    <MultiBinding StringFormat="({0:hh\:mm} - {1:hh\:mm})">
                                                                         <Binding Path="StartTime"/>
                                                                         <Binding Path="EndTime"/>
                                                                     </MultiBinding>

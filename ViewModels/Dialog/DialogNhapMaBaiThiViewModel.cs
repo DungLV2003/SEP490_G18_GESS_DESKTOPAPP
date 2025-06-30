@@ -122,36 +122,21 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
 
                 if (result != null)
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    Application.Current.Dispatcher.Invoke(async () =>
                     {
-                        // Show success dialog
-                        var successViewModel = new DialogThongBaoThanhCongViewModel(
-                            "Xác thực thành công",
-                            "Vào thi trắc nghiệm thành công!",
-                            result.Message,
-                            async () => {
-                                // Navigate to LamBaiThiView after success dialog closes
-                                var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
-                                var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
+                        // Chuyển thẳng sang LamBaiThiView mà không hiển thị dialog thành công
+                        var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
+                        var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
 
-                                // Initialize exam data
-                                await lamBaiThiViewModel.InitializeExam(ExamType.MultipleChoice, result, _examInfo.ExamId);
+                        // Initialize exam data
+                        await lamBaiThiViewModel.InitializeExam(ExamType.MultipleChoice, result, _examInfo.ExamId);
 
-                                lamBaiThiView.DataContext = lamBaiThiViewModel;
-                                lamBaiThiView.Show();
+                        lamBaiThiView.DataContext = lamBaiThiViewModel;
+                        lamBaiThiView.Show();
 
-                                // Close all dialogs and parent window
-                                Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
-                                Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault()?.Close();
-                            }
-                        );
-
-                        var successDialog = new DialogThongBaoThanhCongView(successViewModel)
-                        {
-                            Owner = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()
-                        };
-
-                        successDialog.ShowDialog();
+                        // Close all dialogs and parent window
+                        Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
+                        Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault()?.Close();
                     });
                 }
             }
@@ -235,36 +220,21 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
 
                 if (result != null)
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    Application.Current.Dispatcher.Invoke(async () =>
                     {
-                        // Show success dialog
-                        var successViewModel = new DialogThongBaoThanhCongViewModel(
-                            "Xác thực thành công",
-                            "Vào thi tự luận thành công!",
-                            result.Message,
-                            async () => {
-                                // Navigate to LamBaiThiView after success dialog closes
-                                var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
-                                var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
+                        // Chuyển thẳng sang LamBaiThiView mà không hiển thị dialog thành công
+                        var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
+                        var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
 
-                                // Initialize exam data
-                                await lamBaiThiViewModel.InitializeExam(ExamType.Practice, result, _examInfo.ExamId);
+                        // Initialize exam data
+                        await lamBaiThiViewModel.InitializeExam(ExamType.Practice, result, _examInfo.ExamId);
 
-                                lamBaiThiView.DataContext = lamBaiThiViewModel;
-                                lamBaiThiView.Show();
+                        lamBaiThiView.DataContext = lamBaiThiViewModel;
+                        lamBaiThiView.Show();
 
-                                // Close all dialogs and parent window
-                                Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
-                                Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault()?.Close();
-                            }
-                        );
-
-                        var successDialog = new DialogThongBaoThanhCongView(successViewModel)
-                        {
-                            Owner = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()
-                        };
-
-                        successDialog.ShowDialog();
+                        // Close all dialogs and parent window
+                        Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault()?.Close();
+                        Application.Current.Windows.OfType<DanhSachBaiThiView>().FirstOrDefault()?.Close();
                     });
                 }
             }
