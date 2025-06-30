@@ -32,7 +32,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Left Content -->
-            <StackPanel Grid.Column="0" Margin="80,80,40,0" MaxWidth="600" HorizontalAlignment="Left">
+            <StackPanel Grid.Column="0" Margin="200,80,40,0" MaxWidth="600" HorizontalAlignment="Left">
 
                 <!-- Title -->
                 <TextBlock Text="Đã nhận được bài thi của bạn," 
@@ -122,22 +122,119 @@
                 </Button>
             </StackPanel>
 
-            <!-- Right Illustration -->
-            <Grid Grid.Column="1" VerticalAlignment="Center" Margin="102,0,-22,0">
-                <Canvas Width="300" Height="400" Margin="-151,-32,171,32">
-                    <!-- Simple illustration -->
-                    <Path Data="M50,200 Q150,100 250,200 T450,200" 
-                          Stroke="#E1E5EA" StrokeThickness="2" Fill="Transparent"/>
+            <Grid Grid.Column="1" VerticalAlignment="Center" Margin="-350,-80,0,0">
+                <Canvas Width="380" Height="500">
+                    <!-- Background gradient circle -->
+                    <Ellipse Width="340" Height="340" Canvas.Left="20" Canvas.Top="80">
+                        <Ellipse.Fill>
+                            <RadialGradientBrush>
+                                <GradientStop Color="#E8F5E8" Offset="0"/>
+                                <GradientStop Color="#F0F8F0" Offset="0.7"/>
+                                <GradientStop Color="Transparent" Offset="1"/>
+                            </RadialGradientBrush>
+                        </Ellipse.Fill>
+                    </Ellipse>
 
-                    <!-- Character celebrating -->
-                    <Ellipse Width="60" Height="60" Fill="#FFE0B2" Canvas.Left="120" Canvas.Top="150"/>
-                    <Path Data="M120,180 Q150,220 150,250" Stroke="#333" StrokeThickness="3" Fill="Transparent"/>
-                    <Path Data="M150,250 L130,280 M150,250 L170,280" Stroke="#333" StrokeThickness="3"/>
-                    <Path Data="M150,200 L120,180 M150,200 L180,180" Stroke="#333" StrokeThickness="3"/>
+                    <!-- Decorative dots -->
+                    <Ellipse Width="10" Height="10" Fill="#E0E7FF" Canvas.Left="70" Canvas.Top="130" Opacity="0.6"/>
+                    <Ellipse Width="8" Height="8" Fill="#FEF3C7" Canvas.Left="300" Canvas.Top="150" Opacity="0.5"/>
+                    <Ellipse Width="12" Height="12" Fill="#ECFDF5" Canvas.Left="80" Canvas.Top="320" Opacity="0.7"/>
+                    <Ellipse Width="7" Height="7" Fill="#F3E8FF" Canvas.Left="310" Canvas.Top="340" Opacity="0.6"/>
 
-                    <!-- Hand waving -->
-                    <Path Data="M180,180 Q190,170 200,180" Stroke="#333" StrokeThickness="3" Fill="#FFE0B2"/>
-                    <Ellipse Width="20" Height="20" Fill="#FFE0B2" Canvas.Left="190" Canvas.Top="170"/>
+                    <!-- Central success icon background -->
+                    <Ellipse Width="140" Height="140" Fill="White" Canvas.Left="120" Canvas.Top="180">
+                        <Ellipse.Effect>
+                            <DropShadowEffect Color="Gray" BlurRadius="12" ShadowDepth="4" Opacity="0.2"/>
+                        </Ellipse.Effect>
+                    </Ellipse>
+
+                    <!-- Central success icon -->
+                    <Ellipse Width="120" Height="120" Canvas.Left="130" Canvas.Top="190">
+                        <Ellipse.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#10B981" Offset="0"/>
+                                <GradientStop Color="#059669" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Ellipse.Fill>
+                    </Ellipse>
+
+                    <!-- Checkmark -->
+                    <Path Data="M0,0 L15,15 L35,-10" Stroke="White" StrokeThickness="7" 
+  Canvas.Left="173" Canvas.Top="245"/>
+
+                    <!-- Document with checkmark -->
+                    <Rectangle Width="50" Height="60" Fill="White" Canvas.Left="50" Canvas.Top="220" 
+       RadiusX="5" RadiusY="5">
+                        <Rectangle.Effect>
+                            <DropShadowEffect Color="Gray" BlurRadius="6" ShadowDepth="3" Opacity="0.15"/>
+                        </Rectangle.Effect>
+                    </Rectangle>
+                    <Rectangle Width="30" Height="3" Fill="#E5E7EB" Canvas.Left="60" Canvas.Top="235"/>
+                    <Rectangle Width="35" Height="3" Fill="#E5E7EB" Canvas.Left="57" Canvas.Top="245"/>
+                    <Rectangle Width="25" Height="3" Fill="#E5E7EB" Canvas.Left="62" Canvas.Top="255"/>
+                    <!-- Small checkmark on document -->
+                    <Ellipse Width="18" Height="18" Fill="#10B981" Canvas.Left="77" Canvas.Top="225"/>
+                    <Path Data="M0,0 L4,4 L10,-4" Stroke="White" StrokeThickness="2" 
+  Canvas.Left="83" Canvas.Top="232"/>
+
+                    <!-- Academic cap -->
+                    <Polygon Points="0,12 25,0 50,12 25,18" Fill="#1F2937" Canvas.Left="270" Canvas.Top="200"/>
+                    <Rectangle Width="25" Height="10" Fill="#1F2937" Canvas.Left="282" Canvas.Top="208"/>
+                    <Ellipse Width="8" Height="8" Fill="#F59E0B" Canvas.Left="299" Canvas.Top="195"/>
+                    <Rectangle Width="1" Height="18" Fill="#8B5CF6" Canvas.Left="303" Canvas.Top="203"/>
+
+                    <!-- Star -->
+                    <Polygon Points="0,10 2.5,2.5 10,2.5 4,7.5 6,15 0,11 -6,15 -4,7.5 -10,2.5 -2.5,2.5" 
+     Fill="#FBBF24" Canvas.Left="330" Canvas.Top="250" Opacity="0.9"/>
+
+                    <!-- Trophy -->
+                    <Polygon Points="6,0 18,0 18,10 22,10 22,15 18,15 18,18 15,18 15,25 9,25 9,18 6,18 6,15 2,15 2,10 6,10" 
+     Fill="#F59E0B" Canvas.Left="70" Canvas.Top="360"/>
+                    <Ellipse Width="10" Height="5" Fill="#FBBF24" Canvas.Left="79" Canvas.Top="355"/>
+
+                    <!-- Subtle connecting lines -->
+                    <Line X1="100" Y1="250" X2="130" Y2="230" Stroke="#E5E7EB" StrokeThickness="2" 
+  StrokeDashArray="4,4" Opacity="0.5"/>
+                    <Line X1="295" Y1="220" X2="250" Y2="210" Stroke="#E5E7EB" StrokeThickness="2" 
+  StrokeDashArray="4,4" Opacity="0.5"/>
+
+                    <!-- Floating particles -->
+                    <Ellipse Width="5" Height="5" Fill="#34D399" Canvas.Left="160" Canvas.Top="150" Opacity="0.7"/>
+                    <Ellipse Width="4" Height="4" Fill="#60A5FA" Canvas.Left="210" Canvas.Top="140" Opacity="0.6"/>
+                    <Ellipse Width="6" Height="6" Fill="#F472B6" Canvas.Left="140" Canvas.Top="380" Opacity="0.5"/>
+                    <Ellipse Width="4" Height="4" Fill="#A78BFA" Canvas.Left="230" Canvas.Top="390" Opacity="0.6"/>
+
+                    <!-- Success text -->
+                    <TextBlock Text="Hoàn thành!" FontSize="20" FontWeight="SemiBold" 
+       Foreground="#059669" Canvas.Left="155" Canvas.Top="330"/>
+
+                    <!-- Subtle celebration elements -->
+                    <Rectangle Width="3" Height="10" Fill="#FBBF24" Canvas.Left="120" Canvas.Top="110" 
+       RenderTransformOrigin="0.5,0.5" Opacity="0.6">
+                        <Rectangle.RenderTransform>
+                            <RotateTransform Angle="15"/>
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+
+                    <Rectangle Width="3" Height="10" Fill="#EC4899" Canvas.Left="260" Canvas.Top="120" 
+       RenderTransformOrigin="0.5,0.5" Opacity="0.6">
+                        <Rectangle.RenderTransform>
+                            <RotateTransform Angle="-25"/>
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+
+                    <Rectangle Width="3" Height="10" Fill="#06B6D4" Canvas.Left="130" Canvas.Top="420" 
+       RenderTransformOrigin="0.5,0.5" Opacity="0.6">
+                        <Rectangle.RenderTransform>
+                            <RotateTransform Angle="45"/>
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+
+                    <!-- Quote decoration -->
+                    <TextBlock Text="&#8220;" FontSize="54" Foreground="#E5E7EB" Canvas.Left="45" Canvas.Top="90" 
+       FontFamily="Georgia" Opacity="0.3"/>
+                    <TextBlock Text="&#8221;" FontSize="54" Foreground="#E5E7EB" Canvas.Left="300" Canvas.Top="380" 
+       FontFamily="Georgia" Opacity="0.3"/>
                 </Canvas>
             </Grid>
         </Grid>

@@ -27,6 +27,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         private DispatcherTimer _autoSaveTimer;
         private int _totalSeconds;
 
+
         #region Properties
         // Exam Type
         private ExamType _examType;
@@ -487,11 +488,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     CurrentQuestion = questionReference;
 
                     // Debug: Log current question details
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdateCurrentQuestion {CurrentQuestionIndex + 1}:");
-                    System.Diagnostics.Debug.WriteLine($"  - Question ID: {CurrentQuestion.QuestionId}");
-                    System.Diagnostics.Debug.WriteLine($"  - IsMultipleChoice: {CurrentQuestion.IsMultipleChoice}");
-                    System.Diagnostics.Debug.WriteLine($"  - Selected answers: {CurrentQuestion.Answers.Count(a => a.IsSelected)}");
-                    
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdateCurrentQuestion - Practice:");
+                    System.Diagnostics.Debug.WriteLine($"  - Index: {CurrentQuestionIndex}");
+                    System.Diagnostics.Debug.WriteLine($"  - Total questions: {_allPracticeQuestions.Count}");
+                    System.Diagnostics.Debug.WriteLine($"  - Current question exists: {CurrentPracticeQuestion != null}");
+                    System.Diagnostics.Debug.WriteLine($"  - Question content: {CurrentPracticeQuestion?.Content}");
+                    System.Diagnostics.Debug.WriteLine($"  - Question ID: {CurrentPracticeQuestion?.PracticeQuestionId}");
+                    System.Diagnostics.Debug.WriteLine($"  - Question Order: {CurrentPracticeQuestion?.QuestionOrder}");
+
+
                     // Force UI refresh for template binding
                     OnPropertyChanged(nameof(CurrentQuestion));
 
@@ -768,9 +773,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
                     if (!confirmViewModel.IsConfirmed)
                     {
-                        // Người dùng hủy, KHÔNG cần start lại timer vì nó vẫn đang chạy
-                        // _timer?.Start();
-                        // _autoSaveTimer?.Start();
                         return;
                     }
                 }
@@ -971,8 +973,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                // Đóng màn hình làm bài
+                // Set flag đã nộp bài
                 var lamBaiThiView = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
+                if (lamBaiThiView != null)
+                {
+                    lamBaiThiView.SetExamSubmitted();
+                }
+
+                // Đóng màn hình làm bài
                 lamBaiThiView?.Close();
 
                 // Mở màn hình kết quả
@@ -984,12 +992,19 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             });
         }
 
+
         private void ShowPracticeExamResult(SubmitPracticeExamResponseDTO result)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                // Đóng màn hình làm bài
+                // Set flag đã nộp bài
                 var lamBaiThiView = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
+                if (lamBaiThiView != null)
+                {
+                    lamBaiThiView.SetExamSubmitted();
+                }
+
+                // Đóng màn hình làm bài
                 lamBaiThiView?.Close();
 
                 // Mở màn hình kết quả
