@@ -278,7 +278,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     var questionVm = new QuestionViewModel
                     {
                         QuestionId = questionDetail.MultiQuestionId,
-                        QuestionOrder = i + 1, // Sử dụng index + 1 thay vì questionSimple.QuestionOrder
+                        QuestionOrder = i + 1,
                         Content = questionDetail.Content,
                         ImageUrl = questionDetail.UrlImg,
                         Answers = answers?.Select(a => new AnswerViewModel
@@ -288,8 +288,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                             IsCorrect = a.IsCorrect,
                             IsSelected = false
                         }).ToList() ?? new List<AnswerViewModel>(),
+                        // IMPORTANT: Ensure this is set correctly
                         IsMultipleChoice = answers?.Count(a => a.IsCorrect) > 1
                     };
+
 
                     questionsWithDetails.Add(questionVm);
                 }
@@ -394,11 +396,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 if (ExamType == ExamType.MultipleChoice && _allQuestions.Count > CurrentQuestionIndex)
                 {
+                    // IMPORTANT: Use direct reference, not create new instance
                     CurrentQuestion = _allQuestions[CurrentQuestionIndex];
+
                     System.Diagnostics.Debug.WriteLine($"UpdateCurrentQuestion: Question {CurrentQuestionIndex + 1}");
                     var selectedCount = CurrentQuestion.Answers.Count(a => a.IsSelected);
                     System.Diagnostics.Debug.WriteLine($"  - Selected answers: {selectedCount}");
-                    // Check and update IsAnswered status based on current answers
+                    System.Diagnostics.Debug.WriteLine($"  - Is Multiple Choice: {CurrentQuestion.IsMultipleChoice}");
+
+                    // Check and update IsAnswered status
                     if (CurrentQuestionIndex >= 0 && CurrentQuestionIndex < QuestionNumbers.Count)
                     {
                         var questionItem = QuestionNumbers[CurrentQuestionIndex];
@@ -406,7 +412,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
                         if (questionItem.IsAnswered != hasAnswered)
                         {
-                            questionItem.IsAnswered = hasAnswered;
+                            var newItem = new QuestionNumberItem
+                            {
+                                Number = questionItem.Number,
+                                IsAnswered = hasAnswered,
+                                IsMarked = questionItem.IsMarked,
+                                IsCurrent = questionItem.IsCurrent
+                            };
+                            QuestionNumbers[CurrentQuestionIndex] = newItem;
                             System.Diagnostics.Debug.WriteLine($"Updated IsAnswered for question {CurrentQuestionIndex + 1} to {hasAnswered}");
                         }
                     }
@@ -439,10 +452,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     item.IsCurrent = item.Number == CurrentQuestionIndex + 1;
                 }
 
-                // Notify CurrentQuestionNumberItem changed
                 OnPropertyChanged(nameof(CurrentQuestionNumberItem));
-
-                // Force update commands
                 CommandManager.InvalidateRequerySuggested();
             });
         }
@@ -453,14 +463,17 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             if (CurrentQuestionIndex > 0)
             {
                 CurrentQuestionIndex--;
+                UpdateProgress(); // Add this line
             }
         }
+
         private void NextQuestion()
         {
             SaveCurrentQuestionState(); // Save current state before moving
             if (CurrentQuestionIndex < TotalQuestions - 1)
             {
                 CurrentQuestionIndex++;
+                UpdateProgress(); // Add this line
             }
         }
 
@@ -470,6 +483,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             if (questionNumber > 0 && questionNumber <= TotalQuestions)
             {
                 CurrentQuestionIndex = questionNumber - 1;
+                UpdateProgress(); // Add this line
             }
         }
 
@@ -497,46 +511,40 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             if (CurrentQuestion != null && !CurrentQuestion.IsMultipleChoice)
             {
-                System.Diagnostics.Debug.WriteLine($"Processing single choice answer for question {CurrentQuestion.QuestionId}");
-
-                // Single choice - clear other selections and set the new one
                 Application.Current.Dispatcher.Invoke(() =>
                 {
+                    // Clear all selections
                     foreach (var answer in CurrentQuestion.Answers)
                     {
                         answer.IsSelected = false;
                     }
 
+                    // Set new selection
                     var selectedAnswer = CurrentQuestion.Answers.FirstOrDefault(a => a.AnswerId.ToString() == answerId);
                     if (selectedAnswer != null)
                     {
                         selectedAnswer.IsSelected = true;
-                        System.Diagnostics.Debug.WriteLine($"Answer {answerId} selected");
+                        System.Diagnostics.Debug.WriteLine($"Answer {answerId} selected for question {CurrentQuestionIndex + 1}");
                     }
 
-                    // Mark question as answered - Direct update
+                    // Update question status
                     if (CurrentQuestionIndex >= 0 && CurrentQuestionIndex < QuestionNumbers.Count)
                     {
-                        QuestionNumbers[CurrentQuestionIndex].IsAnswered = true;
-                        System.Diagnostics.Debug.WriteLine($"Question {CurrentQuestionIndex + 1} marked as answered");
-
-                        // Force collection refresh
-                        OnPropertyChanged(nameof(QuestionNumbers));
+                        QuestionNumbers[CurrentQuestionIndex] = new QuestionNumberItem
+                        {
+                            Number = QuestionNumbers[CurrentQuestionIndex].Number,
+                            IsAnswered = true,
+                            IsMarked = QuestionNumbers[CurrentQuestionIndex].IsMarked,
+                            IsCurrent = QuestionNumbers[CurrentQuestionIndex].IsCurrent
+                        };
                     }
 
-                    // Update progress
                     UpdateProgress();
                 });
 
-                // Auto save progress
                 _ = Task.Run(async () => await SaveProgressAsync());
             }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($"CurrentQuestion is null or is multiple choice: {CurrentQuestion?.IsMultipleChoice}");
-            }
         }
-
 
         private void ToggleAnswer(string answerId)
         {
@@ -544,53 +552,35 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             if (CurrentQuestion != null && CurrentQuestion.IsMultipleChoice)
             {
-                System.Diagnostics.Debug.WriteLine($"Processing multiple choice answer for question {CurrentQuestion.QuestionId}");
-
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    // Multiple choice - toggle selection
+                    // Toggle selection
                     var answer = CurrentQuestion.Answers.FirstOrDefault(a => a.AnswerId.ToString() == answerId);
                     if (answer != null)
                     {
-                        bool wasSelected = answer.IsSelected;
                         answer.IsSelected = !answer.IsSelected;
-                        System.Diagnostics.Debug.WriteLine($"Answer {answer.AnswerId}: {wasSelected} -> {answer.IsSelected}");
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Answer with ID {answerId} not found");
+                        System.Diagnostics.Debug.WriteLine($"Answer {answerId} toggled to {answer.IsSelected} for question {CurrentQuestionIndex + 1}");
                     }
 
-                    // Mark question as answered if at least one answer is selected
+                    // Check if any answer is selected
+                    bool hasSelected = CurrentQuestion.Answers.Any(a => a.IsSelected);
+
+                    // Update question status
                     if (CurrentQuestionIndex >= 0 && CurrentQuestionIndex < QuestionNumbers.Count)
                     {
-                        var questionItem = QuestionNumbers[CurrentQuestionIndex];
-                        bool hasSelected = CurrentQuestion.Answers.Any(a => a.IsSelected);
-                        questionItem.IsAnswered = hasSelected;
-                        System.Diagnostics.Debug.WriteLine($"Question {CurrentQuestionIndex + 1} answered status: {hasSelected}");
-
-                        // Force refresh the specific item
-                        var index = QuestionNumbers.IndexOf(questionItem);
-                        if (index >= 0)
+                        QuestionNumbers[CurrentQuestionIndex] = new QuestionNumberItem
                         {
-                            // Remove and re-add to force UI update
-                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                QuestionNumbers[index] = questionItem;
-                            }), System.Windows.Threading.DispatcherPriority.Background);
-                        }
+                            Number = QuestionNumbers[CurrentQuestionIndex].Number,
+                            IsAnswered = hasSelected,
+                            IsMarked = QuestionNumbers[CurrentQuestionIndex].IsMarked,
+                            IsCurrent = QuestionNumbers[CurrentQuestionIndex].IsCurrent
+                        };
                     }
 
-                    // Update progress
                     UpdateProgress();
                 });
 
-                // Auto save progress
                 _ = Task.Run(async () => await SaveProgressAsync());
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($"CurrentQuestion is null or is not multiple choice: {CurrentQuestion?.IsMultipleChoice}");
             }
         }
         #endregion
@@ -882,23 +872,37 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         {
             if (ExamType == ExamType.MultipleChoice && CurrentQuestion != null && CurrentQuestionIndex >= 0)
             {
-                // The current question's answers are already stored in _allQuestions[CurrentQuestionIndex]
-                // Just make sure the reference is correct
+                // Ensure the current question's state is properly stored in _allQuestions
                 var storedQuestion = _allQuestions[CurrentQuestionIndex];
 
-                // Debug log
-                System.Diagnostics.Debug.WriteLine($"Saving state for question {CurrentQuestionIndex + 1}:");
-                foreach (var answer in storedQuestion.Answers)
+                // Copy current answer states to stored question
+                for (int i = 0; i < CurrentQuestion.Answers.Count; i++)
                 {
-                    if (answer.IsSelected)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"  - Answer {answer.AnswerId} is selected");
-                    }
+                    storedQuestion.Answers[i].IsSelected = CurrentQuestion.Answers[i].IsSelected;
                 }
+
+                // Debug log
+                System.Diagnostics.Debug.WriteLine($"Saved state for question {CurrentQuestionIndex + 1}:");
+                foreach (var answer in storedQuestion.Answers.Where(a => a.IsSelected))
+                {
+                    System.Diagnostics.Debug.WriteLine($"  - Answer {answer.AnswerId} is selected");
+                }
+            }
+            else if (ExamType == ExamType.Practice && CurrentPracticeQuestion != null && CurrentQuestionIndex >= 0)
+            {
+                // Save practice question state
+                var storedQuestion = _allPracticeQuestions[CurrentQuestionIndex];
+                storedQuestion.RichTextAnswer = CurrentPracticeQuestion.RichTextAnswer;
+                storedQuestion.MathAnswer = CurrentPracticeQuestion.MathAnswer;
+                storedQuestion.CodeAnswer = CurrentPracticeQuestion.CodeAnswer;
+                storedQuestion.SelectedTabIndex = CurrentPracticeQuestion.SelectedTabIndex;
             }
         }
         private async Task SubmitMultipleChoiceExam()
         {
+            // IMPORTANT: Save current question state before submitting
+            SaveCurrentQuestionState();
+
             // Debug: Log all questions and their answers before submitting
             System.Diagnostics.Debug.WriteLine("=== SUBMIT EXAM DEBUG ===");
             System.Diagnostics.Debug.WriteLine($"Total questions: {_allQuestions.Count}");
@@ -999,9 +1003,22 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         #region Helper Methods
         private void UpdateProgress()
         {
-            var answeredCount = QuestionNumbers.Count(q => q.IsAnswered);
+            // Count from the actual source of truth - _allQuestions
+            int answeredCount = 0;
+
+            if (ExamType == ExamType.MultipleChoice)
+            {
+                answeredCount = _allQuestions.Count(q => q.Answers.Any(a => a.IsSelected));
+            }
+            else
+            {
+                answeredCount = _allPracticeQuestions.Count(q => !string.IsNullOrEmpty(q.GetCombinedAnswer()));
+            }
+
             ProgressText = $"{answeredCount}/{TotalQuestions} câu";
-            ProgressValue = (double)answeredCount / TotalQuestions * 100;
+            ProgressValue = TotalQuestions > 0 ? (double)answeredCount / TotalQuestions * 100 : 0;
+
+            System.Diagnostics.Debug.WriteLine($"UpdateProgress: {answeredCount}/{TotalQuestions} questions answered");
         }
         #endregion
     }
