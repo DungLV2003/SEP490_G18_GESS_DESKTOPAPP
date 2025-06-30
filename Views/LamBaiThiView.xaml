@@ -43,16 +43,17 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8">
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8">
                             <ContentPresenter HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"/>
+                                    VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F3F4F6"/>
-                                <Setter Property="BorderBrush" Value="#9CA3AF"/>
+                                <Setter Property="Background" Value="#E5E7EB"/>
+                                <Setter Property="BorderBrush" Value="#6B7280"/>
+                                <Setter Property="BorderThickness" Value="2"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -595,12 +596,8 @@
                                     <DataTemplate>
                                         <RadioButton Style="{StaticResource AnswerRadioButtonStyle}"
                                                     GroupName="{Binding DataContext.CurrentQuestion.QuestionId, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                    Click="RadioButton_Click"
-                                                    MouseDown="RadioButton_MouseDown"
-                                                    Command="{Binding DataContext.SelectAnswerCommand, 
-                                                             RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding AnswerId}">
+                                                    IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    PreviewMouseLeftButtonDown="RadioButton_PreviewMouseDown">
                                             <RadioButton.Tag>
                                                 <MultiBinding Converter="{StaticResource IndexToAlphabetConverter}">
                                                     <Binding RelativeSource="{RelativeSource AncestorType=ItemsControl}" 
@@ -621,16 +618,12 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <CheckBox Style="{StaticResource AnswerCheckBoxStyle}"
-                                                IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                Click="CheckBox_Click"
-                                                MouseDown="CheckBox_MouseDown"
-                                                Command="{Binding DataContext.ToggleAnswerCommand, 
-                                                         RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding AnswerId}">
+         IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+         PreviewMouseLeftButtonDown="CheckBox_PreviewMouseDown">
                                             <CheckBox.Tag>
                                                 <MultiBinding Converter="{StaticResource IndexToAlphabetConverter}">
                                                     <Binding RelativeSource="{RelativeSource AncestorType=ItemsControl}" 
-                                                           Path="ItemsSource"/>
+                   Path="ItemsSource"/>
                                                     <Binding/>
                                                 </MultiBinding>
                                             </CheckBox.Tag>
