@@ -98,6 +98,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views.Dialog
             if (_parentWindow != null)
             {
                 _parentWindow.Effect = _originalEffect;
+
+                // Xóa dark overlay
+                if (_darkOverlay != null && _darkOverlay.Parent is Grid parentGrid)
+                {
+                    parentGrid.Children.Remove(_darkOverlay);
+                    _darkOverlay = null; // Clear reference
+                }
             }
 
             base.OnClosed(e);

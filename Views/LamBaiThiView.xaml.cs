@@ -155,6 +155,55 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             }
         }
 
+        private void RadioButton_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is RadioButton radioButton && radioButton.DataContext is AnswerViewModel answer)
+            {
+                // Prevent default handling
+                e.Handled = true;
+
+                // Toggle the selection directly
+                if (!answer.IsSelected)
+                {
+                    // Clear other selections first (for single choice)
+                    if (_viewModel.CurrentQuestion != null)
+                    {
+                        foreach (var ans in _viewModel.CurrentQuestion.Answers)
+                        {
+                            ans.IsSelected = false;
+                        }
+                    }
+
+                    // Set this answer as selected
+                    answer.IsSelected = true;
+
+                    // Use command to save progress
+                    if (_viewModel.SelectAnswerCommand.CanExecute(answer.AnswerId.ToString()))
+                    {
+                        _viewModel.SelectAnswerCommand.Execute(answer.AnswerId.ToString());
+                    }
+                }
+            }
+        }
+
+        private void CheckBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is CheckBox checkBox && checkBox.DataContext is AnswerViewModel answer)
+            {
+                // Prevent default handling
+                e.Handled = true;
+
+                // Toggle the selection
+                answer.IsSelected = !answer.IsSelected;
+
+                // Use command to save progress
+                if (_viewModel.ToggleAnswerCommand.CanExecute(answer.AnswerId.ToString()))
+                {
+                    _viewModel.ToggleAnswerCommand.Execute(answer.AnswerId.ToString());
+                }
+            }
+        }
+
         private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("CheckBox_Click event fired");
@@ -252,6 +301,9 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                 bool isCurrent = values[1] is bool current && current;
                 bool isMarked = values[2] is bool marked && marked;
                 FrameworkElement element = values[3] as FrameworkElement;
+
+                // Debug
+                System.Diagnostics.Debug.WriteLine($"QuestionButtonStyleConverter: IsAnswered={isAnswered}, IsCurrent={isCurrent}, IsMarked={isMarked}");
 
                 if (element != null)
                 {
