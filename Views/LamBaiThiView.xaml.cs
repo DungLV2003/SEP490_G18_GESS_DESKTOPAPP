@@ -31,6 +31,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
     {
         private LamBaiThiViewModel _viewModel;
         private bool _isExamSubmitted = false;
+        private bool _isUpdatingEditorFromViewModel = false; // Flag để tránh infinite loop
         // Windows API để chặn phím tắt
         [DllImport("user32.dll")]
         private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
@@ -50,22 +51,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             // Full screen mode for exam
             // Full screen mode cho bài thi
             //SetupExamMode();
+            // Setup practice answer editor NGAY SAU KHI INITIALIZE
+            this.Loaded += (s, e) => SetupPracticeAnswerEditor();
 
             AnimationHelper.ApplyFadeIn(this);
-
-       
-
-            // Bind RichTextBox for practice exam
-            //SetupRichTextBinding();
-
-            // Hook keyboard events
-            //this.PreviewKeyDown += OnPreviewKeyDown;
-
-            AnimationHelper.ApplyFadeIn(this);
-
-          
-
-            // Bind RichTextBox for practice exam
   
         }
 
@@ -85,27 +74,49 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         {
             if (PracticeAnswerEditor != null && _viewModel != null)
             {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] SetupPracticeAnswerEditor: Starting setup...");
+
                 // Set default syntax highlighting to Text
                 PracticeAnswerEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("Text");
 
-                // Bind text to ViewModel
+                // QUAN TRỌNG: Bind text từ ViewModel sang Editor khi question thay đổi
+                _viewModel.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(_viewModel.CurrentPracticeQuestion))
+                    {
+                        UpdateEditorFromViewModel();
+                    }
+                };
+
+                // Bind text từ Editor về ViewModel khi user nhập
                 PracticeAnswerEditor.TextChanged += (s, e) =>
                 {
-                    if (_viewModel.CurrentPracticeQuestion != null)
+                    if (!_isUpdatingEditorFromViewModel && _viewModel.CurrentPracticeQuestion != null)
                     {
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor TextChanged: Updating answer for question {_viewModel.CurrentQuestionIndex + 1}");
                         _viewModel.CurrentPracticeQuestion.Answer = PracticeAnswerEditor.Text;
                     }
                 };
 
-                // Update editor when question changes
-                _viewModel.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(_viewModel.CurrentPracticeQuestion) &&
-                        _viewModel.CurrentPracticeQuestion != null)
-                    {
-                        PracticeAnswerEditor.Text = _viewModel.CurrentPracticeQuestion.Answer ?? "";
-                    }
-                };
+                // Load initial content nếu đã có CurrentPracticeQuestion
+                UpdateEditorFromViewModel();
+
+                System.Diagnostics.Debug.WriteLine("[DEBUG] SetupPracticeAnswerEditor: Setup completed");
+            }
+        }
+
+        private void UpdateEditorFromViewModel()
+        {
+            if (_viewModel.CurrentPracticeQuestion != null && PracticeAnswerEditor != null)
+            {
+                _isUpdatingEditorFromViewModel = true;
+
+                var answer = _viewModel.CurrentPracticeQuestion.Answer ?? "";
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdateEditorFromViewModel: Question {_viewModel.CurrentQuestionIndex + 1}, Answer='{answer}'");
+
+                PracticeAnswerEditor.Text = answer;
+
+                _isUpdatingEditorFromViewModel = false;
             }
         }
 

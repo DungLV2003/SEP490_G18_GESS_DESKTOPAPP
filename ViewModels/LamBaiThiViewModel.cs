@@ -483,7 +483,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             _allPracticeQuestions.Clear();
             QuestionNumbers.Clear();
 
-            // Load all practice questions
+            // Load all practice questions với PropertyChanged binding
             foreach (var questionOrder in questionOrders.OrderBy(q => q.QuestionOrder))
             {
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] Processing question order {questionOrder.QuestionOrder}");
@@ -502,31 +502,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                         QuestionOrder = questionOrder.QuestionOrder,
                         Content = questionDetail.Content,
                         Score = questionDetail.Score,
-                        // Answer content will be loaded if exists
+                        // Answer content sẽ được set riêng để trigger PropertyChanged
                         Answer = questionDetail.AnswerContent ?? "",
-
                     };
 
-                    // Subscribe to PropertyChanged to detect answer changes
-                    practiceVm.PropertyChanged += (s, e) => {
-                        if (e.PropertyName == nameof(PracticeQuestionViewModel.Answer))
-                        {
-                            // Update progress when answer changes
-                            var questionIndex = _allPracticeQuestions.FindIndex(q => q.PracticeQuestionId == practiceVm.PracticeQuestionId);
-                            if (questionIndex >= 0 && questionIndex < QuestionNumbers.Count)
-                            {
-                                var hasAnswer = !string.IsNullOrEmpty(practiceVm.GetAnswer());
-                                QuestionNumbers[questionIndex].IsAnswered = hasAnswer;
+                    // QUAN TRỌNG: Subscribe to PropertyChanged để detect answer changes
+                    SetupPracticeQuestionBinding(practiceVm);
 
-                                UpdatePracticeProgress();
-
-                                // Auto save when answer changes
-                                _ = Task.Run(async () => await SavePracticeProgressAsync());
-                            }
-                        }
-                    };
-
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Created PracticeVM: ID={practiceVm.PracticeQuestionId}, Content='{practiceVm.Content}', Score={practiceVm.Score}");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Created PracticeVM: ID={practiceVm.PracticeQuestionId}, Content='{practiceVm.Content}', Score={practiceVm.Score}, HasAnswer={practiceVm.HasAnswer}");
 
                     _allPracticeQuestions.Add(practiceVm);
 
@@ -534,7 +517,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     QuestionNumbers.Add(new QuestionNumberItem
                     {
                         Number = _allPracticeQuestions.Count, // Use sequential numbering for display
-                        IsAnswered = !string.IsNullOrEmpty(questionDetail.AnswerContent),
+                        IsAnswered = practiceVm.HasAnswer,
                         IsMarked = false,
                         IsCurrent = _allPracticeQuestions.Count == 1 // First question should be current
                     });
@@ -557,7 +540,50 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             OnPropertyChanged(nameof(TotalQuestions));
             OnPropertyChanged(nameof(QuestionNumbers));
         }
+        private void SetupPracticeQuestionBinding(PracticeQuestionViewModel practiceVm)
+        {
+            practiceVm.PropertyChanged += (s, e) => {
+                if (e.PropertyName == nameof(PracticeQuestionViewModel.Answer) ||
+                    e.PropertyName == nameof(PracticeQuestionViewModel.HasAnswer))
+                {
+                    // Tìm index của question này
+                    var questionIndex = _allPracticeQuestions.FindIndex(q => q.PracticeQuestionId == practiceVm.PracticeQuestionId);
+                    if (questionIndex >= 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Practice Question {questionIndex + 1} Answer changed: HasAnswer={practiceVm.HasAnswer}");
 
+                        // Update QuestionNumbers nếu đây là question hiện tại hoặc update toàn bộ
+                        if (questionIndex < QuestionNumbers.Count)
+                        {
+                            QuestionNumbers[questionIndex].IsAnswered = practiceVm.HasAnswer;
+                        }
+
+                        // Update progress
+                        UpdatePracticeProgress();
+
+                        // Auto save khi answer thay đổi (async)
+                        _ = Task.Run(async () => await SavePracticeProgressAsync());
+                    }
+                }
+            };
+        }
+        // Thêm method để force update trạng thái cho practice question hiện tại
+        private void ForceUpdateCurrentPracticeQuestionStatus()
+        {
+            if (ExamType == ExamType.Practice && CurrentQuestionIndex >= 0 && CurrentQuestionIndex < _allPracticeQuestions.Count)
+            {
+                var currentQuestion = _allPracticeQuestions[CurrentQuestionIndex];
+                var questionItem = QuestionNumbers[CurrentQuestionIndex];
+
+                // Force update trạng thái
+                questionItem.IsAnswered = currentQuestion.HasAnswer;
+
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ForceUpdateCurrentPracticeQuestionStatus: Question {CurrentQuestionIndex + 1}, IsAnswered: {questionItem.IsAnswered}");
+
+                // Update progress
+                UpdatePracticeProgress();
+            }
+        }
         private void LoadPracticeQuestionsFromExamInfo(PracticeExamInfoResponseDTO examInfo)
         {
             System.Diagnostics.Debug.WriteLine("[DEBUG] LoadPracticeQuestionsFromExamInfo: Starting fallback loading...");
@@ -581,24 +607,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     Content = questionDetail.Content,
                     Score = questionDetail.Score,
                     Answer = questionDetail.AnswerContent ?? "",
-      
                 };
 
-                // Subscribe to PropertyChanged
-                practiceVm.PropertyChanged += (s, e) => {
-                    if (e.PropertyName == nameof(PracticeQuestionViewModel.Answer))
-                    {
-                        var questionIndex = _allPracticeQuestions.FindIndex(q => q.PracticeQuestionId == practiceVm.PracticeQuestionId);
-                        if (questionIndex >= 0 && questionIndex < QuestionNumbers.Count)
-                        {
-                            var hasAnswer = !string.IsNullOrEmpty(practiceVm.GetAnswer());
-                            QuestionNumbers[questionIndex].IsAnswered = hasAnswer;
-
-                            UpdatePracticeProgress();
-                            _ = Task.Run(async () => await SavePracticeProgressAsync());
-                        }
-                    }
-                };
+                // Setup binding cho từng question
+                SetupPracticeQuestionBinding(practiceVm);
 
                 _allPracticeQuestions.Add(practiceVm);
 
@@ -606,7 +618,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 QuestionNumbers.Add(new QuestionNumberItem
                 {
                     Number = i + 1, // Use sequential numbering for display
-                    IsAnswered = !string.IsNullOrEmpty(questionDetail.AnswerContent),
+                    IsAnswered = practiceVm.HasAnswer,
                     IsMarked = false,
                     IsCurrent = i == 0 // First question should be current
                 });
@@ -677,14 +689,11 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     System.Diagnostics.Debug.WriteLine($"  - Index: {CurrentQuestionIndex}");
                     System.Diagnostics.Debug.WriteLine($"  - Question ID: {CurrentPracticeQuestion?.PracticeQuestionId}");
                     System.Diagnostics.Debug.WriteLine($"  - Question Content: {CurrentPracticeQuestion?.Content}");
+                    System.Diagnostics.Debug.WriteLine($"  - Current Answer: '{CurrentPracticeQuestion?.Answer}'");
+                    System.Diagnostics.Debug.WriteLine($"  - HasAnswer: {CurrentPracticeQuestion?.HasAnswer}");
 
                     // Update question status for practice questions
-                    if (CurrentQuestionIndex < QuestionNumbers.Count)
-                    {
-                        var questionItem = QuestionNumbers[CurrentQuestionIndex];
-                        bool hasAnswered = !string.IsNullOrEmpty(CurrentPracticeQuestion.GetAnswer());
-                        questionItem.IsAnswered = hasAnswered;
-                    }
+                    UpdatePracticeQuestionStatus();
 
                     OnPropertyChanged(nameof(CurrentPracticeQuestion));
                 }
@@ -696,28 +705,51 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 }
 
                 // Update navigation buttons
-                foreach (var item in QuestionNumbers)
-                {
-                    item.IsCurrent = item.Number == CurrentQuestionIndex + 1;
-                }
-
+                UpdateNavigationButtons();
+                ForceUpdateCurrentPracticeQuestionStatus();
                 OnPropertyChanged(nameof(CurrentQuestionNumberItem));
                 CommandManager.InvalidateRequerySuggested();
             });
         }
+        private void UpdatePracticeQuestionStatus()
+        {
+            if (CurrentQuestionIndex >= 0 && CurrentQuestionIndex < QuestionNumbers.Count && CurrentPracticeQuestion != null)
+            {
+                var questionItem = QuestionNumbers[CurrentQuestionIndex];
+                bool hasAnswered = CurrentPracticeQuestion.HasAnswer;
 
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdatePracticeQuestionStatus: Question {CurrentQuestionIndex + 1}, HasAnswered: {hasAnswered}");
+
+                questionItem.IsAnswered = hasAnswered;
+
+                // Update progress sau khi update trạng thái
+                UpdatePracticeProgress();
+            }
+        }
+
+        private void UpdateNavigationButtons()
+        {
+            // Update navigation buttons cho tất cả questions
+            foreach (var item in QuestionNumbers)
+            {
+                item.IsCurrent = item.Number == CurrentQuestionIndex + 1;
+            }
+        }
         private void PreviousQuestion()
         {
             SaveCurrentQuestionState();
             if (CurrentQuestionIndex > 0)
             {
                 CurrentQuestionIndex--;
+
                 if (ExamType == ExamType.Practice)
                 {
-                    UpdatePracticeProgress();
+                    // Đảm bảo CurrentPracticeQuestion được update
+                    UpdateCurrentPracticeQuestion();
                 }
                 else
                 {
+                    UpdateCurrentMultipleChoiceQuestion();
                     UpdateMultipleChoiceProgress();
                 }
             }
@@ -729,12 +761,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             if (CurrentQuestionIndex < TotalQuestions - 1)
             {
                 CurrentQuestionIndex++;
+
                 if (ExamType == ExamType.Practice)
                 {
-                    UpdatePracticeProgress();
+                    // Đảm bảo CurrentPracticeQuestion được update
+                    UpdateCurrentPracticeQuestion();
                 }
                 else
                 {
+                    UpdateCurrentMultipleChoiceQuestion();
                     UpdateMultipleChoiceProgress();
                 }
             }
@@ -746,12 +781,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             if (questionNumber > 0 && questionNumber <= TotalQuestions)
             {
                 CurrentQuestionIndex = questionNumber - 1;
+
                 if (ExamType == ExamType.Practice)
                 {
-                    UpdatePracticeProgress();
+                    // Đảm bảo CurrentPracticeQuestion được update
+                    UpdateCurrentPracticeQuestion();
                 }
                 else
                 {
+                    UpdateCurrentMultipleChoiceQuestion();
                     UpdateMultipleChoiceProgress();
                 }
             }
@@ -900,22 +938,35 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
         private async Task SavePracticeProgressAsync()
         {
-            var updateDto = new UpdatePracticeExamAnswersRequest
+            try
             {
-                Answers = new List<UpdatePracticeExamAnswerDTO>()
-            };
-
-            foreach (var question in _allPracticeQuestions.Where(q => !string.IsNullOrEmpty(q.GetAnswer())))
-            {
-                updateDto.Answers.Add(new UpdatePracticeExamAnswerDTO
+                var updateDto = new UpdatePracticeExamAnswersRequest
                 {
-                    PracExamHistoryId = _pracExamHistoryId,
-                    PracticeQuestionId = question.PracticeQuestionId,
-                    Answer = question.GetAnswer()
-                });
-            }
+                    Answers = new List<UpdatePracticeExamAnswerDTO>()
+                };
 
-            await _lamBaiThiService.UpdatePEEach5minutesAsync(updateDto);
+                // Lưu tất cả câu trả lời, kể cả câu trống (để server biết câu nào đã được "touched")
+                foreach (var question in _allPracticeQuestions)
+                {
+                    updateDto.Answers.Add(new UpdatePracticeExamAnswerDTO
+                    {
+                        PracExamHistoryId = _pracExamHistoryId,
+                        PracticeQuestionId = question.PracticeQuestionId,
+                        Answer = question.GetAnswer()
+                    });
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] SavePracticeProgressAsync: Saving {updateDto.Answers.Count} answers");
+
+                await _lamBaiThiService.UpdatePEEach5minutesAsync(updateDto);
+
+                System.Diagnostics.Debug.WriteLine("[DEBUG] SavePracticeProgressAsync: Save completed successfully");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERROR] SavePracticeProgressAsync failed: {ex.Message}");
+                // Log error nhưng không throw để không ảnh hưởng đến UX
+            }
         }
 
         private async Task SubmitExamAsync(bool isAutoSubmit = false)
@@ -1067,11 +1118,19 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 var storedQuestion = _allPracticeQuestions[CurrentQuestionIndex];
 
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] SaveCurrentQuestionState: Practice Question {CurrentQuestionIndex + 1}");
+                System.Diagnostics.Debug.WriteLine($"  - Current Answer: '{CurrentPracticeQuestion.Answer}'");
+                System.Diagnostics.Debug.WriteLine($"  - Stored Answer: '{storedQuestion.Answer}'");
+
                 // Verify that CurrentPracticeQuestion is the same reference
                 if (!object.ReferenceEquals(CurrentPracticeQuestion, storedQuestion))
                 {
+                    System.Diagnostics.Debug.WriteLine($"  - Different references detected, syncing...");
                     storedQuestion.Answer = CurrentPracticeQuestion.GetAnswer();
-
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"  - Same references, no sync needed");
                 }
             }
         }
@@ -1222,9 +1281,18 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
         private void UpdatePracticeProgress()
         {
-            int answeredCount = _allPracticeQuestions.Count(q => !string.IsNullOrEmpty(q.Answer));
+            // Đếm số câu đã trả lời dựa trên HasAnswer property
+            int answeredCount = _allPracticeQuestions.Count(q => q.HasAnswer);
             ProgressText = $"{answeredCount}/{TotalQuestions} câu";
             ProgressValue = TotalQuestions > 0 ? (double)answeredCount / TotalQuestions * 100 : 0;
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdatePracticeProgress: {answeredCount}/{TotalQuestions} answered");
+
+            // Cập nhật lại QuestionNumbers.IsAnswered cho tất cả câu hỏi
+            for (int i = 0; i < _allPracticeQuestions.Count && i < QuestionNumbers.Count; i++)
+            {
+                QuestionNumbers[i].IsAnswered = _allPracticeQuestions[i].HasAnswer;
+            }
         }
         #endregion
     }
@@ -1268,30 +1336,30 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         public string Content { get; set; }
         public double Score { get; set; }
 
-        // CHỈ CÓ 1 TRƯỜNG ANSWER DUY NHẤT
+        // CHỈ CÓ 1 TRƯỜNG ANSWER DUY NHẤT với PropertyChanged
         private string _answer;
         public string Answer
         {
-            get => _answer;
-            set => SetProperty(ref _answer, value);
+            get => _answer ?? "";
+            set
+            {
+                if (SetProperty(ref _answer, value))
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] PracticeQuestion {PracticeQuestionId} Answer changed: '{value}'");
+
+                    // Notify HasAnswer changed
+                    OnPropertyChanged(nameof(HasAnswer));
+                }
+            }
         }
 
-        // Bỏ các property không cần thiết:
-        // - RichTextAnswer
-        // - MathAnswer  
-        // - CodeAnswer
-        // - SelectedTabIndex
+        // Property để kiểm tra câu hỏi đã được trả lời chưa
+        public bool HasAnswer => !string.IsNullOrWhiteSpace(Answer);
 
         // Method để lấy answer cho API
         public string GetAnswer()
         {
             return Answer ?? "";
-        }
-
-        // Method để kiểm tra câu hỏi đã được trả lời chưa
-        public bool HasAnswer()
-        {
-            return !string.IsNullOrWhiteSpace(Answer);
         }
     }
 
