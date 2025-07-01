@@ -2,6 +2,8 @@
 using SEP490_G18_GESS_DESKTOPAPP.Helpers;
 using SEP490_G18_GESS_DESKTOPAPP.Models.Enum;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels;
+using SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog;
+using SEP490_G18_GESS_DESKTOPAPP.Views.Dialog;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -31,6 +33,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
     {
         private bool _isExamSubmitted = false;
         private bool _isUpdatingEditorFromViewModel = false; // Flag để tránh infinite loop
+        private bool _isExitDialogShowing = false;
+        // Windows API để chặn phím tắt
         // Windows API để chặn phím tắt
         [DllImport("user32.dll")]
         private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
@@ -38,8 +42,27 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         [DllImport("user32.dll")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc callback, IntPtr hInstance, uint threadId);
+
+        [DllImport("user32.dll")]
+        private static extern bool UnhookWindowsHookEx(IntPtr hInstance);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr CallNextHookEx(IntPtr idHook, int nCode, int wParam, IntPtr lParam);
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr LoadLibrary(string lpFileName);
+
+        private const int WH_KEYBOARD_LL = 13;
+        private const int WM_KEYDOWN = 0x0100;
         private const int GWL_STYLE = -16;
         private const int WS_SYSMENU = 0x80000;
+
+        private IntPtr _hookID = IntPtr.Zero;
+        private LowLevelKeyboardProc _proc;
+
+        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         private LamBaiThiViewModel ViewModel => this.DataContext as LamBaiThiViewModel;
 
@@ -47,10 +70,17 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         {
             InitializeComponent();
             System.Diagnostics.Debug.WriteLine($"[DEBUG] LamBaiThiView Constructor: Window instance = {this.GetHashCode()}");
-            
+            // Hook keyboard events
+            _proc = HookCallback;
+            _hookID = SetHook(_proc);
+
+            // Register PreviewKeyDown
+            this.PreviewKeyDown += OnPreviewKeyDown;
+            // Handle window closing event
+            this.Closing += LamBaiThiView_Closing;
             // Debug AvalonEdit highlighting capabilities
             DebugAvalonEditHighlighting();
-            
+            SetupExamMode();
             // DataContext sẽ được gán từ ngoài khi khởi tạo
             this.Loaded += (s, e) =>
             {
@@ -101,7 +131,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                     System.Diagnostics.Debug.WriteLine($"[DEBUG] New ViewModel AllPracticeQuestions count = {newViewModel.AllPracticeQuestions?.Count ?? 0}");
                 }
             };
-            
+           
+
             AnimationHelper.ApplyFadeIn(this);
         }
 
@@ -149,48 +180,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         {
             // Full screen
             this.WindowState = WindowState.Maximized;
-            //this.WindowStyle = WindowStyle.None;
-            //this.ResizeMode = ResizeMode.NoResize;
+            this.WindowStyle = WindowStyle.None;
+            this.ResizeMode = ResizeMode.NoResize;
             this.Topmost = true; // Luôn ở trên cùng
 
             // Ẩn taskbar
-            //this.ShowInTaskbar = false;
+            this.ShowInTaskbar = false;
         }
-        // Thêm method mới để setup practice answer với AvalonEdit
-        //private void SetupPracticeAnswerEditor()
-        //{
-        //    if (PracticeAnswerEditor != null && _viewModel != null)
-        //    {
-        //        System.Diagnostics.Debug.WriteLine("[DEBUG] SetupPracticeAnswerEditor: Starting setup...");
-
-        //        // Set default syntax highlighting to Text
-        //        PracticeAnswerEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("Text");
-
-        //        // QUAN TRỌNG: Bind text từ ViewModel sang Editor khi question thay đổi
-        //        _viewModel.PropertyChanged += (s, e) =>
-        //        {
-        //            if (e.PropertyName == nameof(_viewModel.CurrentPracticeQuestion))
-        //            {
-        //                UpdateEditorFromViewModel();
-        //            }
-        //        };
-
-        //        // Bind text từ Editor về ViewModel khi user nhập
-        //        PracticeAnswerEditor.TextChanged += (s, e) =>
-        //        {
-        //            if (!_isUpdatingEditorFromViewModel && _viewModel.CurrentPracticeQuestion != null)
-        //            {
-        //                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor TextChanged: Updating answer for question {_viewModel.CurrentQuestionIndex + 1}");
-        //                _viewModel.CurrentPracticeQuestion.Answer = PracticeAnswerEditor.Text;
-        //            }
-        //        };
-
-        //        // Load initial content nếu đã có CurrentPracticeQuestion
-        //        UpdateEditorFromViewModel();
-
-        //        System.Diagnostics.Debug.WriteLine("[DEBUG] SetupPracticeAnswerEditor: Setup completed");
-        //    }
-        //}
+        
         private void UpdatePracticeQuestionUI()
         {
             if (ViewModel != null && ViewModel.ExamType == ExamType.Practice &&
@@ -199,20 +196,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdatePracticeQuestionUI: Question {ViewModel.CurrentQuestionIndex + 1}");
             }
         }
-        //private void UpdateEditorFromViewModel()
-        //{
-        //    if (_viewModel.CurrentPracticeQuestion != null && PracticeAnswerEditor != null)
-        //    {
-        //        _isUpdatingEditorFromViewModel = true;
-
-        //        var answer = _viewModel.CurrentPracticeQuestion.Answer ?? "";
-        //        System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdateEditorFromViewModel: Question {_viewModel.CurrentQuestionIndex + 1}, Answer='{answer}'");
-
-        //        PracticeAnswerEditor.Text = answer;
-
-        //        _isUpdatingEditorFromViewModel = false;
-        //    }
-        //}
+    
 
         private void ApplyEditorMode(ICSharpCode.AvalonEdit.TextEditor editor, string mode)
         {
@@ -501,6 +485,55 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             }
             return null;
         }
+        private IntPtr SetHook(LowLevelKeyboardProc proc)
+        {
+            using (var curProcess = System.Diagnostics.Process.GetCurrentProcess())
+            using (var curModule = curProcess.MainModule)
+            {
+                return SetWindowsHookEx(WH_KEYBOARD_LL, proc,
+                    LoadLibrary(curModule.ModuleName), 0);
+            }
+        }
+
+        private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            {
+                int vkCode = Marshal.ReadInt32(lParam);
+
+                // Ctrl+Shift+Esc (Task Manager)
+                if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && vkCode == (int)Key.Escape)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        ShowExitConfirmationDialog();
+                    });
+                    return (IntPtr)1; // Block the key
+                }
+
+                // Alt+F4
+                if (Keyboard.Modifiers == ModifierKeys.Alt && vkCode == (int)Key.F4)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        ShowExitConfirmationDialog();
+                    });
+                    return (IntPtr)1; // Block the key
+                }
+
+                // Ctrl+Alt+Del không thể được hoàn toàn chặn vì đây là phím tắt cấp hệ thống
+                // nhưng chúng ta có thể giám sát và hiển thị thông báo khi người dùng quay lại
+                if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt) && vkCode == (int)Key.Delete)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        // Đánh dấu có thể cần phải kiểm tra khi người dùng quay lại
+                        // (có thể đặt flag nào đó ở đây)
+                    });
+                }
+            }
+            return CallNextHookEx(_hookID, nCode, (int)wParam, lParam);
+        }
 
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -516,13 +549,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         }
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Chặn Alt + F4
-            //if (e.Key == Key.System && e.SystemKey == Key.F4)
-            //{
-            //    e.Handled = true;
-            //    return;
-            //}
-
             // Chặn Alt + Tab
             if (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.Tab)
             {
@@ -536,16 +562,76 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                 e.Handled = true;
                 return;
             }
-
-            // Chặn Ctrl + Alt + Del (khó chặn hoàn toàn, nhưng có thể cảnh báo)
-            //if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt) && e.Key == Key.Delete)
-            //{
-            //    e.Handled = true;
-            //    MessageBox.Show("Không được phép sử dụng phím tắt này trong khi thi!", "Cảnh báo",
-            //        MessageBoxButton.OK, MessageBoxImage.Warning);
-            //    return;
-            //}
         }
+
+        private void LamBaiThiView_Closing(object sender, CancelEventArgs e)
+        {
+            //Nếu bài thi đã được nộp thì cho phép đóng
+            if (_isExamSubmitted)
+            {
+                // Unhook keyboard để tránh memory leak
+                UnhookWindowsHookEx(_hookID);
+                base.OnClosing(e);
+                return;
+            }
+
+            // Ngăn chặn đóng window khi đang thi nếu không qua dialog xác nhận
+            if (!_isExitDialogShowing)
+            {
+                e.Cancel = true;
+                ShowExitConfirmationDialog();
+            }
+        }
+        protected override void OnClosed(EventArgs e)
+        {
+            // Unhook keyboard khi đóng form để tránh memory leak
+            UnhookWindowsHookEx(_hookID);
+            base.OnClosed(e);
+        }
+
+        private void ShowExitConfirmationDialog()
+        {
+            if (_isExitDialogShowing)
+                return;
+
+            _isExitDialogShowing = true;
+
+            // Tạo action để xử lý khi người dùng xác nhận thoát
+            Action confirmAction = async () =>
+            {
+                try
+                {
+                    // Nộp bài thi tự động
+                    await ViewModel.SubmitExamAsync(true);
+
+                    // Đánh dấu đã nộp để có thể thoát
+                    _isExamSubmitted = true;
+
+                    // Thoát ứng dụng
+                    Application.Current.Shutdown();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi nộp bài thi: {ex.Message}", "Lỗi",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    _isExitDialogShowing = false;
+                }
+            };
+
+            // Hiển thị dialog xác nhận
+            var viewModel = new DialogExitConfirmationViewModel(confirmAction);
+            var dialog = new DialogExitConfirmationView(viewModel);
+
+            dialog.Owner = this;
+            dialog.ShowDialog();
+
+            // Reset flag sau khi dialog đóng
+            _isExitDialogShowing = false;
+        }
+
 
         protected override void OnClosing(CancelEventArgs e)
         {
@@ -555,16 +641,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                 base.OnClosing(e);
                 return;
             }
+            //// Ngăn chặn đóng window khi đang thi
+            //e.Cancel = true;
 
-            // Ngăn chặn đóng window khi đang thi
-            e.Cancel = true;
-
-            MessageBox.Show(
-                "Không thể thoát trong khi đang làm bài thi!\nVui lòng nộp bài trước khi thoát.",
-                "Thông báo",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning
-            );
+            //MessageBox.Show(
+            //    "Không thể thoát trong khi đang làm bài thi!\nVui lòng nộp bài trước khi thoát.",
+            //    "Thông báo",
+            //    MessageBoxButton.OK,
+            //    MessageBoxImage.Warning
+            //);
         }
 
         // Phương thức để set flag khi nộp bài
