@@ -29,7 +29,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
     /// </summary>
     public partial class LamBaiThiView : Window
     {
-        private LamBaiThiViewModel _viewModel;
         private bool _isExamSubmitted = false;
         private bool _isUpdatingEditorFromViewModel = false; // Flag để tránh infinite loop
         // Windows API để chặn phím tắt
@@ -42,35 +41,108 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         private const int GWL_STYLE = -16;
         private const int WS_SYSMENU = 0x80000;
 
-        public LamBaiThiView(LamBaiThiViewModel lbtViewModel)
+        private LamBaiThiViewModel ViewModel => this.DataContext as LamBaiThiViewModel;
+
+        public LamBaiThiView()
         {
             InitializeComponent();
-            _viewModel = lbtViewModel;
-            this.DataContext = _viewModel;
-
-            // Full screen mode for exam
-            // Full screen mode cho bài thi
-            //SetupExamMode();
-            // Setup practice answer editor NGAY SAU KHI INITIALIZE
-            // Đăng ký sự kiện cho ItemsControl
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] LamBaiThiView Constructor: Window instance = {this.GetHashCode()}");
+            
+            // Debug AvalonEdit highlighting capabilities
+            DebugAvalonEditHighlighting();
+            
+            // DataContext sẽ được gán từ ngoài khi khởi tạo
             this.Loaded += (s, e) =>
             {
-                // Lắng nghe sự kiện CurrentQuestionIndex thay đổi để cập nhật editor hiển thị
-                _viewModel.PropertyChanged += (sender, args) =>
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] LamBaiThiView.Loaded: Window instance = {this.GetHashCode()}");
+                
+                // Debug ViewModel instance
+                if (ViewModel != null)
                 {
-                    if (args.PropertyName == nameof(_viewModel.CurrentQuestionIndex) ||
-                        args.PropertyName == nameof(_viewModel.CurrentPracticeQuestion))
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ViewModel instance = {ViewModel.GetHashCode()}");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] AllPracticeQuestions count = {ViewModel.AllPracticeQuestions?.Count ?? 0}");
+                    
+                    if (ViewModel.AllPracticeQuestions != null)
                     {
-                        // Khi thay đổi câu hỏi, cập nhật UI
-                        UpdatePracticeQuestionUI();
+                        for (int i = 0; i < ViewModel.AllPracticeQuestions.Count; i++)
+                        {
+                            var question = ViewModel.AllPracticeQuestions[i];
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Question[{i}]: Id={question.PracticeQuestionId}, Content='{question.Content?.Substring(0, Math.Min(50, question.Content?.Length ?? 0))}...', Answer='{question.Answer}'");
+                        }
                     }
-                };
-
-                // Khởi tạo ban đầu
-                UpdatePracticeQuestionUI();
+                    
+                    ViewModel.PropertyChanged += (sender, args) =>
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] ViewModel PropertyChanged: {args.PropertyName}");
+                        
+                        if (args.PropertyName == nameof(ViewModel.CurrentQuestionIndex) ||
+                            args.PropertyName == nameof(ViewModel.CurrentPracticeQuestion))
+                        {
+                            // Khi thay đổi câu hỏi, cập nhật UI
+                            UpdatePracticeQuestionUI();
+                        }
+                    };
+                    
+                    // Khởi tạo ban đầu
+                    UpdatePracticeQuestionUI();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] ViewModel is NULL in Loaded event!");
+                }
             };
-                AnimationHelper.ApplyFadeIn(this);
-  
+            
+            // Debug DataContext changes
+            this.DataContextChanged += (s, e) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] DataContext changed: Old={e.OldValue?.GetHashCode()}, New={e.NewValue?.GetHashCode()}");
+                if (e.NewValue is LamBaiThiViewModel newViewModel)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] New ViewModel AllPracticeQuestions count = {newViewModel.AllPracticeQuestions?.Count ?? 0}");
+                }
+            };
+            
+            AnimationHelper.ApplyFadeIn(this);
+        }
+
+        private void DebugAvalonEditHighlighting()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] ===== AvalonEdit Highlighting Debug =====");
+                
+                var highlightingManager = HighlightingManager.Instance;
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] HighlightingManager instance: {highlightingManager?.GetHashCode() ?? 0}");
+                
+                if (highlightingManager?.HighlightingDefinitions != null)
+                {
+                    var definitions = highlightingManager.HighlightingDefinitions.ToList();
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Total highlighting definitions: {definitions.Count}");
+                    
+                    foreach (var def in definitions)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] - Available: '{def.Name}'");
+                    }
+                    
+                    // Test specific definitions we need
+                    var testDefinitions = new[] { "C#", "Python", "Java", "SQL", "Text" };
+                    foreach (var testName in testDefinitions)
+                    {
+                        var def = highlightingManager.GetDefinition(testName);
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Test definition '{testName}': {(def != null ? "FOUND" : "NOT FOUND")}");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[ERROR] HighlightingDefinitions collection is NULL!");
+                }
+                
+                System.Diagnostics.Debug.WriteLine("[DEBUG] ============================================");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERROR] DebugAvalonEditHighlighting failed: {ex.Message}");
+            }
         }
 
         private void SetupExamMode()
@@ -121,10 +193,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         //}
         private void UpdatePracticeQuestionUI()
         {
-            if (_viewModel.ExamType == ExamType.Practice &&
-                _viewModel.CurrentPracticeQuestion != null)
+            if (ViewModel != null && ViewModel.ExamType == ExamType.Practice &&
+                ViewModel.CurrentPracticeQuestion != null)
             {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdatePracticeQuestionUI: Question {_viewModel.CurrentQuestionIndex + 1}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdatePracticeQuestionUI: Question {ViewModel.CurrentQuestionIndex + 1}");
             }
         }
         //private void UpdateEditorFromViewModel()
@@ -142,50 +214,263 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         //    }
         //}
 
-        // Method để xử lý thay đổi syntax highlighting
-        private void AnswerModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ApplyEditorMode(ICSharpCode.AvalonEdit.TextEditor editor, string mode)
         {
-            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] ApplyEditorMode STARTING: mode='{mode}', editor={editor?.GetHashCode()}");
+            
+            if (editor == null)
             {
-                string mode = selectedItem.Tag?.ToString() ?? "Text";
+                System.Diagnostics.Debug.WriteLine("[ERROR] ApplyEditorMode: editor is NULL!");
+                return;
+            }
 
-                // Tìm editor tương ứng trong template
-                var parentBorder = FindVisualParent<Border>(comboBox);
-                if (parentBorder != null)
+            // Log available highlighting definitions
+            var availableHighlightings = HighlightingManager.Instance.HighlightingDefinitions.Select(h => h.Name).ToList();
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Available highlighting definitions: {string.Join(", ", availableHighlightings)}");
+
+            var highlighting = mode switch
+            {
+                "CSharp" => HighlightingManager.Instance.GetDefinition("C#"),
+                "Python" => HighlightingManager.Instance.GetDefinition("Python"),
+                "Java" => HighlightingManager.Instance.GetDefinition("Java"),
+                "SQL" => HighlightingManager.Instance.GetDefinition("TSQL"), // Use TSQL instead of SQL
+                _ => null // Text mode - NO highlighting
+            };
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] ApplyEditorMode: Retrieved highlighting definition = {highlighting?.Name ?? "NULL"}");
+
+            // Apply highlighting
+            editor.SyntaxHighlighting = highlighting;
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] ApplyEditorMode: Applied SyntaxHighlighting = {editor.SyntaxHighlighting?.Name ?? "NULL"}");
+
+            // Configure editor based on mode
+            if (mode == "Text")
+            {
+                // Text mode: NO line numbers, NO highlighting, word wrap ON
+                editor.ShowLineNumbers = false;
+                editor.WordWrap = true;
+                editor.SyntaxHighlighting = null; // Explicitly remove highlighting
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ApplyEditorMode: Text mode applied - ShowLineNumbers={editor.ShowLineNumbers}, WordWrap={editor.WordWrap}, SyntaxHighlighting=NULL");
+            }
+            else
+            {
+                // Code mode: line numbers ON, highlighting ON, word wrap OFF
+                editor.ShowLineNumbers = true;
+                editor.WordWrap = false;
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ApplyEditorMode: Code mode applied - ShowLineNumbers={editor.ShowLineNumbers}, WordWrap={editor.WordWrap}, SyntaxHighlighting={editor.SyntaxHighlighting?.Name ?? "NULL"}");
+            }
+
+            // Force refresh the editor
+            try
+            {
+                editor.InvalidateVisual();
+                editor.UpdateLayout(); // Additional refresh
+                System.Diagnostics.Debug.WriteLine("[DEBUG] ApplyEditorMode: InvalidateVisual() and UpdateLayout() called successfully");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERROR] ApplyEditorMode: Refresh failed: {ex.Message}");
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] ApplyEditorMode COMPLETED: mode={mode}, final ShowLineNumbers={editor.ShowLineNumbers}, final SyntaxHighlighting={editor.SyntaxHighlighting?.Name ?? "NULL"}");
+        }
+
+        private void PracticeAnswerEditor_Loaded(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[DEBUG] ===== PracticeAnswerEditor_Loaded CALLED =====");
+            
+            if (sender is ICSharpCode.AvalonEdit.TextEditor editor)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Tag={editor.Tag}, Text='{editor.Text}'");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Window instance = {this.GetHashCode()}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: ViewModel instance = {ViewModel?.GetHashCode() ?? 0}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: AllPracticeQuestions count = {ViewModel?.AllPracticeQuestions?.Count ?? 0}");
+                
+                // Debug current syntax highlighting capability
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Current SyntaxHighlighting = {editor.SyntaxHighlighting?.Name ?? "NULL"}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: ShowLineNumbers = {editor.ShowLineNumbers}");
+                
+                if (editor.Tag is int questionId)
                 {
-                    var editor = FindVisualChild<ICSharpCode.AvalonEdit.TextEditor>(parentBorder);
-                    if (editor != null)
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Looking for questionId = {questionId}");
+                    
+                    if (ViewModel?.AllPracticeQuestions != null)
                     {
-                        // Đặt syntax highlighting tương ứng
-                        var highlighting = mode switch
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Available question IDs:");
+                        foreach (var q in ViewModel.AllPracticeQuestions)
                         {
-                            "CSharp" => HighlightingManager.Instance.GetDefinition("C#"),
-                            "Python" => HighlightingManager.Instance.GetDefinition("Python"),
-                            "Java" => HighlightingManager.Instance.GetDefinition("Java"),
-                            "HTML" => HighlightingManager.Instance.GetDefinition("HTML"),
-                            "CSS" => HighlightingManager.Instance.GetDefinition("CSS"),
-                            "JavaScript" => HighlightingManager.Instance.GetDefinition("JavaScript"),
-                            "SQL" => HighlightingManager.Instance.GetDefinition("SQL"),
-                            _ => HighlightingManager.Instance.GetDefinition("Text")
-                        };
-
-                        editor.SyntaxHighlighting = highlighting;
-
-                        // Tùy chỉnh options theo ngôn ngữ
-                        if (mode == "Text")
+                            System.Diagnostics.Debug.WriteLine($"  - QuestionId = {q.PracticeQuestionId}, Answer = '{q.Answer}', IsCurrent = {q.IsCurrent}");
+                        }
+                        
+                        var question = ViewModel.AllPracticeQuestions.FirstOrDefault(q => q.PracticeQuestionId == questionId);
+                        if (question != null)
                         {
-                            editor.ShowLineNumbers = false;
-                            editor.WordWrap = true;
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Found question, setting text = '{question.Answer ?? string.Empty}'");
+                            editor.Text = question.Answer ?? string.Empty;
                         }
                         else
                         {
-                            editor.ShowLineNumbers = true;
-                            editor.WordWrap = false;
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Question with ID {questionId} NOT FOUND!");
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: ViewModel or AllPracticeQuestions is NULL!");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Tag is not int! Tag type = {editor.Tag?.GetType()}, Value = {editor.Tag}");
+                }
+                
+                // Tìm ComboBox mode trong cùng Border/StackPanel cha - search in multiple levels
+                System.Diagnostics.Debug.WriteLine("[DEBUG] Editor Loaded: Searching for ComboBox...");
+                
+                // Try to find the Grid parent first
+                var gridParent = FindVisualParent<Grid>(editor);
+                if (gridParent != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Found Grid parent {gridParent.GetHashCode()}");
+                    
+                    var comboBox = FindVisualChild<ComboBox>(gridParent);
+                    if (comboBox != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Found ComboBox {comboBox.GetHashCode()} in Grid");
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: ComboBox.SelectedIndex = {comboBox.SelectedIndex}");
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: ComboBox.SelectedItem = {comboBox.SelectedItem}");
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: ComboBox.Tag = {comboBox.Tag}");
+                        
+                        // Apply mode based on ComboBox selection
+                        string mode = "Text";
+                        if (comboBox.SelectedItem is ComboBoxItem selectedItem)
+                        {
+                            mode = selectedItem.Tag?.ToString() ?? "Text";
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Mode from ComboBox = '{mode}'");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: ComboBox SelectedItem is not ComboBoxItem, using default Text mode");
+                        }
+                        
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Loaded: Applying mode '{mode}' from ComboBox selection");
+                        ApplyEditorMode(editor, mode);
+                        
+                        return; // Found ComboBox, apply mode and exit
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("[DEBUG] Editor Loaded: ComboBox not found in Grid parent");
+                        
+                        // Debug: List all children in Grid
+                        System.Diagnostics.Debug.WriteLine("[DEBUG] Children in Grid parent:");
+                        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(gridParent); i++)
+                        {
+                            var child = VisualTreeHelper.GetChild(gridParent, i);
+                            System.Diagnostics.Debug.WriteLine($"  Child[{i}]: {child.GetType().Name}");
+                            
+                            // If it's a Border, check its children too
+                            if (child is Border border)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"    Border children:");
+                                for (int j = 0; j < VisualTreeHelper.GetChildrenCount(border); j++)
+                                {
+                                    var borderChild = VisualTreeHelper.GetChild(border, j);
+                                    System.Diagnostics.Debug.WriteLine($"      BorderChild[{j}]: {borderChild.GetType().Name}");
+                                }
+                            }
                         }
                     }
                 }
+                
+                // Apply default Test mode with debug
+                System.Diagnostics.Debug.WriteLine("[DEBUG] Editor Loaded: Applying default Text mode");
+                ApplyEditorMode(editor, "Text");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("[ERROR] Editor Loaded: Sender is not TextEditor!");
+            }
+            
+            System.Diagnostics.Debug.WriteLine("[DEBUG] ===== PracticeAnswerEditor_Loaded COMPLETED =====");
+        }
+
+        private void AnswerModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[DEBUG] AnswerModeComboBox_SelectionChanged TRIGGERED");
+            
+            if (sender is ComboBox comboBox)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ComboBox found: {comboBox.GetHashCode()}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ComboBox.Tag: {comboBox.Tag}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ComboBox.SelectedIndex: {comboBox.SelectedIndex}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ComboBox.SelectedItem: {comboBox.SelectedItem}");
+                
+                if (comboBox.SelectedItem is ComboBoxItem selectedItem)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] SelectedItem found: Content='{selectedItem.Content}', Tag='{selectedItem.Tag}'");
+                    
+                    if (comboBox.Tag is int questionId)
+                    {
+                        string mode = selectedItem.Tag?.ToString() ?? "Text";
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Mode to apply: '{mode}' for questionId={questionId}");
+                        
+                        // FIX: Tìm Grid parent thay vì Border (vì ComboBox và Editor ở 2 Border khác nhau)
+                        var parentGrid = FindVisualParent<Grid>(comboBox);
+                        if (parentGrid != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Parent Grid found: {parentGrid.GetHashCode()}");
+                            
+                            // Tìm editor có cùng Tag (questionId)
+                            var editor = FindVisualChildren<ICSharpCode.AvalonEdit.TextEditor>(parentGrid)
+                                         .FirstOrDefault(e => e.Tag?.ToString() == questionId.ToString());
+                            
+                            if (editor != null)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor found: {editor.GetHashCode()}, current SyntaxHighlighting: {editor.SyntaxHighlighting?.Name ?? "NULL"}");
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor current ShowLineNumbers: {editor.ShowLineNumbers}");
+                                
+                                ApplyEditorMode(editor, mode);
+                                
+                                // Verify changes after applying
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG] After ApplyEditorMode - SyntaxHighlighting: {editor.SyntaxHighlighting?.Name ?? "NULL"}");
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG] After ApplyEditorMode - ShowLineNumbers: {editor.ShowLineNumbers}");
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[ERROR] Không tìm thấy editor với questionId={questionId}");
+                                
+                                // Debug: List all editors found
+                                var allEditors = FindVisualChildren<ICSharpCode.AvalonEdit.TextEditor>(parentGrid).ToList();
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG] Found {allEditors.Count} editors in Grid:");
+                                foreach (var ed in allEditors)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"  Editor: {ed.GetHashCode()}, Tag: {ed.Tag}");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("[ERROR] Không tìm thấy parent Grid cho ComboBox");
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[ERROR] ComboBox.Tag is not int! Type: {comboBox.Tag?.GetType()}, Value: {comboBox.Tag}");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[ERROR] SelectedItem is not ComboBoxItem!");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] SelectedItem type: {comboBox.SelectedItem?.GetType()}");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("[ERROR] Sender is not ComboBox!");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Sender type: {sender?.GetType()}");
             }
         }
+
         private T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
         {
             DependencyObject parentObject = VisualTreeHelper.GetParent(child);
@@ -293,8 +578,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             if (sender is RadioButton radioButton && radioButton.DataContext is AnswerViewModel answer)
             {
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] RadioButton_Checked: Answer {answer.AnswerId}");
-                System.Diagnostics.Debug.WriteLine($"  - CurrentQuestion: {_viewModel.CurrentQuestion?.QuestionId}");
-                System.Diagnostics.Debug.WriteLine($"  - IsMultipleChoice: {_viewModel.CurrentQuestion?.IsMultipleChoice}");
+                System.Diagnostics.Debug.WriteLine($"  - CurrentQuestion: {ViewModel.CurrentQuestion?.QuestionId}");
+                System.Diagnostics.Debug.WriteLine($"  - IsMultipleChoice: {ViewModel.CurrentQuestion?.IsMultipleChoice}");
                 System.Diagnostics.Debug.WriteLine($"  - ⚠️ SHOULD NOT FIRE for Multiple Choice questions!");
             }
         }
@@ -304,8 +589,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             if (sender is CheckBox checkBox && checkBox.DataContext is AnswerViewModel answer)
             {
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] CheckBox_Checked: Answer {answer.AnswerId}");
-                System.Diagnostics.Debug.WriteLine($"  - CurrentQuestion: {_viewModel.CurrentQuestion?.QuestionId}");
-                System.Diagnostics.Debug.WriteLine($"  - IsMultipleChoice: {_viewModel.CurrentQuestion?.IsMultipleChoice}");
+                System.Diagnostics.Debug.WriteLine($"  - CurrentQuestion: {ViewModel.CurrentQuestion?.QuestionId}");
+                System.Diagnostics.Debug.WriteLine($"  - IsMultipleChoice: {ViewModel.CurrentQuestion?.IsMultipleChoice}");
                 System.Diagnostics.Debug.WriteLine($"  - ✅ Expected for Multiple Choice questions");
             }
         }
@@ -315,9 +600,207 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             if (sender is CheckBox checkBox && checkBox.DataContext is AnswerViewModel answer)
             {
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] CheckBox_Unchecked: Answer {answer.AnswerId}");
-                System.Diagnostics.Debug.WriteLine($"  - CurrentQuestion: {_viewModel.CurrentQuestion?.QuestionId}");
-                System.Diagnostics.Debug.WriteLine($"  - IsMultipleChoice: {_viewModel.CurrentQuestion?.IsMultipleChoice}");
+                System.Diagnostics.Debug.WriteLine($"  - CurrentQuestion: {ViewModel.CurrentQuestion?.QuestionId}");
+                System.Diagnostics.Debug.WriteLine($"  - IsMultipleChoice: {ViewModel.CurrentQuestion?.IsMultipleChoice}");
             }
+        }
+
+        // Sự kiện Loaded cho AvalonEdit - đồng bộ dữ liệu từ ViewModel vào Editor
+        private void PracticeAnswerEditor_TextChanged(object sender, EventArgs e)
+        {
+            if (sender is ICSharpCode.AvalonEdit.TextEditor editor)
+            {
+                // IMPORTANT: Debug line breaks preservation with character analysis
+                var text = editor.Text ?? "";
+                var textLength = text.Length;
+                var lineCount = text.Split('\n').Length;
+                var hasLineBreaks = text.Contains('\n') || text.Contains('\r');
+                
+                // Show each character to debug line endings
+                var charAnalysis = "";
+                for (int i = 0; i < Math.Min(text.Length, 200); i++)
+                {
+                    var c = text[i];
+                    if (c == '\r') charAnalysis += "\\r";
+                    else if (c == '\n') charAnalysis += "\\n";
+                    else if (c == '\t') charAnalysis += "\\t";
+                    else if (char.IsControl(c)) charAnalysis += $"\\x{(int)c:X2}";
+                    else charAnalysis += c;
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ===== TextChanged Analysis =====");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor Tag: {editor.Tag}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Text Length: {textLength}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Line Count: {lineCount}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Has Line Breaks: {hasLineBreaks}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Character Analysis (first 200): '{charAnalysis}'");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Raw bytes: {string.Join(" ", System.Text.Encoding.UTF8.GetBytes(text.Substring(0, Math.Min(50, text.Length))).Select(b => b.ToString("X2")))}");
+                
+                if (editor.Tag is int questionId)
+                {
+                    if (ViewModel?.AllPracticeQuestions != null)
+                    {
+                        var question = ViewModel.AllPracticeQuestions.FirstOrDefault(q => q.PracticeQuestionId == questionId);
+                        if (question != null)
+                        {
+                            if (text != question.Answer)
+                            {
+                                var oldLines = question.Answer?.Split('\n')?.Length ?? 0;
+                                
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG] Updating Answer for QuestionId={questionId}");
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG] Old answer lines: {oldLines}");
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG] New answer lines: {lineCount}");
+                                
+                                question.Answer = text; // Store exactly what editor has
+                                
+                                // Test GetAnswer() method to see what gets processed
+                                var processedAnswer = question.GetAnswer();
+                                var processedLines = processedAnswer?.Split('\n')?.Length ?? 0;
+                                var processedHasLineBreaks = processedAnswer?.Contains('\n') == true || processedAnswer?.Contains('\r') == true;
+                                
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG] GetAnswer() result:");
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG]   Processed Length: {processedAnswer?.Length ?? 0}");
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG]   Processed Lines: {processedLines}");
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG]   Processed Has Line Breaks: {processedHasLineBreaks}");
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG]   First 100 chars: '{processedAnswer?.Substring(0, Math.Min(100, processedAnswer?.Length ?? 0))}'");
+
+                                // Update current question tracking
+                                foreach (var q in ViewModel.AllPracticeQuestions)
+                                    q.IsCurrent = (q.PracticeQuestionId == questionId);
+                                    
+                                var idx = ViewModel.AllPracticeQuestions.FindIndex(q => q.PracticeQuestionId == questionId);
+                                if (idx >= 0)
+                                {
+                                    ViewModel.CurrentQuestionIndex = idx;
+                                }
+                                
+                                System.Diagnostics.Debug.WriteLine($"[DEBUG] Answer update completed successfully");
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Question with ID {questionId} NOT FOUND!");
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] ViewModel or AllPracticeQuestions is NULL!");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Tag is not int! Tag type = {editor.Tag?.GetType()}, Value = {editor.Tag}");
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ================================");
+            }
+        }
+
+        // Thêm debug khi submit bài tự luận
+        public void DebugLogPracticeAnswersBeforeSubmit()
+        {
+            System.Diagnostics.Debug.WriteLine("[DEBUG] ====== SUBMIT DEBUG INFO ======");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Window instance = {this.GetHashCode()}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] ViewModel instance = {ViewModel?.GetHashCode() ?? 0}");
+            
+            if (ViewModel?.AllPracticeQuestions != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] AllPracticeQuestions count = {ViewModel.AllPracticeQuestions.Count}");
+                System.Diagnostics.Debug.WriteLine("[DEBUG] ====== Dữ liệu sẽ gửi lên API khi submit ======");
+                
+                for (int i = 0; i < ViewModel.AllPracticeQuestions.Count; i++)
+                {
+                    var q = ViewModel.AllPracticeQuestions[i];
+                    var answer = q.GetAnswer(); // Get the processed answer that will be sent to API
+                    var lineCount = answer?.Split('\n')?.Length ?? 0;
+                    var hasLineBreaks = answer?.Contains('\n') == true || answer?.Contains('\r') == true;
+                    
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Question[{i}]: PracticeQuestionId={q.PracticeQuestionId}");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG]   Raw Answer: '{q.Answer}'");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG]   Processed Answer: '{answer}'");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG]   Length: {answer?.Length ?? 0}, Lines: {lineCount}, HasLineBreaks: {hasLineBreaks}");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG]   IsCurrent: {q.IsCurrent}");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG]   ---");
+                }
+                System.Diagnostics.Debug.WriteLine("[DEBUG] =============================================");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] ViewModel or AllPracticeQuestions is NULL when trying to submit!");
+            }
+        }
+
+        // Thêm method để debug ViewModel instance từ bên ngoài
+        public void DebugViewModelInstance()
+        {
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] DebugViewModelInstance called on Window {this.GetHashCode()}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] DataContext type = {this.DataContext?.GetType().Name}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] DataContext instance = {this.DataContext?.GetHashCode() ?? 0}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] ViewModel property instance = {ViewModel?.GetHashCode() ?? 0}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Are they the same? = {this.DataContext == ViewModel}");
+            
+            if (ViewModel != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] AllPracticeQuestions count = {ViewModel.AllPracticeQuestions?.Count ?? 0}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ExamType = {ViewModel.ExamType}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] CurrentQuestionIndex = {ViewModel.CurrentQuestionIndex}");
+            }
+        }
+
+        // Method để test highlighting trực tiếp lên editor hiện tại
+        public void TestHighlightingModes()
+        {
+            System.Diagnostics.Debug.WriteLine("[DEBUG] ===== TestHighlightingModes =====");
+            
+            // Tìm tất cả editors hiện tại
+            var editors = FindVisualChildren<ICSharpCode.AvalonEdit.TextEditor>(this).ToList();
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Found {editors.Count} TextEditors in window");
+            
+            foreach (var editor in editors)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Testing editor {editor.GetHashCode()}, Tag={editor.Tag}");
+                
+                // Test different highlighting modes
+                var modes = new[] { "Text", "CSharp", "Python", "Java", "SQL" };
+                foreach (var mode in modes)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Testing mode: {mode}");
+                    ApplyEditorMode(editor, mode);
+                    
+                    // Verify after applying
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] After applying {mode}: SyntaxHighlighting={editor.SyntaxHighlighting?.Name ?? "NULL"}, ShowLineNumbers={editor.ShowLineNumbers}");
+                }
+                
+                // Reset to Text mode
+                ApplyEditorMode(editor, "Text");
+                break; // Only test first editor
+            }
+            
+            System.Diagnostics.Debug.WriteLine("[DEBUG] ===== TestHighlightingModes COMPLETED =====");
+        }
+
+        // Helper method to find all children of specific type
+        private IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent != null)
+            {
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                    if (child != null && child is T)
+                        yield return (T)child;
+
+                    foreach (T childOfChild in FindVisualChildren<T>(child))
+                        yield return childOfChild;
+                }
+            }
+        }
+
+        // Event handler cho test button
+        private void TestHighlightingButton_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[DEBUG] Test Highlighting Button Clicked!");
+            TestHighlightingModes();
         }
     }
 

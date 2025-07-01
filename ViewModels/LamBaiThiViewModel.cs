@@ -196,6 +196,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         // All Questions
         private List<QuestionViewModel> _allQuestions;
         private List<PracticeQuestionViewModel> _allPracticeQuestions;
+        public List<PracticeQuestionViewModel> AllPracticeQuestions => _allPracticeQuestions;
 
         // Loading state
         private bool _isLoading;
@@ -227,6 +228,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
         public LamBaiThiViewModel(ILamBaiThiService lamBaiThiService, INavigationService navigationService)
         {
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] LamBaiThiViewModel Constructor: Creating new instance {this.GetHashCode()}");
+            
             _lamBaiThiService = lamBaiThiService;
             _navigationService = navigationService;
 
@@ -242,6 +245,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             SubmitExamCommand = new RelayCommand(async () => await SubmitExamAsync());
             SelectAnswerCommand = new RelayCommand<string>(SelectAnswer);
             ToggleAnswerCommand = new RelayCommand<string>(ToggleAnswer);
+            
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] LamBaiThiViewModel Constructor: Completed for instance {this.GetHashCode()}");
         }
 
         #region Initialize Methods
@@ -499,6 +504,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                         QuestionOrder = questionOrder.QuestionOrder,
                         Content = questionDetail.Content,
                         Score = questionDetail.Score,
+                        TotalQuestions = TotalQuestions
                     };
 
                     // QUAN TRỌNG: Set answer và setup binding
@@ -615,6 +621,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     Content = questionDetail.Content,
                     Score = questionDetail.Score,
                     Answer = questionDetail.AnswerContent ?? "",
+                    TotalQuestions = TotalQuestions
                 };
 
                 // Setup binding cho từng question
@@ -692,6 +699,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     // CRITICAL: Always use direct reference for practice questions
                     var practiceReference = _allPracticeQuestions[CurrentQuestionIndex];
                     CurrentPracticeQuestion = practiceReference;
+
+                    // Cập nhật IsCurrent cho từng câu hỏi
+                    for (int i = 0; i < _allPracticeQuestions.Count; i++)
+                        _allPracticeQuestions[i].IsCurrent = (i == CurrentQuestionIndex);
 
                     System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdateCurrentPracticeQuestion:");
                     System.Diagnostics.Debug.WriteLine($"  - Index: {CurrentQuestionIndex}");
@@ -1177,6 +1188,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         {
             SaveCurrentQuestionState();
 
+            // Gọi debug log trước khi submit
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var lamBaiThiView = Application.Current.Windows.OfType<SEP490_G18_GESS_DESKTOPAPP.Views.LamBaiThiView>().FirstOrDefault();
+                lamBaiThiView?.DebugLogPracticeAnswersBeforeSubmit();
+            });
+
             var submitDto = new SubmitPracticeExamRequest
             {
                 PracExamHistoryId = _pracExamHistoryId,
@@ -1351,7 +1369,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         public string Content { get; set; }
         public double Score { get; set; }
 
-        // CHỈ CÓ 1 TRƯỜNG ANSWER DUY NHẤT với PropertyChanged
+        private bool _isCurrent;
+        public bool IsCurrent
+        {
+            get => _isCurrent;
+            set => SetProperty(ref _isCurrent, value);
+        }
+
         private string _answer;
         public string Answer
         {
@@ -1360,34 +1384,64 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 if (SetProperty(ref _answer, value))
                 {
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] PracticeQuestion {PracticeQuestionId} Answer changed: '{value}'");
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] HasAnswer: {HasAnswer}");
-
-                    // Notify HasAnswer changed
                     OnPropertyChanged(nameof(HasAnswer));
+                    UpdateProgressValue();
                 }
             }
         }
 
-        // Property để kiểm tra câu hỏi đã được trả lời chưa - QUAN TRỌNG: Kiểm tra chặt chẽ hơn
-        public bool HasAnswer => !string.IsNullOrWhiteSpace(Answer?.Trim());
+        public bool HasAnswer => !string.IsNullOrWhiteSpace(Answer);
 
-        // Method để lấy answer cho API
-        public string GetAnswer()
+        private double _progressValue;
+        public double ProgressValue
         {
-            return Answer?.Trim() ?? "";
+            get => _progressValue;
+            set => SetProperty(ref _progressValue, value);
         }
 
-        // Method để set answer từ bên ngoài (từ API hoặc saved data)
+        // Cần truyền tổng số câu vào để tính
+        public int TotalQuestions { get; set; }
+
+        public void UpdateProgressValue()
+        {
+            if (TotalQuestions > 0)
+                ProgressValue = HasAnswer ? 100.0 / TotalQuestions : 0;
+            else
+                ProgressValue = 0;
+        }
+
+        public string GetAnswer()
+        {
+            // IMPORTANT: Preserve line breaks for code formatting
+            // Use simple encoding to preserve line breaks in database
+            var answer = Answer ?? "";
+            
+            if (string.IsNullOrEmpty(answer))
+                return answer;
+            
+            // Method 1: Replace line breaks with unique markers
+            // Use markers that are unlikely to be typed by users in code
+            answer = answer.Replace("\r\n", "___NEWLINE___")   // Windows line ending
+                          .Replace("\r", "___NEWLINE___")      // Mac line ending  
+                          .Replace("\n", "___NEWLINE___");     // Unix line ending
+            
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] GetAnswer: Question {PracticeQuestionId}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] GetAnswer: Original='{Answer}'");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] GetAnswer: Encoded='{answer}'");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] GetAnswer: Contains markers={answer.Contains("___NEWLINE___")}");
+            
+            return answer;
+        }
+
         public void SetAnswerSilently(string answer)
         {
             _answer = answer ?? "";
             OnPropertyChanged(nameof(Answer));
             OnPropertyChanged(nameof(HasAnswer));
+            UpdateProgressValue();
             System.Diagnostics.Debug.WriteLine($"[DEBUG] SetAnswerSilently: Question {PracticeQuestionId}, Answer='{_answer}', HasAnswer={HasAnswer}");
         }
 
-        // Method để clear answer
         public void ClearAnswer()
         {
             SetAnswerSilently("");
