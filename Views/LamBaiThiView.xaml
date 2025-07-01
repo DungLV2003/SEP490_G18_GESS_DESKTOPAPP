@@ -651,8 +651,8 @@
 
                 <!-- Practice Exam Content -->
                 <Border Grid.Row="0" Background="White" Margin="24,24,24,0" CornerRadius="12" 
-                        BorderBrush="{StaticResource BorderGray}" BorderThickness="1"
-                        Visibility="{Binding ExamType, Converter={StaticResource ExamTypeToVisibilityConverter}, ConverterParameter=Practice}">
+        BorderBrush="{StaticResource BorderGray}" BorderThickness="1"
+        Visibility="{Binding ExamType, Converter={StaticResource ExamTypeToVisibilityConverter}, ConverterParameter=Practice}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -669,7 +669,7 @@
 
                                 <StackPanel Grid.Column="0">
                                     <TextBlock FontSize="22" FontWeight="Bold" 
-                                            Foreground="#1F2937" Margin="0,0,0,8">
+                            Foreground="#1F2937" Margin="0,0,0,8">
                                         <TextBlock.Text>
                                             <MultiBinding StringFormat="Câu hỏi {0}/{1}">
                                                 <Binding Path="CurrentQuestionIndex" Converter="{StaticResource AddOneConverter}"/>
@@ -679,9 +679,9 @@
                                     </TextBlock>
 
                                     <TextBlock FontSize="18" Foreground="#374151" 
-                                            TextWrapping="Wrap" 
-                                            LineHeight="28"
-                                            Margin="0,0,0,16">
+                            TextWrapping="Wrap" 
+                            LineHeight="28"
+                            Margin="0,0,0,16">
                                         <TextBlock.Text>
                                             <Binding Path="CurrentPracticeQuestion.Content" FallbackValue="[DEBUG] No Content Bound" TargetNullValue="[DEBUG] Content is NULL"/>
                                         </TextBlock.Text>
@@ -690,11 +690,11 @@
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                                     <Border Background="#F3F4F6" 
-                                            BorderBrush="#D1D5DB" 
-                                            BorderThickness="1"
-                                            CornerRadius="6" 
-                                            Padding="8,4" 
-                                            Margin="0,0,12,0">
+                            BorderBrush="#D1D5DB" 
+                            BorderThickness="1"
+                            CornerRadius="6" 
+                            Padding="8,4" 
+                            Margin="0,0,12,0">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="🏆" FontSize="12" Margin="0,0,4,0" VerticalAlignment="Center"/>
                                             <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#6B7280" VerticalAlignment="Center">
@@ -708,118 +708,116 @@
                                     </Border>
 
                                     <Button Style="{StaticResource MarkButtonStyle}" 
-                                            Command="{Binding MarkQuestionCommand}">
+                            Command="{Binding MarkQuestionCommand}">
                                         <Button.Content>
                                             <Binding Path="CurrentQuestionNumberItem.IsMarked" 
-                                                     Converter="{StaticResource IsMarkedToTextConverter}"/>
+                                     Converter="{StaticResource IsMarkedToTextConverter}"/>
                                         </Button.Content>
                                     </Button>
                                 </StackPanel>
                             </Grid>
                         </Border>
 
-                        <!-- Answer Tabs -->
-                        <TabControl Grid.Row="1" 
-                                    SelectedIndex="{Binding CurrentPracticeQuestion.SelectedTabIndex}"
-                                    Margin="32,0,32,32">
-                            <TabControl.Template>
-                                <ControlTemplate TargetType="TabControl">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <TabPanel Grid.Row="0" 
-                                                IsItemsHost="True" 
-                                                Background="Transparent"
-                                                Margin="0,0,0,16"/>
-                                        <Border Grid.Row="1" 
-                                                Background="{StaticResource LightGray}"
-                                                BorderBrush="{StaticResource BorderGray}"
-                                                BorderThickness="1"
-                                                CornerRadius="8">
-                                            <ContentPresenter ContentSource="SelectedContent"/>
-                                        </Border>
-                                    </Grid>
-                                </ControlTemplate>
-                            </TabControl.Template>
+                        <!-- Answer Section - CHỈ MỘT VÙNG NHẬP LIỆU -->
+                        <Grid Grid.Row="1" Margin="32,0,32,32">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
-                            <!-- Rich Text Tab -->
-                            <TabItem Header="📝 Văn bản" Style="{StaticResource ModernTabStyle}">
-                                <RichTextBox x:Name="RichTextAnswer" 
-                                           VerticalScrollBarVisibility="Auto"
-                                           FontSize="16"
-                                           Padding="16"
-                                           BorderThickness="0"
-                                           Background="Transparent">
-                                    <RichTextBox.Resources>
-                                        <Style TargetType="{x:Type Paragraph}">
-                                            <Setter Property="Margin" Value="0,0,0,10"/>
-                                        </Style>
-                                    </RichTextBox.Resources>
-                                    <FlowDocument>
-                                        <Paragraph>
-                                            <Run/>
-                                        </Paragraph>
-                                    </FlowDocument>
-                                </RichTextBox>
-                            </TabItem>
+                            <!-- Header của vùng trả lời -->
+                            <TextBlock Grid.Row="0" 
+                       Text="📝 Phần trả lời"
+                       FontSize="16" 
+                       FontWeight="SemiBold"
+                       Foreground="#374151"
+                       Margin="0,0,0,12"/>
 
-                            <!-- Math Tab -->
-                            <TabItem Header="🔢 Toán học" Style="{StaticResource ModernTabStyle}">
+                            <!-- Vùng nhập câu trả lời với AvalonEdit -->
+                            <Border Grid.Row="1" 
+                    Background="#F8F9FA"
+                    BorderBrush="{StaticResource BorderGray}"
+                    BorderThickness="1"
+                    CornerRadius="8">
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="*"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
-                                    <TextBox Grid.Row="0" 
-                                           Text="{Binding CurrentPracticeQuestion.MathAnswer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                           AcceptsReturn="True"
-                                           TextWrapping="Wrap"
-                                           VerticalScrollBarVisibility="Auto"
-                                           FontSize="16"
-                                           FontFamily="Consolas"
-                                           Padding="16"
-                                           BorderThickness="0"
-                                           Background="Transparent"/>
-
-                                    <Border Grid.Row="1" 
-                                            Background="White" 
-                                            BorderBrush="{StaticResource BorderGray}"
-                                            BorderThickness="0,1,0,0"
-                                            Padding="16">
-                                        <StackPanel>
-                                            <TextBlock Text="Xem trước:" 
-                                                     FontWeight="Bold" 
-                                                     Margin="0,0,0,8"
-                                                     Foreground="#6B7280"/>
-                                            <controls:FormulaControl Formula="{Binding CurrentPracticeQuestion.MathAnswer}" />
+                                    <!-- Toolbar để chọn mode -->
+                                    <Border Grid.Row="0" 
+                            Background="#E9ECEF" 
+                            CornerRadius="8,8,0,0"
+                            Padding="12,8">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Chế độ: " 
+                                       FontSize="12" 
+                                       VerticalAlignment="Center"
+                                       Foreground="#6B7280"/>
+                                            <ComboBox x:Name="AnswerModeComboBox"
+                                      SelectedIndex="0"
+                                      FontSize="12"
+                                      MinWidth="120"
+                                      SelectionChanged="AnswerModeComboBox_SelectionChanged">
+                                                <ComboBoxItem Content="📝 Văn bản" Tag="Text"/>
+                                                <ComboBoxItem Content="💻 C# Code" Tag="CSharp"/>
+                                                <ComboBoxItem Content="🐍 Python" Tag="Python"/>
+                                                <ComboBoxItem Content="☕ Java" Tag="Java"/>
+                                                <ComboBoxItem Content="🌐 HTML" Tag="HTML"/>
+                                                <ComboBoxItem Content="🎨 CSS" Tag="CSS"/>
+                                                <ComboBoxItem Content="⚡ JavaScript" Tag="JavaScript"/>
+                                                <ComboBoxItem Content="📊 SQL" Tag="SQL"/>
+                                            </ComboBox>
                                         </StackPanel>
                                     </Border>
-                                </Grid>
-                            </TabItem>
 
-                            <!-- Code Tab -->
-                            <TabItem Header="💻 Code" Style="{StaticResource ModernTabStyle}">
-                                <avalonedit:TextEditor x:Name="CodeEditor"
-                                                     FontFamily="Consolas"
-                                                     FontSize="14"
-                                                     ShowLineNumbers="True"
-                                                     SyntaxHighlighting="C#"
-                                                     Padding="8"
-                                                     BorderThickness="0"
-                                                     Background="Transparent">
-                                    <avalonedit:TextEditor.Options>
-                                        <avalonedit:TextEditorOptions 
-                                            EnableHyperlinks="False"
-                                            EnableEmailHyperlinks="False"
-                                            ShowSpaces="False"
-                                            ShowTabs="False"/>
-                                    </avalonedit:TextEditor.Options>
-                                </avalonedit:TextEditor>
-                            </TabItem>
-                        </TabControl>
+                                    <!-- AvalonEdit Editor -->
+                                    <avalonedit:TextEditor x:Name="PracticeAnswerEditor"
+                                           Grid.Row="1"
+                                           FontFamily="Consolas"
+                                           FontSize="14"
+                                           ShowLineNumbers="True"
+                                           SyntaxHighlighting="Text"
+                                           Padding="16"
+                                           BorderThickness="0"
+                                           Background="White"
+                                           WordWrap="True">
+                                        <avalonedit:TextEditor.Options>
+                                            <avalonedit:TextEditorOptions 
+                                EnableHyperlinks="False"
+                                EnableEmailHyperlinks="False"
+                                ShowSpaces="False"
+                                ShowTabs="True"
+                                IndentationSize="4"
+                                ConvertTabsToSpaces="True"/>
+                                        </avalonedit:TextEditor.Options>
+                                    </avalonedit:TextEditor>
+
+                                    <!-- Placeholder overlay khi trống -->
+                                    <TextBlock Grid.Row="1"
+                               FontSize="14"
+                               Foreground="#9CA3AF"
+                               Margin="20,20,16,16"
+                               IsHitTestVisible="False"
+                               VerticalAlignment="Top">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=PracticeAnswerEditor}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=PracticeAnswerEditor}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </Grid>
                     </Grid>
                 </Border>
 
