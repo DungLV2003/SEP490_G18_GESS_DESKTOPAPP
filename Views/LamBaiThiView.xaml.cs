@@ -63,11 +63,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
 
             AnimationHelper.ApplyFadeIn(this);
 
-            // Setup code editor
-            SetupCodeEditor();
+          
 
             // Bind RichTextBox for practice exam
-            SetupRichTextBinding();
+  
         }
 
         private void SetupExamMode()
@@ -81,20 +80,20 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             // Ẩn taskbar
             //this.ShowInTaskbar = false;
         }
-
-        private void SetupCodeEditor()
+        // Thêm method mới để setup practice answer với AvalonEdit
+        private void SetupPracticeAnswerEditor()
         {
-            if (CodeEditor != null)
+            if (PracticeAnswerEditor != null && _viewModel != null)
             {
-                // Set default syntax highlighting
-                CodeEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
+                // Set default syntax highlighting to Text
+                PracticeAnswerEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("Text");
 
                 // Bind text to ViewModel
-                CodeEditor.TextChanged += (s, e) =>
+                PracticeAnswerEditor.TextChanged += (s, e) =>
                 {
                     if (_viewModel.CurrentPracticeQuestion != null)
                     {
-                        _viewModel.CurrentPracticeQuestion.CodeAnswer = CodeEditor.Text;
+                        _viewModel.CurrentPracticeQuestion.Answer = PracticeAnswerEditor.Text;
                     }
                 };
 
@@ -104,46 +103,49 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                     if (e.PropertyName == nameof(_viewModel.CurrentPracticeQuestion) &&
                         _viewModel.CurrentPracticeQuestion != null)
                     {
-                        CodeEditor.Text = _viewModel.CurrentPracticeQuestion.CodeAnswer ?? "";
+                        PracticeAnswerEditor.Text = _viewModel.CurrentPracticeQuestion.Answer ?? "";
                     }
                 };
             }
         }
 
-        private void SetupRichTextBinding()
+        // Method để xử lý thay đổi syntax highlighting
+        private void AnswerModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (RichTextAnswer != null && _viewModel != null)
+            if (PracticeAnswerEditor != null && AnswerModeComboBox.SelectedItem is ComboBoxItem selectedItem)
             {
-                // Bind RichTextBox content to ViewModel
-                RichTextAnswer.TextChanged += (s, e) =>
+                string mode = selectedItem.Tag?.ToString() ?? "Text";
+
+                // Đặt syntax highlighting tương ứng
+                var highlighting = mode switch
                 {
-                    if (_viewModel.CurrentPracticeQuestion != null)
-                    {
-                        var textRange = new TextRange(
-                            RichTextAnswer.Document.ContentStart,
-                            RichTextAnswer.Document.ContentEnd
-                        );
-                        _viewModel.CurrentPracticeQuestion.RichTextAnswer = textRange.Text;
-                    }
+                    "CSharp" => HighlightingManager.Instance.GetDefinition("C#"),
+                    "Python" => HighlightingManager.Instance.GetDefinition("Python"),
+                    "Java" => HighlightingManager.Instance.GetDefinition("Java"),
+                    "HTML" => HighlightingManager.Instance.GetDefinition("HTML"),
+                    "CSS" => HighlightingManager.Instance.GetDefinition("CSS"),
+                    "JavaScript" => HighlightingManager.Instance.GetDefinition("JavaScript"),
+                    "SQL" => HighlightingManager.Instance.GetDefinition("SQL"),
+                    _ => HighlightingManager.Instance.GetDefinition("Text")
                 };
 
-                // Update RichTextBox when question changes
-                _viewModel.PropertyChanged += (s, e) =>
+                PracticeAnswerEditor.SyntaxHighlighting = highlighting;
+
+                // Tùy chỉnh options theo ngôn ngữ
+                if (mode == "Text")
                 {
-                    if (e.PropertyName == nameof(_viewModel.CurrentPracticeQuestion) &&
-                        _viewModel.CurrentPracticeQuestion != null)
-                    {
-                        RichTextAnswer.Document.Blocks.Clear();
-                        if (!string.IsNullOrEmpty(_viewModel.CurrentPracticeQuestion.RichTextAnswer))
-                        {
-                            RichTextAnswer.Document.Blocks.Add(
-                                new Paragraph(new Run(_viewModel.CurrentPracticeQuestion.RichTextAnswer))
-                            );
-                        }
-                    }
-                };
+                    PracticeAnswerEditor.ShowLineNumbers = false;
+                    PracticeAnswerEditor.WordWrap = true;
+                }
+                else
+                {
+                    PracticeAnswerEditor.ShowLineNumbers = true;
+                    PracticeAnswerEditor.WordWrap = false;
+                }
             }
         }
+
+
 
         protected override void OnSourceInitialized(EventArgs e)
         {
