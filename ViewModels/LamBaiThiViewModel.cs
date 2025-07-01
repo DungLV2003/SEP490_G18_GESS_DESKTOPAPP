@@ -987,7 +987,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             }
         }
 
-        private async Task SubmitExamAsync(bool isAutoSubmit = false)
+        public async Task SubmitExamAsync(bool isAutoSubmit = false)
         {
             try
             {

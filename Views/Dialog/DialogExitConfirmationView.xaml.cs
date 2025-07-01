@@ -1,0 +1,124 @@
+﻿using SEP490_G18_GESS_DESKTOPAPP.Helpers;
+using SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Effects;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+
+namespace SEP490_G18_GESS_DESKTOPAPP.Views.Dialog
+{
+    /// <summary>
+    /// Interaction logic for DialogExitConfirmationView.xaml
+    /// </summary>
+    public partial class DialogExitConfirmationView : Window
+    {
+        private Window _parentWindow;
+        private Effect _originalEffect;
+        private Border _darkOverlay;
+
+        public DialogExitConfirmationView(DialogExitConfirmationViewModel viewModel)
+        {
+            InitializeComponent();
+            this.DataContext = viewModel;
+
+            // Cấu hình dialog
+            this.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            this.ShowInTaskbar = false;
+
+            AnimationHelper.ApplyFadeIn(this, 300);
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+
+            // Tìm parent window
+            _parentWindow = Application.Current.Windows.OfType<Window>()
+                .FirstOrDefault(w => w.IsActive && w != this);
+
+            if (_parentWindow != null)
+            {
+                // Lưu effect gốc
+                _originalEffect = _parentWindow.Effect;
+
+                // Thêm Blur effect
+                _parentWindow.Effect = new BlurEffect
+                {
+                    Radius = 5,
+                    KernelType = KernelType.Gaussian
+                };
+
+                // Tạo dark overlay
+                CreateDarkOverlay();
+            }
+        }
+
+        private void CreateDarkOverlay()
+        {
+            // Tìm Grid chính của parent window
+            var parentGrid = FindVisualChild<Grid>(_parentWindow);
+            if (parentGrid != null)
+            {
+                // Tạo overlay đen với opacity 50%
+                _darkOverlay = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromArgb(128, 0, 0, 0)), // 50% black
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    IsHitTestVisible = false // Không chặn mouse events
+                };
+
+                // Đặt overlay lên trên tất cả các controls khác
+                Grid.SetRowSpan(_darkOverlay, parentGrid.RowDefinitions.Count == 0 ? 1 : parentGrid.RowDefinitions.Count);
+                Grid.SetColumnSpan(_darkOverlay, parentGrid.ColumnDefinitions.Count == 0 ? 1 : parentGrid.ColumnDefinitions.Count);
+
+                // Thêm overlay vào cuối để nó nằm trên cùng
+                parentGrid.Children.Add(_darkOverlay);
+                Panel.SetZIndex(_darkOverlay, 9999);
+            }
+        }
+
+        private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                    return typedChild;
+
+                var result = FindVisualChild<T>(child);
+                if (result != null)
+                    return result;
+            }
+            return null;
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            // Khôi phục parent window
+            if (_parentWindow != null)
+            {
+                _parentWindow.Effect = _originalEffect;
+
+                // Xóa dark overlay
+                if (_darkOverlay != null && _darkOverlay.Parent is Grid parentGrid)
+                {
+                    parentGrid.Children.Remove(_darkOverlay);
+                }
+            }
+
+            base.OnClosed(e);
+        }
+
+    }
+}
