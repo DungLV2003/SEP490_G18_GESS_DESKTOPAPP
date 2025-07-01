@@ -525,10 +525,17 @@
                             </ItemsControl>
                         </ScrollViewer>
 
+                        <!-- Debug Test Button -->
+                        <Button Grid.Row="6" Content="🔧 Test Highlighting" 
+                                Background="#FF6B7280" Foreground="White"
+                                FontSize="12" Height="35"
+                                Margin="0,10,0,5" 
+                                Click="TestHighlightingButton_Click"/>
+                        
                         <!-- Submit Button -->
                         <Button Grid.Row="6" Content="✓ Nộp Bài" 
                                 Style="{StaticResource SubmitButtonStyle}" 
-                                Margin="0,20,0,0" 
+                                Margin="0,10,0,0" 
                                 Command="{Binding SubmitExamCommand}"/>
                     </Grid>
                 </ScrollViewer>
@@ -735,110 +742,67 @@
 
                             <!-- ItemsControl để hiển thị editor cho từng question -->
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                                <ItemsControl x:Name="PracticeAnswersContainer" ItemsSource="{Binding _allPracticeQuestions}">
+                                <ItemsControl ItemsSource="{Binding AllPracticeQuestions}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <!-- CHỈ HIỂN THỊ EDITOR CHO QUESTION HIỆN TẠI -->
                                             <Border Background="#F8F9FA"
-                                    BorderBrush="{StaticResource BorderGray}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    Margin="0,0,0,16">
+                                                    BorderBrush="{StaticResource BorderGray}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Margin="0,0,0,16">
                                                 <Border.Style>
                                                     <Style TargetType="Border">
                                                         <Setter Property="Visibility" Value="Collapsed"/>
                                                         <Style.Triggers>
-                                                            <!-- Chỉ hiển thị khi là current question -->
-                                                            <MultiDataTrigger>
-                                                                <MultiDataTrigger.Conditions>
-                                                                    <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=DataContext.CurrentPracticeQuestion.PracticeQuestionId}" 
-                                                               Value="{Binding PracticeQuestionId}"/>
-                                                                </MultiDataTrigger.Conditions>
+                                                            <DataTrigger Binding="{Binding IsCurrent}" Value="True">
                                                                 <Setter Property="Visibility" Value="Visible"/>
-                                                            </MultiDataTrigger>
+                                                            </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
-
                                                 <Grid>
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="Auto"/>
                                                         <RowDefinition Height="*"/>
                                                     </Grid.RowDefinitions>
-
                                                     <!-- Toolbar để chọn mode -->
                                                     <Border Grid.Row="0" 
-                                            Background="#E9ECEF" 
-                                            CornerRadius="8,8,0,0"
-                                            Padding="12,8">
+                                                            Background="#E9ECEF" 
+                                                            CornerRadius="8,8,0,0"
+                                                            Padding="12,8">
                                                         <StackPanel Orientation="Horizontal">
                                                             <TextBlock Text="Chế độ: " 
-                                                       FontSize="12" 
-                                                       VerticalAlignment="Center"
-                                                       Foreground="#6B7280"/>
-                                                            <ComboBox x:Name="AnswerModeComboBox"
-                                                      SelectedIndex="0"
-                                                      FontSize="12"
-                                                      MinWidth="120"
-                                                      SelectionChanged="AnswerModeComboBox_SelectionChanged">
+                                                                       FontSize="12" 
+                                                                       VerticalAlignment="Center"
+                                                                       Foreground="#6B7280"/>
+                                                            <ComboBox SelectedIndex="0"
+                                                                      FontSize="12"
+                                                                      MinWidth="120"
+                                                                      Tag="{Binding PracticeQuestionId}"
+                                                                      SelectionChanged="AnswerModeComboBox_SelectionChanged">
                                                                 <ComboBoxItem Content="📝 Văn bản" Tag="Text"/>
                                                                 <ComboBoxItem Content="💻 C# Code" Tag="CSharp"/>
                                                                 <ComboBoxItem Content="🐍 Python" Tag="Python"/>
                                                                 <ComboBoxItem Content="☕ Java" Tag="Java"/>
-                                                                <ComboBoxItem Content="🌐 HTML" Tag="HTML"/>
-                                                                <ComboBoxItem Content="🎨 CSS" Tag="CSS"/>
-                                                                <ComboBoxItem Content="⚡ JavaScript" Tag="JavaScript"/>
                                                                 <ComboBoxItem Content="📊 SQL" Tag="SQL"/>
                                                             </ComboBox>
                                                         </StackPanel>
                                                     </Border>
-
-                                                    <!-- AvalonEdit Editor cho từng question -->
-                                                    <avalonedit:TextEditor x:Name="QuestionAnswerEditor"
-                                                           Grid.Row="1"
-                                                           FontFamily="Consolas"
-                                                           FontSize="14"
-                                                           ShowLineNumbers="True"
-                                                           SyntaxHighlighting="Text"
-                                                           Padding="16"
-                                                           BorderThickness="0"
-                                                           Background="White"
-                                                           WordWrap="True"
-                                                           Text="{Binding Answer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                           MinHeight="200">
-                                                        <avalonedit:TextEditor.Options>
-                                                            <avalonedit:TextEditorOptions 
-                                                EnableHyperlinks="False"
-                                                EnableEmailHyperlinks="False"
-                                                ShowSpaces="False"
-                                                ShowTabs="True"
-                                                IndentationSize="4"
-                                                ConvertTabsToSpaces="True"/>
-                                                        </avalonedit:TextEditor.Options>
-                                                    </avalonedit:TextEditor>
-
-                                                    <!-- Placeholder overlay khi trống -->
-                                                    <TextBlock Grid.Row="1"
-                                               FontSize="14"
-                                               Foreground="#9CA3AF"
-                                               Margin="20,20,16,16"
-                                               IsHitTestVisible="False"
-                                               VerticalAlignment="Top"
-                                               Text="Nhập câu trả lời của bạn tại đây...">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Answer}" Value="">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding Answer}" Value="{x:Null}">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
+                                                    <!-- AvalonEdit Editor riêng biệt cho từng câu -->
+                                                    <avalonedit:TextEditor Grid.Row="1"
+                                                                         Tag="{Binding PracticeQuestionId}"
+                                                                         FontFamily="Consolas"
+                                                                         FontSize="14"
+                                                                         ShowLineNumbers="True"
+                                                                         SyntaxHighlighting="Text"
+                                                                         Padding="16"
+                                                                         BorderThickness="0"
+                                                                         Background="White"
+                                                                         WordWrap="True"
+                                                                         MinHeight="200"
+                                                                         Loaded="PracticeAnswerEditor_Loaded"
+                                                                         TextChanged="PracticeAnswerEditor_TextChanged"
+                                                                         ToolTip="{Binding PracticeQuestionId, StringFormat='QuestionID: {0}'}" />
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>
