@@ -52,9 +52,24 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             // Full screen mode cho bài thi
             //SetupExamMode();
             // Setup practice answer editor NGAY SAU KHI INITIALIZE
-            this.Loaded += (s, e) => SetupPracticeAnswerEditor();
+            // Đăng ký sự kiện cho ItemsControl
+            this.Loaded += (s, e) =>
+            {
+                // Lắng nghe sự kiện CurrentQuestionIndex thay đổi để cập nhật editor hiển thị
+                _viewModel.PropertyChanged += (sender, args) =>
+                {
+                    if (args.PropertyName == nameof(_viewModel.CurrentQuestionIndex) ||
+                        args.PropertyName == nameof(_viewModel.CurrentPracticeQuestion))
+                    {
+                        // Khi thay đổi câu hỏi, cập nhật UI
+                        UpdatePracticeQuestionUI();
+                    }
+                };
 
-            AnimationHelper.ApplyFadeIn(this);
+                // Khởi tạo ban đầu
+                UpdatePracticeQuestionUI();
+            };
+                AnimationHelper.ApplyFadeIn(this);
   
         }
 
@@ -70,92 +85,137 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             //this.ShowInTaskbar = false;
         }
         // Thêm method mới để setup practice answer với AvalonEdit
-        private void SetupPracticeAnswerEditor()
+        //private void SetupPracticeAnswerEditor()
+        //{
+        //    if (PracticeAnswerEditor != null && _viewModel != null)
+        //    {
+        //        System.Diagnostics.Debug.WriteLine("[DEBUG] SetupPracticeAnswerEditor: Starting setup...");
+
+        //        // Set default syntax highlighting to Text
+        //        PracticeAnswerEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("Text");
+
+        //        // QUAN TRỌNG: Bind text từ ViewModel sang Editor khi question thay đổi
+        //        _viewModel.PropertyChanged += (s, e) =>
+        //        {
+        //            if (e.PropertyName == nameof(_viewModel.CurrentPracticeQuestion))
+        //            {
+        //                UpdateEditorFromViewModel();
+        //            }
+        //        };
+
+        //        // Bind text từ Editor về ViewModel khi user nhập
+        //        PracticeAnswerEditor.TextChanged += (s, e) =>
+        //        {
+        //            if (!_isUpdatingEditorFromViewModel && _viewModel.CurrentPracticeQuestion != null)
+        //            {
+        //                System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor TextChanged: Updating answer for question {_viewModel.CurrentQuestionIndex + 1}");
+        //                _viewModel.CurrentPracticeQuestion.Answer = PracticeAnswerEditor.Text;
+        //            }
+        //        };
+
+        //        // Load initial content nếu đã có CurrentPracticeQuestion
+        //        UpdateEditorFromViewModel();
+
+        //        System.Diagnostics.Debug.WriteLine("[DEBUG] SetupPracticeAnswerEditor: Setup completed");
+        //    }
+        //}
+        private void UpdatePracticeQuestionUI()
         {
-            if (PracticeAnswerEditor != null && _viewModel != null)
+            if (_viewModel.ExamType == ExamType.Practice &&
+                _viewModel.CurrentPracticeQuestion != null)
             {
-                System.Diagnostics.Debug.WriteLine("[DEBUG] SetupPracticeAnswerEditor: Starting setup...");
-
-                // Set default syntax highlighting to Text
-                PracticeAnswerEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("Text");
-
-                // QUAN TRỌNG: Bind text từ ViewModel sang Editor khi question thay đổi
-                _viewModel.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName == nameof(_viewModel.CurrentPracticeQuestion))
-                    {
-                        UpdateEditorFromViewModel();
-                    }
-                };
-
-                // Bind text từ Editor về ViewModel khi user nhập
-                PracticeAnswerEditor.TextChanged += (s, e) =>
-                {
-                    if (!_isUpdatingEditorFromViewModel && _viewModel.CurrentPracticeQuestion != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Editor TextChanged: Updating answer for question {_viewModel.CurrentQuestionIndex + 1}");
-                        _viewModel.CurrentPracticeQuestion.Answer = PracticeAnswerEditor.Text;
-                    }
-                };
-
-                // Load initial content nếu đã có CurrentPracticeQuestion
-                UpdateEditorFromViewModel();
-
-                System.Diagnostics.Debug.WriteLine("[DEBUG] SetupPracticeAnswerEditor: Setup completed");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdatePracticeQuestionUI: Question {_viewModel.CurrentQuestionIndex + 1}");
             }
         }
+        //private void UpdateEditorFromViewModel()
+        //{
+        //    if (_viewModel.CurrentPracticeQuestion != null && PracticeAnswerEditor != null)
+        //    {
+        //        _isUpdatingEditorFromViewModel = true;
 
-        private void UpdateEditorFromViewModel()
-        {
-            if (_viewModel.CurrentPracticeQuestion != null && PracticeAnswerEditor != null)
-            {
-                _isUpdatingEditorFromViewModel = true;
+        //        var answer = _viewModel.CurrentPracticeQuestion.Answer ?? "";
+        //        System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdateEditorFromViewModel: Question {_viewModel.CurrentQuestionIndex + 1}, Answer='{answer}'");
 
-                var answer = _viewModel.CurrentPracticeQuestion.Answer ?? "";
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] UpdateEditorFromViewModel: Question {_viewModel.CurrentQuestionIndex + 1}, Answer='{answer}'");
+        //        PracticeAnswerEditor.Text = answer;
 
-                PracticeAnswerEditor.Text = answer;
-
-                _isUpdatingEditorFromViewModel = false;
-            }
-        }
+        //        _isUpdatingEditorFromViewModel = false;
+        //    }
+        //}
 
         // Method để xử lý thay đổi syntax highlighting
         private void AnswerModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (PracticeAnswerEditor != null && AnswerModeComboBox.SelectedItem is ComboBoxItem selectedItem)
+            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 string mode = selectedItem.Tag?.ToString() ?? "Text";
 
-                // Đặt syntax highlighting tương ứng
-                var highlighting = mode switch
+                // Tìm editor tương ứng trong template
+                var parentBorder = FindVisualParent<Border>(comboBox);
+                if (parentBorder != null)
                 {
-                    "CSharp" => HighlightingManager.Instance.GetDefinition("C#"),
-                    "Python" => HighlightingManager.Instance.GetDefinition("Python"),
-                    "Java" => HighlightingManager.Instance.GetDefinition("Java"),
-                    "HTML" => HighlightingManager.Instance.GetDefinition("HTML"),
-                    "CSS" => HighlightingManager.Instance.GetDefinition("CSS"),
-                    "JavaScript" => HighlightingManager.Instance.GetDefinition("JavaScript"),
-                    "SQL" => HighlightingManager.Instance.GetDefinition("SQL"),
-                    _ => HighlightingManager.Instance.GetDefinition("Text")
-                };
+                    var editor = FindVisualChild<ICSharpCode.AvalonEdit.TextEditor>(parentBorder);
+                    if (editor != null)
+                    {
+                        // Đặt syntax highlighting tương ứng
+                        var highlighting = mode switch
+                        {
+                            "CSharp" => HighlightingManager.Instance.GetDefinition("C#"),
+                            "Python" => HighlightingManager.Instance.GetDefinition("Python"),
+                            "Java" => HighlightingManager.Instance.GetDefinition("Java"),
+                            "HTML" => HighlightingManager.Instance.GetDefinition("HTML"),
+                            "CSS" => HighlightingManager.Instance.GetDefinition("CSS"),
+                            "JavaScript" => HighlightingManager.Instance.GetDefinition("JavaScript"),
+                            "SQL" => HighlightingManager.Instance.GetDefinition("SQL"),
+                            _ => HighlightingManager.Instance.GetDefinition("Text")
+                        };
 
-                PracticeAnswerEditor.SyntaxHighlighting = highlighting;
+                        editor.SyntaxHighlighting = highlighting;
 
-                // Tùy chỉnh options theo ngôn ngữ
-                if (mode == "Text")
-                {
-                    PracticeAnswerEditor.ShowLineNumbers = false;
-                    PracticeAnswerEditor.WordWrap = true;
-                }
-                else
-                {
-                    PracticeAnswerEditor.ShowLineNumbers = true;
-                    PracticeAnswerEditor.WordWrap = false;
+                        // Tùy chỉnh options theo ngôn ngữ
+                        if (mode == "Text")
+                        {
+                            editor.ShowLineNumbers = false;
+                            editor.WordWrap = true;
+                        }
+                        else
+                        {
+                            editor.ShowLineNumbers = true;
+                            editor.WordWrap = false;
+                        }
+                    }
                 }
             }
         }
+        private T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
 
+            if (parentObject == null) return null;
+
+            T parent = parentObject as T;
+            if (parent != null)
+                return parent;
+            else
+                return FindVisualParent<T>(parentObject);
+        }
+
+
+        private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                if (child != null && child is T)
+                    return (T)child;
+                else
+                {
+                    T childOfChild = FindVisualChild<T>(child);
+                    if (childOfChild != null)
+                        return childOfChild;
+                }
+            }
+            return null;
+        }
 
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -172,11 +232,11 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             // Chặn Alt + F4
-            if (e.Key == Key.System && e.SystemKey == Key.F4)
-            {
-                e.Handled = true;
-                return;
-            }
+            //if (e.Key == Key.System && e.SystemKey == Key.F4)
+            //{
+            //    e.Handled = true;
+            //    return;
+            //}
 
             // Chặn Alt + Tab
             if (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.Tab)
@@ -193,13 +253,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             }
 
             // Chặn Ctrl + Alt + Del (khó chặn hoàn toàn, nhưng có thể cảnh báo)
-            if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt) && e.Key == Key.Delete)
-            {
-                e.Handled = true;
-                MessageBox.Show("Không được phép sử dụng phím tắt này trong khi thi!", "Cảnh báo",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            //if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt) && e.Key == Key.Delete)
+            //{
+            //    e.Handled = true;
+            //    MessageBox.Show("Không được phép sử dụng phím tắt này trong khi thi!", "Cảnh báo",
+            //        MessageBoxButton.OK, MessageBoxImage.Warning);
+            //    return;
+            //}
         }
 
         protected override void OnClosing(CancelEventArgs e)
