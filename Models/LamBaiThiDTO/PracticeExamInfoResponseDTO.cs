@@ -14,6 +14,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO
         public string SubjectName { get; set; }
         public string ExamCategoryName { get; set; }
         public int Duration { get; set; }
+        public DateTime? StartTime { get; set; } // Thêm để tính thời gian còn lại
         public string Message { get; set; }
         public List<PracticeExamQuestionDetailDTO> Questions { get; set; }
     }

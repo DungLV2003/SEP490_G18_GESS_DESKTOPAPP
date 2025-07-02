@@ -302,7 +302,21 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             SubjectName = examInfo.SubjectName;
             ExamCategoryName = examInfo.ExamCategoryName;
             Duration = examInfo.Duration;
-            _totalSeconds = Duration * 60;
+            
+            // QUAN TRỌNG: Tính thời gian còn lại dựa trên StartTime từ server
+            if (examInfo.StartTime.HasValue)
+            {
+                var timeElapsed = DateTime.Now - examInfo.StartTime.Value;
+                var timeRemaining = Duration - timeElapsed.TotalMinutes;
+                _totalSeconds = Math.Max(0, (int)(timeRemaining * 60)); // Đảm bảo không âm
+                
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Continue exam - Time elapsed: {timeElapsed.TotalMinutes:F1} minutes, Time remaining: {timeRemaining:F1} minutes");
+            }
+            else
+            {
+                _totalSeconds = Duration * 60; // Lần đầu làm bài
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] New exam - Full duration: {Duration} minutes");
+            }
 
             // Get all questions for the exam
             var questionList = await _lamBaiThiService.GetAllQuestionMultiExamByMultiExamIdAsync(_examId);
@@ -434,6 +448,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 });
             }
 
+            // QUAN TRỌNG: Load các đáp án đã lưu từ server (TH3 - tiếp tục thi)
+            if (examInfo.SavedAnswers != null && examInfo.SavedAnswers.Any())
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Loading {examInfo.SavedAnswers.Count} saved answers...");
+                LoadSavedMultipleChoiceAnswers(examInfo.SavedAnswers);
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Saved answers loaded successfully");
+            }
+
             // Show first question
             CurrentQuestionIndex = 0;
             UpdateCurrentMultipleChoiceQuestion();
@@ -457,7 +479,21 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             SubjectName = examInfo.SubjectName;
             ExamCategoryName = examInfo.ExamCategoryName;
             Duration = examInfo.Duration;
-            _totalSeconds = Duration * 60;
+            
+            // QUAN TRỌNG: Tính thời gian còn lại dựa trên StartTime từ server
+            if (examInfo.StartTime.HasValue)
+            {
+                var timeElapsed = DateTime.Now - examInfo.StartTime.Value;
+                var timeRemaining = Duration - timeElapsed.TotalMinutes;
+                _totalSeconds = Math.Max(0, (int)(timeRemaining * 60)); // Đảm bảo không âm
+                
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Continue practice exam - Time elapsed: {timeElapsed.TotalMinutes:F1} minutes, Time remaining: {timeRemaining:F1} minutes");
+            }
+            else
+            {
+                _totalSeconds = Duration * 60; // Lần đầu làm bài
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] New practice exam - Full duration: {Duration} minutes");
+            }
 
             // Get all questions
             var questionOrders = await _lamBaiThiService.GetQuestionAndAnswerByPracExamIdAsync(_examId);
@@ -505,14 +541,19 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     };
 
                     // QUAN TRỌNG: Set answer và setup binding
-                    // Nếu có sẵn answer content từ server thì set, nếu không thì để trống
+                    // Nếu có sẵn answer content từ server thì set (TH3 - tiếp tục thi), nếu không thì để trống (TH1, TH2)
                     if (!string.IsNullOrWhiteSpace(questionDetail.AnswerContent))
                     {
-                        practiceVm.SetAnswerSilently(questionDetail.AnswerContent);
+                        // DECODE line breaks nếu có (từ format ___NEWLINE___ về \n)
+                        var decodedAnswer = questionDetail.AnswerContent.Replace("___NEWLINE___", "\n");
+                        practiceVm.SetAnswerSilently(decodedAnswer);
+                        
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] TH3 - Loaded saved answer for Question {practiceVm.PracticeQuestionId}: '{decodedAnswer.Substring(0, Math.Min(50, decodedAnswer.Length))}...'");
                     }
                     else
                     {
                         practiceVm.ClearAnswer(); // Đảm bảo bắt đầu với answer trống
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] TH1/TH2 - Question {practiceVm.PracticeQuestionId} starts with empty answer");
                     }
 
                     // QUAN TRỌNG: Subscribe to PropertyChanged để detect answer changes
@@ -614,9 +655,21 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     QuestionOrder = questionDetail.QuestionOrder,
                     Content = questionDetail.Content,
                     Score = questionDetail.Score,
-                    Answer = questionDetail.AnswerContent ?? "",
                     TotalQuestions = TotalQuestions
                 };
+
+                // QUAN TRỌNG: Load answer đã lưu (TH3) với decode line breaks
+                if (!string.IsNullOrWhiteSpace(questionDetail.AnswerContent))
+                {
+                    var decodedAnswer = questionDetail.AnswerContent.Replace("___NEWLINE___", "\n");
+                    practiceVm.SetAnswerSilently(decodedAnswer);
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Fallback - Loaded saved answer for Question {i + 1}: '{decodedAnswer.Substring(0, Math.Min(50, decodedAnswer.Length))}...'");
+                }
+                else
+                {
+                    practiceVm.ClearAnswer();
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Fallback - Question {i + 1} starts with empty answer");
+                }
 
                 // Setup binding cho từng question
                 SetupPracticeQuestionBinding(practiceVm);
@@ -644,6 +697,54 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             OnPropertyChanged(nameof(CurrentPracticeQuestion));
             OnPropertyChanged(nameof(TotalQuestions));
             OnPropertyChanged(nameof(QuestionNumbers));
+        }
+
+        // Helper method: Load đáp án đã lưu cho Multiple Choice (TH3)
+        private void LoadSavedMultipleChoiceAnswers(List<SavedAnswerDTO> savedAnswers)
+        {
+            foreach (var savedAnswer in savedAnswers)
+            {
+                // Tìm question tương ứng
+                var question = _allQuestions.FirstOrDefault(q => q.QuestionId == savedAnswer.QuestionId);
+                if (question == null) continue;
+
+                // Parse các answer IDs đã chọn
+                if (!string.IsNullOrEmpty(savedAnswer.Answer))
+                {
+                    var selectedAnswerIds = savedAnswer.Answer.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(id => int.TryParse(id.Trim(), out int answerId) ? answerId : 0)
+                        .Where(id => id > 0)
+                        .ToList();
+
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Question {savedAnswer.QuestionId}: Loading saved answer IDs [{string.Join(", ", selectedAnswerIds)}]");
+
+                    // Set IsSelected cho các đáp án đã chọn
+                    _isUpdatingSelections = true;
+                    try
+                    {
+                        foreach (var answer in question.Answers)
+                        {
+                            answer.IsSelected = selectedAnswerIds.Contains(answer.AnswerId);
+                        }
+                    }
+                    finally
+                    {
+                        _isUpdatingSelections = false;
+                    }
+                }
+            }
+
+            // Update progress sau khi load xong tất cả đáp án
+            UpdateMultipleChoiceProgress();
+            
+            // Update question navigation status
+            for (int i = 0; i < _allQuestions.Count && i < QuestionNumbers.Count; i++)
+            {
+                var hasAnswers = _allQuestions[i].Answers.Any(a => a.IsSelected);
+                QuestionNumbers[i].IsAnswered = hasAnswers;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] LoadSavedMultipleChoiceAnswers completed - Updated progress and navigation");
         }
         #endregion
 
@@ -841,10 +942,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         #region Timer Methods
         private void StartTimer()
         {
+            // Cập nhật display ngay lập tức trước khi bắt đầu timer
+            UpdateTimerDisplay();
+            
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromSeconds(1);
             _timer.Tick += Timer_Tick;
             _timer.Start();
+            
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Timer started with {_totalSeconds} seconds remaining");
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -891,19 +997,28 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
         private void UpdateTimerDisplay()
         {
-            var hours = _totalSeconds / 3600;
-            var minutes = (_totalSeconds % 3600) / 60;
-            var seconds = _totalSeconds % 60;
+            // Đảm bảo không hiển thị thời gian âm
+            var displaySeconds = Math.Max(0, _totalSeconds);
+            
+            var hours = displaySeconds / 3600;
+            var minutes = (displaySeconds % 3600) / 60;
+            var seconds = displaySeconds % 60;
 
             TimerText = $"{hours:D2}:{minutes:D2}:{seconds:D2}";
+            
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Timer: {TimerText} (Total seconds: {_totalSeconds})");
         }
 
         private void StartAutoSave()
         {
             _autoSaveTimer = new DispatcherTimer();
-            _autoSaveTimer.Interval = TimeSpan.FromMinutes(5);
-            _autoSaveTimer.Tick += async (s, e) => await SaveProgressAsync();
+            _autoSaveTimer.Interval = TimeSpan.FromSeconds(10); // DEBUG: Changed from 5 minutes to 10 seconds for testing
+            _autoSaveTimer.Tick += async (s, e) => {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ⏰ AUTO-SAVE TIMER TRIGGERED at {DateTime.Now:HH:mm:ss}");
+                await SaveProgressAsync();
+            };
             _autoSaveTimer.Start();
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] ✅ Auto-save timer started - will save every 10 seconds");
         }
         #endregion
 
@@ -912,18 +1027,27 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 💾 SaveProgressAsync STARTED - ExamType: {ExamType}");
+                
                 if (ExamType == ExamType.MultipleChoice)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] 📝 Calling SaveMultipleChoiceProgressAsync...");
                     await SaveMultipleChoiceProgressAsync();
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ✅ SaveMultipleChoiceProgressAsync COMPLETED");
                 }
                 else if (ExamType == ExamType.Practice)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] 📝 Calling SavePracticeProgressAsync...");
                     await SavePracticeProgressAsync();
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ✅ SavePracticeProgressAsync COMPLETED");
                 }
+                
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 💾 SaveProgressAsync FINISHED SUCCESSFULLY at {DateTime.Now:HH:mm:ss}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Save progress error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR] ❌ SaveProgressAsync FAILED: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR] StackTrace: {ex.StackTrace}");
             }
         }
 
@@ -945,7 +1069,17 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 });
             }
 
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] 📤 Multiple Choice Auto-Save Request:");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG]   - MultiExamHistoryId: {updateDto.MultiExamHistoryId}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG]   - Total Answers: {updateDto.Answers.Count}");
+            
+            foreach (var answer in updateDto.Answers)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - QuestionId: {answer.QuestionId}, Answer: {answer.Answer}");
+            }
+
             await _lamBaiThiService.UpdateProgressAsync(updateDto);
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] 📥 Multiple Choice Auto-Save API call completed successfully");
         }
 
         private async Task SavePracticeProgressAsync()
@@ -968,15 +1102,24 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     });
                 }
 
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] SavePracticeProgressAsync: Saving {updateDto.Answers.Count} answers");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 📤 Practice Exam Auto-Save Request:");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - PracExamHistoryId: {_pracExamHistoryId}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - Total Questions: {updateDto.Answers.Count}");
+                
+                foreach (var answer in updateDto.Answers)
+                {
+                    var answerPreview = answer.Answer?.Length > 50 ? answer.Answer.Substring(0, 50) + "..." : answer.Answer;
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG]   - QuestionId: {answer.PracticeQuestionId}, Answer: '{answerPreview}'");
+                }
 
                 await _lamBaiThiService.UpdatePEEach5minutesAsync(updateDto);
 
-                System.Diagnostics.Debug.WriteLine("[DEBUG] SavePracticeProgressAsync: Save completed successfully");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 📥 Practice Exam Auto-Save API call completed successfully");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ERROR] SavePracticeProgressAsync failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR] ❌ SavePracticeProgressAsync failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR] StackTrace: {ex.StackTrace}");
                 // Log error nhưng không throw để không ảnh hưởng đến UX
             }
         }
