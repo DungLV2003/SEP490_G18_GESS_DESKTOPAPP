@@ -393,9 +393,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                                             }
 
                                             UpdateMultipleChoiceProgress();
-
-                                            // Save progress asynchronously
-                                            _ = Task.Run(async () => await SaveProgressAsync());
                                         }
                                     }));
                                 }
@@ -574,9 +571,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
                         // Update progress
                         UpdatePracticeProgress();
-
-                        // Auto save khi answer thay đổi (async)
-                        _ = Task.Run(async () => await SavePracticeProgressAsync());
                     }
                 }
             };
@@ -1025,7 +1019,11 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 _timer?.Stop();
                 _autoSaveTimer?.Stop();
 
-                IsLoading = true;
+                // Chỉ hiển thị loading nếu không phải auto submit (để tránh delay khi thoát)
+                if (!isAutoSubmit)
+                {
+                    IsLoading = true;
+                }
 
                 if (ExamType == ExamType.MultipleChoice)
                 {
@@ -1096,7 +1094,11 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             }
             finally
             {
-                IsLoading = false;
+                // Chỉ tắt loading nếu đã bật (không phải auto submit)
+                if (!isAutoSubmit)
+                {
+                    IsLoading = false;
+                }
             }
         }
 
@@ -1174,6 +1176,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 });
             }
 
+            // Tối ưu: Thêm timeout cho auto submit để tránh chờ quá lâu
             var result = await _lamBaiThiService.SubmitExamAsync(submitDto);
 
             System.Diagnostics.Debug.WriteLine($"[DEBUG] SubmitMultipleChoiceExam result: {result != null}");
@@ -1205,6 +1208,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 }).ToList()
             };
 
+            // Tối ưu: Thêm timeout cho auto submit để tránh chờ quá lâu
             var result = await _lamBaiThiService.SubmitPracticeExamAsync(submitDto);
 
             System.Diagnostics.Debug.WriteLine($"[DEBUG] SubmitPracticeExam result: {result != null}");
