@@ -167,9 +167,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
             try
             {
                 var url = $"{BASE_URL}/update-progress";
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 🌐 HTTP POST to: {url}");
+
+                var jsonPayload = JsonSerializer.Serialize(dto);
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 📤 Request payload: {jsonPayload}");
 
                 var content = new StringContent(
-                    JsonSerializer.Serialize(dto),
+                    jsonPayload,
                     Encoding.UTF8,
                     "application/json"
                 );
@@ -177,8 +181,12 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 var response = await _httpClient.PostAsync(url, content);
                 var json = await response.Content.ReadAsStringAsync();
 
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 📥 Response Status: {response.StatusCode}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 📥 Response Content: {json}");
+
                 if (!response.IsSuccessStatusCode)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] ❌ Auto-Save failed with status: {response.StatusCode}");
                     // Try to parse error message
                     try
                     {
@@ -192,6 +200,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 }
 
                 var result = JsonSerializer.Deserialize<UpdateMultiExamProgressResponseDTO>(json, _jsonOptions);
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ✅ Multiple Choice Auto-Save HTTP request completed successfully");
                 return result;
             }
             catch (APIException)
@@ -200,7 +209,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"UpdateProgress Exception: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR] ❌ UpdateProgress Exception: {ex}");
                 throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }
@@ -374,18 +383,26 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
             try
             {
                 var url = $"{BASE_URL}/UpdatePEEach5minutes";
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 🌐 HTTP POST to: {url}");
+
+                var jsonPayload = JsonSerializer.Serialize(request);
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 📤 Practice Request payload: {jsonPayload}");
 
                 var content = new StringContent(
-                    JsonSerializer.Serialize(request),
+                    jsonPayload,
                     Encoding.UTF8,
                     "application/json"
                 );
 
                 var response = await _httpClient.PostAsync(url, content);
 
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 📥 Practice Response Status: {response.StatusCode}");
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] 📥 Practice Error Response: {json}");
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] ❌ Practice Auto-Save failed with status: {response.StatusCode}");
                     try
                     {
                         var errorResponse = JsonSerializer.Deserialize<APIResponse>(json, _jsonOptions);
@@ -397,6 +414,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                     }
                 }
 
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ✅ Practice Exam Auto-Save HTTP request completed successfully");
                 return true;
             }
             catch (APIException)
@@ -405,7 +423,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"UpdatePEEach5minutes Exception: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR] ❌ UpdatePEEach5minutes Exception: {ex}");
                 throw new APIException("Lỗi kết nối đến server", "CONNECTION_ERROR");
             }
         }

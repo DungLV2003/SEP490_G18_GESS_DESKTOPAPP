@@ -28,6 +28,47 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
 {
     /// <summary>
     /// Interaction logic for LamBaiThiView.xaml
+    /// 
+    /// CHỨC NĂNG BẢO MẬT ĐÃ ĐƯỢC TÍCH HỢP:
+    /// ====================================
+    /// 
+    /// 1. CHẶN PHÍM TẮT HỆ THỐNG:
+    ///    - Windows Key (trái/phải) → Không thể mở Start Menu
+    ///    - Alt+Tab → Không thể chuyển ứng dụng
+    ///    - Alt+Esc → Không thể chuyển ứng dụng
+    ///    - Ctrl+Esc → Không thể mở Start Menu
+    ///    - Alt+F4 → Hiển thị dialog xác nhận thoát
+    ///    - Ctrl+Shift+Esc → Hiển thị dialog xác nhận thoát (thay vì Task Manager)
+    ///    - Alt+Space → Không thể mở System Menu
+    /// 
+    /// 2. CHẶN PHÍM CHỨC NĂNG:
+    ///    - F1 → Không thể mở Help
+    ///    - F5, Ctrl+R → Không thể refresh (tránh mất dữ liệu)
+    ///    - F12 → Không thể mở Developer Tools
+    ///    - Print Screen → Không thể chụp màn hình
+    ///    - Pause/Break → Chặn
+    /// 
+    /// 3. CHẶN PHÍM TẮT TRÌNH DUYỆT/EDITOR:
+    ///    - Ctrl+W → Không thể đóng tab/window
+    ///    - Ctrl+T → Không thể mở tab mới
+    ///    - Ctrl+N → Không thể mở window mới
+    ///    - Ctrl+Shift+N → Không thể mở incognito window
+    ///    - Ctrl+U → Không thể xem source code
+    ///    - Ctrl+Shift+I → Không thể mở Developer Tools
+    ///    - Ctrl+Shift+C → Không thể inspect element
+    /// 
+    /// 4. CHỐ ĐỘ TOÀN MÀN HÌNH:
+    ///    - Fullscreen, không border, không resize
+    ///    - Luôn ở trên cùng (Topmost)
+    ///    - Ẩn khỏi taskbar
+    ///    - Vô hiệu hóa System Menu
+    /// 
+    /// 5. XỬ LÝ THOÁT KHẨN CẤP:
+    ///    - Mọi thao tác thoát đều hiển thị dialog xác nhận
+    ///    - Auto-submit bài thi khi xác nhận thoát
+    ///    - Hook keyboard toàn hệ thống (Low-level)
+    /// 
+    /// ⚠️  LƯU Ý: Ctrl+Alt+Del không thể chặn vì đây là System Interrupt
     /// </summary>
     public partial class LamBaiThiView : Window
     {
@@ -54,10 +95,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         [DllImport("kernel32.dll")]
         private static extern IntPtr LoadLibrary(string lpFileName);
 
+        // Windows API Constants
         private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
         private const int GWL_STYLE = -16;
         private const int WS_SYSMENU = 0x80000;
+        
+        // Virtual Key Codes for Windows keys
+        private const int VK_LWIN = 0x5B;
+        private const int VK_RWIN = 0x5C;
 
         private IntPtr _hookID = IntPtr.Zero;
         private LowLevelKeyboardProc _proc;
@@ -80,7 +126,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             this.Closing += LamBaiThiView_Closing;
             // Debug AvalonEdit highlighting capabilities
             DebugAvalonEditHighlighting();
-            //SetupExamMode();
+            SetupExamMode();
             // DataContext sẽ được gán từ ngoài khi khởi tạo
             this.Loaded += (s, e) =>
             {
@@ -178,14 +224,54 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
 
         private void SetupExamMode()
         {
-            // Full screen
-            this.WindowState = WindowState.Maximized;
-            //this.WindowStyle = WindowStyle.None;
-            //this.ResizeMode = ResizeMode.NoResize;
-            //this.Topmost = true; // Luôn ở trên cùng
+            try
+            {
+                // Full screen mode - chế độ toàn màn hình
+                this.WindowState = WindowState.Maximized;
+                this.WindowStyle = WindowStyle.None;
+                this.ResizeMode = ResizeMode.NoResize;
+                this.Topmost = true; // Luôn ở trên cùng
 
-            // Ẩn taskbar
-            //this.ShowInTaskbar = false;
+                // Ẩn taskbar để ngăn chuyển ứng dụng
+                this.ShowInTaskbar = false;
+
+                // Ẩn con trỏ chuột khi di chuyển ra ngoài vùng làm bài (tùy chọn)
+                // this.Cursor = Cursors.None;
+
+                System.Diagnostics.Debug.WriteLine("[DEBUG] Exam mode setup completed - Full screen, no taskbar, topmost");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERROR] SetupExamMode failed: {ex.Message}");
+            }
+        }
+
+        // Method để hiển thị cảnh báo khi phát hiện hành vi bất thường
+        private void ShowSecurityWarning(string action)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[WARNING] Security violation detected: {action}");
+                
+                // Có thể hiển thị thông báo cảnh báo
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    // Tùy chọn: Hiển thị thông báo cảnh báo
+                    // MessageBox.Show(
+                    //     $"Phát hiện hành vi không được phép: {action}\nVui lòng không thử thoát khỏi ứng dụng thi.",
+                    //     "Cảnh báo bảo mật",
+                    //     MessageBoxButton.OK,
+                    //     MessageBoxImage.Warning
+                    // );
+                }));
+
+                // Log hành vi để báo cáo sau
+                // TODO: Có thể ghi log vào file hoặc gửi về server
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERROR] ShowSecurityWarning failed: {ex.Message}");
+            }
         }
         
         private void UpdatePracticeQuestionUI()
@@ -501,9 +587,38 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             {
                 int vkCode = Marshal.ReadInt32(lParam);
 
+                // Chặn nút Windows (Left và Right Windows key)
+                if (vkCode == VK_LWIN || vkCode == VK_RWIN)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Windows key");
+                    return (IntPtr)1; // Block the key
+                }
+
+                // Ctrl+Esc (Start Menu)
+                if (Keyboard.Modifiers == ModifierKeys.Control && vkCode == (int)Key.Escape)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+Esc");
+                    return (IntPtr)1; // Block the key
+                }
+
+                // Alt+Tab (Switch applications)
+                if (Keyboard.Modifiers == ModifierKeys.Alt && vkCode == (int)Key.Tab)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Alt+Tab");
+                    return (IntPtr)1; // Block the key
+                }
+
+                // Alt+Esc (Switch applications)
+                if (Keyboard.Modifiers == ModifierKeys.Alt && vkCode == (int)Key.Escape)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Alt+Esc");
+                    return (IntPtr)1; // Block the key
+                }
+
                 // Ctrl+Shift+Esc (Task Manager)
                 if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && vkCode == (int)Key.Escape)
                 {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+Shift+Esc - showing exit dialog");
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         ShowExitConfirmationDialog();
@@ -514,6 +629,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                 // Alt+F4
                 if (Keyboard.Modifiers == ModifierKeys.Alt && vkCode == (int)Key.F4)
                 {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Alt+F4 - showing exit dialog");
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         ShowExitConfirmationDialog();
@@ -521,10 +637,60 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                     return (IntPtr)1; // Block the key
                 }
 
+                // F1 (Help)
+                if (vkCode == (int)Key.F1)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked F1");
+                    return (IntPtr)1; // Block the key
+                }
+
+                // Ctrl+Shift+I (Developer Tools in some apps)
+                if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && vkCode == (int)Key.I)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+Shift+I");
+                    return (IntPtr)1; // Block the key
+                }
+
+                // F12 (Developer Tools)
+                if (vkCode == (int)Key.F12)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked F12");
+                    return (IntPtr)1; // Block the key
+                }
+
+                // Ctrl+U (View Source)
+                if (Keyboard.Modifiers == ModifierKeys.Control && vkCode == (int)Key.U)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+U");
+                    return (IntPtr)1; // Block the key
+                }
+
+                // Ctrl+Shift+C (Inspect Element)
+                if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && vkCode == (int)Key.C)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+Shift+C");
+                    return (IntPtr)1; // Block the key
+                }
+
+                // Ctrl+R và F5 (Refresh - có thể gây mất dữ liệu)
+                if ((Keyboard.Modifiers == ModifierKeys.Control && vkCode == (int)Key.R) || vkCode == (int)Key.F5)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Refresh key");
+                    return (IntPtr)1; // Block the key
+                }
+
+                // Alt+Space (System menu)
+                if (Keyboard.Modifiers == ModifierKeys.Alt && vkCode == (int)Key.Space)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Alt+Space");
+                    return (IntPtr)1; // Block the key
+                }
+
                 // Ctrl+Alt+Del không thể được hoàn toàn chặn vì đây là phím tắt cấp hệ thống
                 // nhưng chúng ta có thể giám sát và hiển thị thông báo khi người dùng quay lại
                 if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Alt) && vkCode == (int)Key.Delete)
                 {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Detected Ctrl+Alt+Del - cannot block system-level shortcut");
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         // Đánh dấu có thể cần phải kiểm tra khi người dùng quay lại
@@ -549,16 +715,80 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         }
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            // Chặn Alt + Tab
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] OnPreviewKeyDown: Key={e.Key}, Modifiers={Keyboard.Modifiers}");
+
+            // Chặn Alt + Tab (backup - chủ yếu được xử lý trong HookCallback)
             if (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.Tab)
             {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] OnPreviewKeyDown: Blocked Alt+Tab");
                 e.Handled = true;
                 return;
             }
 
-            // Chặn Windows key
+            // Chặn Windows key (backup - chủ yếu được xử lý trong HookCallback)
             if (e.Key == Key.LWin || e.Key == Key.RWin)
             {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] OnPreviewKeyDown: Blocked Windows key");
+                e.Handled = true;
+                return;
+            }
+
+            // Chặn Ctrl+W (Đóng tab/window)
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.W)
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] OnPreviewKeyDown: Blocked Ctrl+W");
+                e.Handled = true;
+                return;
+            }
+
+            // Chặn Ctrl+T (New tab)
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.T)
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] OnPreviewKeyDown: Blocked Ctrl+T");
+                e.Handled = true;
+                return;
+            }
+
+            // Chặn Ctrl+N (New window)
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.N)
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] OnPreviewKeyDown: Blocked Ctrl+N");
+                e.Handled = true;
+                return;
+            }
+
+            // Chặn Ctrl+Shift+N (New incognito window)
+            if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && e.Key == Key.N)
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] OnPreviewKeyDown: Blocked Ctrl+Shift+N");
+                e.Handled = true;
+                return;
+            }
+
+            // Chặn các phím chức năng F1-F12 (trừ một số cần thiết cho bài thi)
+            if (e.Key >= Key.F1 && e.Key <= Key.F12)
+            {
+                // Cho phép F9, F10 nếu cần thiết cho editor
+                if (e.Key != Key.F9 && e.Key != Key.F10)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] OnPreviewKeyDown: Blocked function key {e.Key}");
+                    e.Handled = true;
+                    return;
+                }
+            }
+
+            // Chặn Print Screen
+            if (e.Key == Key.PrintScreen)
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] OnPreviewKeyDown: Blocked PrintScreen");
+                e.Handled = true;
+                return;
+            }
+
+            // Chặn Pause/Break
+            if (e.Key == Key.Pause)
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] OnPreviewKeyDown: Blocked Pause");
                 e.Handled = true;
                 return;
             }

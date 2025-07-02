@@ -14,8 +14,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO
         public string SubjectName { get; set; }
         public string ExamCategoryName { get; set; }
         public int Duration { get; set; }
+        public DateTime? StartTime { get; set; }
         public string Message { get; set; }
         public List<MultiQuestionDetailDTO> Questions { get; set; }
+        public List<SavedAnswerDTO> SavedAnswers { get; set; } = new List<SavedAnswerDTO>();
     }
     public class MultiQuestionDetailDTO
     {
@@ -25,5 +27,11 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO
         public int ChapterId { get; set; }
         public int LevelQuestionId { get; set; }
         // Thêm các trường khác nếu cần
+    }
+
+    public class SavedAnswerDTO
+    {
+        public int QuestionId { get; set; }
+        public string Answer { get; set; }
     }
 }
