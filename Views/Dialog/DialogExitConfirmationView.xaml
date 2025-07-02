@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.Dialog"
         mc:Ignorable="d"
         Title="Xác nhận thoát" 
-        Height="380" Width="500"
+        Height="420" Width="520"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -52,6 +52,8 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+
 
         <Style x:Key="ConfirmButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#DC3545"/>

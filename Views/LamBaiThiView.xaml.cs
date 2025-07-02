@@ -80,7 +80,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             this.Closing += LamBaiThiView_Closing;
             // Debug AvalonEdit highlighting capabilities
             DebugAvalonEditHighlighting();
-            SetupExamMode();
+            //SetupExamMode();
             // DataContext sẽ được gán từ ngoài khi khởi tạo
             this.Loaded += (s, e) =>
             {
@@ -180,12 +180,12 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         {
             // Full screen
             this.WindowState = WindowState.Maximized;
-            this.WindowStyle = WindowStyle.None;
-            this.ResizeMode = ResizeMode.NoResize;
-            this.Topmost = true; // Luôn ở trên cùng
+            //this.WindowStyle = WindowStyle.None;
+            //this.ResizeMode = ResizeMode.NoResize;
+            //this.Topmost = true; // Luôn ở trên cùng
 
             // Ẩn taskbar
-            this.ShowInTaskbar = false;
+            //this.ShowInTaskbar = false;
         }
         
         private void UpdatePracticeQuestionUI()
@@ -571,7 +571,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             {
                 // Unhook keyboard để tránh memory leak
                 UnhookWindowsHookEx(_hookID);
-                base.OnClosing(e);
                 return;
             }
 
@@ -582,75 +581,101 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                 ShowExitConfirmationDialog();
             }
         }
-        protected override void OnClosed(EventArgs e)
-        {
-            // Unhook keyboard khi đóng form để tránh memory leak
-            UnhookWindowsHookEx(_hookID);
-            base.OnClosed(e);
-        }
+        //protected override void OnClosed(EventArgs e)
+        //{
+        //    // Unhook keyboard khi đóng form để tránh memory leak
+        //    UnhookWindowsHookEx(_hookID);
+        //    base.OnClosed(e);
+        //}
 
         private void ShowExitConfirmationDialog()
         {
+            System.Diagnostics.Debug.WriteLine("[DEBUG] ShowExitConfirmationDialog: Starting...");
+            
             if (_isExitDialogShowing)
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] ShowExitConfirmationDialog: Dialog already showing, returning");
                 return;
+            }
 
             _isExitDialogShowing = true;
+            System.Diagnostics.Debug.WriteLine("[DEBUG] ShowExitConfirmationDialog: Set _isExitDialogShowing = true");
 
             // Tạo action để xử lý khi người dùng xác nhận thoát
             Action confirmAction = async () =>
             {
                 try
                 {
-                    // Nộp bài thi tự động
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] ShowExitConfirmationDialog: Confirm action executed");
+
+                    // Nộp bài và CHỜ hoàn thành
                     await ViewModel.SubmitExamAsync(true);
 
-                    // Đánh dấu đã nộp để có thể thoát
+                    // Đánh dấu đã nộp để có thể đóng window nếu cần
                     _isExamSubmitted = true;
 
-                    // Thoát ứng dụng
-                    Application.Current.Shutdown();
+                    // KHÔNG gọi Application.Current.Shutdown();
+                    // ViewModel sẽ tự chuyển về trang kết quả
                 }
                 catch (Exception ex)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] ShowExitConfirmationDialog: {ex.Message}");
                     MessageBox.Show($"Lỗi khi nộp bài thi: {ex.Message}", "Lỗi",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 finally
                 {
                     _isExitDialogShowing = false;
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] ShowExitConfirmationDialog: Reset _isExitDialogShowing = false");
                 }
             };
 
-            // Hiển thị dialog xác nhận
-            var viewModel = new DialogExitConfirmationViewModel(confirmAction);
-            var dialog = new DialogExitConfirmationView(viewModel);
-
-            dialog.Owner = this;
-            dialog.ShowDialog();
-
-            // Reset flag sau khi dialog đóng
-            _isExitDialogShowing = false;
-        }
-
-
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            //Nếu bài thi đã được nộp thì cho phép đóng
-            if (_isExamSubmitted)
+            try
             {
-                base.OnClosing(e);
-                return;
-            }
-            //// Ngăn chặn đóng window khi đang thi
-            //e.Cancel = true;
+                // Hiển thị dialog xác nhận
+                var viewModel = new DialogExitConfirmationViewModel(confirmAction);
+                var dialog = new DialogExitConfirmationView(viewModel);
 
-            //MessageBox.Show(
-            //    "Không thể thoát trong khi đang làm bài thi!\nVui lòng nộp bài trước khi thoát.",
-            //    "Thông báo",
-            //    MessageBoxButton.OK,
-            //    MessageBoxImage.Warning
-            //);
+                dialog.Owner = this;
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                
+                System.Diagnostics.Debug.WriteLine("[DEBUG] ShowExitConfirmationDialog: About to show dialog");
+                dialog.ShowDialog();
+                System.Diagnostics.Debug.WriteLine("[DEBUG] ShowExitConfirmationDialog: Dialog closed");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERROR] ShowExitConfirmationDialog: Failed to show dialog: {ex.Message}");
+                MessageBox.Show($"Lỗi hiển thị dialog: {ex.Message}", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                // Reset flag sau khi dialog đóng
+                _isExitDialogShowing = false;
+                System.Diagnostics.Debug.WriteLine("[DEBUG] ShowExitConfirmationDialog: Final reset _isExitDialogShowing = false");
+            }
         }
+
+
+        //protected override void OnClosing(CancelEventArgs e)
+        //{
+        //    //Nếu bài thi đã được nộp thì cho phép đóng
+        //    if (_isExamSubmitted)
+        //    {
+        //        base.OnClosing(e);
+        //        return;
+        //    }
+        //    //// Ngăn chặn đóng window khi đang thi
+        //    //e.Cancel = true;
+
+        //    //MessageBox.Show(
+        //    //    "Không thể thoát trong khi đang làm bài thi!\nVui lòng nộp bài trước khi thoát.",
+        //    //    "Thông báo",
+        //    //    MessageBoxButton.OK,
+        //    //    MessageBoxImage.Warning
+        //    //);
+        //}
 
         // Phương thức để set flag khi nộp bài
         public void SetExamSubmitted()
