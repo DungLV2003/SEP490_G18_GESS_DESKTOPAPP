@@ -122,6 +122,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
 
             // Register PreviewKeyDown
             this.PreviewKeyDown += OnPreviewKeyDown;
+            
+            // Register focus violation tracking - Theo dõi vi phạm tab ra ngoài
+            this.Deactivated += OnWindowDeactivated;
+            
             // Handle window closing event
             this.Closing += LamBaiThiView_Closing;
             // Debug AvalonEdit highlighting capabilities
@@ -238,7 +242,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                 // Ẩn con trỏ chuột khi di chuyển ra ngoài vùng làm bài (tùy chọn)
                 // this.Cursor = Cursors.None;
 
-                System.Diagnostics.Debug.WriteLine("[DEBUG] Exam mode setup completed - Full screen, no taskbar, topmost");
+                System.Diagnostics.Debug.WriteLine("[DEBUG] Exam mode setup enabled - Full security mode active");
             }
             catch (Exception ex)
             {
@@ -644,33 +648,37 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                     return (IntPtr)1; // Block the key
                 }
 
+                // TẠMIỜI: Cho phép Ctrl+Shift+I để test Chrome Developer Tools
                 // Ctrl+Shift+I (Developer Tools in some apps)
-                if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && vkCode == (int)Key.I)
-                {
-                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+Shift+I");
-                    return (IntPtr)1; // Block the key
-                }
+                // if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && vkCode == (int)Key.I)
+                // {
+                //     System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+Shift+I");
+                //     return (IntPtr)1; // Block the key
+                // }
 
+                // TẠMIỜI: Cho phép F12 để test Chrome Developer Tools
                 // F12 (Developer Tools)
-                if (vkCode == (int)Key.F12)
-                {
-                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked F12");
-                    return (IntPtr)1; // Block the key
-                }
+                // if (vkCode == (int)Key.F12)
+                // {
+                //     System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked F12");
+                //     return (IntPtr)1; // Block the key
+                // }
 
+                // TẠMIỜI: Cho phép Ctrl+U để test Chrome View Source
                 // Ctrl+U (View Source)
-                if (Keyboard.Modifiers == ModifierKeys.Control && vkCode == (int)Key.U)
-                {
-                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+U");
-                    return (IntPtr)1; // Block the key
-                }
+                // if (Keyboard.Modifiers == ModifierKeys.Control && vkCode == (int)Key.U)
+                // {
+                //     System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+U");
+                //     return (IntPtr)1; // Block the key
+                // }
 
+                // TẠMIỜI: Cho phép Ctrl+Shift+C để test Chrome Inspect Element
                 // Ctrl+Shift+C (Inspect Element)
-                if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && vkCode == (int)Key.C)
-                {
-                    System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+Shift+C");
-                    return (IntPtr)1; // Block the key
-                }
+                // if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && vkCode == (int)Key.C)
+                // {
+                //     System.Diagnostics.Debug.WriteLine("[DEBUG] Blocked Ctrl+Shift+C");
+                //     return (IntPtr)1; // Block the key
+                // }
 
                 // Ctrl+R và F5 (Refresh - có thể gây mất dữ liệu)
                 if ((Keyboard.Modifiers == ModifierKeys.Control && vkCode == (int)Key.R) || vkCode == (int)Key.F5)
@@ -765,11 +773,12 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                 return;
             }
 
-            // Chặn các phím chức năng F1-F12 (trừ một số cần thiết cho bài thi)
+            // Chặn các phím chức năng F1-F12 (trừ F12 cho Chrome DevTools và một số cần thiết cho editor)
             if (e.Key >= Key.F1 && e.Key <= Key.F12)
             {
-                // Cho phép F9, F10 nếu cần thiết cho editor
-                if (e.Key != Key.F9 && e.Key != Key.F10)
+                // TẠMIỜI: Cho phép F12 để test Chrome DevTools
+                // Cho phép F9, F10 nếu cần thiết cho editor, và F12 cho Chrome
+                if (e.Key != Key.F9 && e.Key != Key.F10 && e.Key != Key.F12)
                 {
                     System.Diagnostics.Debug.WriteLine($"[DEBUG] OnPreviewKeyDown: Blocked function key {e.Key}");
                     e.Handled = true;
@@ -794,9 +803,59 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             }
         }
 
+        /// <summary>
+        /// Xử lý khi window mất focus (sinh viên tab ra ngoài)
+        /// Đây là hành vi vi phạm và sẽ bị xử phạt theo quy định
+        /// </summary>
+        private void OnWindowDeactivated(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] ⚠️ Window Deactivated - Sinh viên tab ra ngoài!");
+                
+                // Bỏ qua nếu đang trong quá trình nộp bài
+                if (ViewModel?.IsSubmitting == true)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Bỏ qua deactivated vì đang nộp bài");
+                    return;
+                }
+                
+                // Kiểm tra xem có phải là dialog nội bộ không
+                var activeWindow = Application.Current.Windows.OfType<Window>()
+                    .FirstOrDefault(w => w.IsActive);
+
+                // Bỏ qua nếu active window là dialog của chính app này
+                if (activeWindow != null)
+                {
+                    var windowType = activeWindow.GetType().Name;
+                    if (windowType.Contains("Dialog") && 
+                        windowType.Contains("SEP490_G18_GESS_DESKTOPAPP"))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Bỏ qua deactivated vì đang mở dialog nội bộ: {windowType}");
+                        return;
+                    }
+                }
+
+                // Gọi ViewModel để xử lý vi phạm
+                if (ViewModel != null)
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Gọi ViewModel.HandleFocusViolation()");
+                    ViewModel.HandleFocusViolation();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[ERROR] ViewModel is null, không thể xử lý vi phạm");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERROR] OnWindowDeactivated exception: {ex.Message}");
+            }
+        }
+
         private void LamBaiThiView_Closing(object sender, CancelEventArgs e)
         {
-            //Nếu bài thi đã được nộp thì cho phép đóng
+            // Nếu bài thi đã được nộp thì cho phép đóng
             if (_isExamSubmitted)
             {
                 // Unhook keyboard để tránh memory leak
@@ -812,7 +871,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             }
         }
         //protected override void OnClosed(EventArgs e)
-        //{
+        //{         
         //    // Unhook keyboard khi đóng form để tránh memory leak
         //    UnhookWindowsHookEx(_hookID);
         //    base.OnClosed(e);

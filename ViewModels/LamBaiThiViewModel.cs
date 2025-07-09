@@ -214,6 +214,78 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
         // Flag to prevent infinite loops in PropertyChanged events
         private bool _isUpdatingSelections = false;
+
+        // Violation tracking properties - Theo dõi vi phạm tab ra ngoài
+        private int _violationCount = 0;
+        /// <summary>
+        /// Số lần vi phạm tab ra ngoài (1, 2, 3)
+        /// </summary>
+        public int ViolationCount
+        {
+            get => _violationCount;
+            set => SetProperty(ref _violationCount, value);
+        }
+
+        private bool _isInPenalty = false;
+        /// <summary>
+        /// Có đang trong thời gian phạt hay không
+        /// </summary>
+        public bool IsInPenalty
+        {
+            get => _isInPenalty;
+            set
+            {
+                if (SetProperty(ref _isInPenalty, value))
+                {
+                    // Cập nhật trạng thái UI khi thay đổi penalty
+                    OnPropertyChanged(nameof(CanInteractWithExam));
+                    
+                    // Invalidate commands để cập nhật enabled/disabled state
+                    Application.Current.Dispatcher.BeginInvoke(() =>
+                    {
+                        CommandManager.InvalidateRequerySuggested();
+                    });
+                    
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] IsInPenalty changed to: {value}");
+                }
+            }
+        }
+
+        private DateTime? _penaltyEndTime = null;
+        /// <summary>
+        /// Thời gian kết thúc phạt
+        /// </summary>
+        public DateTime? PenaltyEndTime
+        {
+            get => _penaltyEndTime;
+            set => SetProperty(ref _penaltyEndTime, value);
+        }
+
+        /// <summary>
+        /// Có thể tương tác với bài thi hay không (không bị phạt và không loading)
+        /// </summary>
+        public bool CanInteractWithExam => !IsInPenalty && !IsLoading;
+
+        private bool _isExamSubmitted = false;
+        /// <summary>
+        /// Bài thi đã được nộp hay chưa
+        /// </summary>
+        public bool IsExamSubmitted
+        {
+            get => _isExamSubmitted;
+            set => SetProperty(ref _isExamSubmitted, value);
+        }
+
+        private bool _isSubmitting = false;
+        /// <summary>
+        /// Đang trong quá trình nộp bài hay không - để tránh trigger vi phạm
+        /// </summary>
+        public bool IsSubmitting
+        {
+            get => _isSubmitting;
+            set => SetProperty(ref _isSubmitting, value);
+        }
+
         #endregion
 
         #region Commands
@@ -238,13 +310,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             _allPracticeQuestions = new List<PracticeQuestionViewModel>();
 
             // Initialize commands
-            PreviousQuestionCommand = new RelayCommand(PreviousQuestion, () => CurrentQuestionIndex > 0);
-            NextQuestionCommand = new RelayCommand(NextQuestion, () => CurrentQuestionIndex < TotalQuestions - 1);
-            GoToQuestionCommand = new RelayCommand<int>(GoToQuestion);
-            MarkQuestionCommand = new RelayCommand(MarkCurrentQuestion);
-            SubmitExamCommand = new RelayCommand(async () => await SubmitExamAsync());
-            SelectAnswerCommand = new RelayCommand<string>(SelectAnswer);
-            ToggleAnswerCommand = new RelayCommand<string>(ToggleAnswer);
+            PreviousQuestionCommand = new RelayCommand(PreviousQuestion, () => CurrentQuestionIndex > 0 && CanInteractWithExam);
+            NextQuestionCommand = new RelayCommand(NextQuestion, () => CurrentQuestionIndex < TotalQuestions - 1 && CanInteractWithExam);
+            GoToQuestionCommand = new RelayCommand<int>(GoToQuestion, (questionNumber) => CanInteractWithExam);
+            MarkQuestionCommand = new RelayCommand(MarkCurrentQuestion, () => CanInteractWithExam);
+            SubmitExamCommand = new RelayCommand(async () => await SubmitExamAsync(), () => CanInteractWithExam);
+            SelectAnswerCommand = new RelayCommand<string>(SelectAnswer, (answerId) => CanInteractWithExam);
+            ToggleAnswerCommand = new RelayCommand<string>(ToggleAnswer, (answerId) => CanInteractWithExam);
             
             System.Diagnostics.Debug.WriteLine($"[DEBUG] LamBaiThiViewModel Constructor: Completed for instance {this.GetHashCode()}");
         }
@@ -1128,8 +1200,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         {
             try
             {
+                // Set flag đang nộp bài để tránh trigger vi phạm
+                IsSubmitting = true;
+                
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] SubmitExamAsync bắt đầu: isAutoSubmit={isAutoSubmit}");
+
                 if (!isAutoSubmit)
                 {
+                    // MANUAL SUBMIT - Người dùng ấn nút nộp bài bình thường
                     int answeredCount;
                     if (ExamType == ExamType.MultipleChoice)
                     {
@@ -1154,13 +1232,24 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
                     if (!confirmViewModel.IsConfirmed)
                     {
+                        System.Diagnostics.Debug.WriteLine("[DEBUG] Người dùng hủy nộp bài");
                         return;
                     }
+                    
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Người dùng xác nhận nộp bài thủ công");
+                }
+                else
+                {
+                    // AUTO SUBMIT - Vi phạm lần 3 hoặc hết giờ
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Auto submit do vi phạm lần 3 hoặc hết giờ");
                 }
 
                 // Stop timers when actually submitting
                 _timer?.Stop();
                 _autoSaveTimer?.Stop();
+
+                // Set flag submitted để ngăn vi phạm focus tiếp theo
+                IsExamSubmitted = true;
 
                 // Chỉ hiển thị loading nếu không phải auto submit (để tránh delay khi thoát)
                 if (!isAutoSubmit)
@@ -1237,11 +1326,16 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             }
             finally
             {
+                // Reset flag đang nộp bài
+                IsSubmitting = false;
+                
                 // Chỉ tắt loading nếu đã bật (không phải auto submit)
                 if (!isAutoSubmit)
                 {
                     IsLoading = false;
                 }
+                
+                System.Diagnostics.Debug.WriteLine("[DEBUG] SubmitExamAsync hoàn thành");
             }
         }
 
@@ -1472,6 +1566,156 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     System.Diagnostics.Debug.WriteLine($"[DEBUG] Question {i + 1}: IsAnswered changed from {wasAnswered} to {isAnswered}");
                 }
             }
+        }
+
+        #endregion
+
+        #region Focus Violation Methods - Xử lý vi phạm tab ra ngoài
+
+        /// <summary>
+        /// Xử lý khi sinh viên tab ra ngoài (mất focus window)
+        /// Hệ thống phạt theo cấp độ: 5p → 10p → auto submit
+        /// </summary>
+        public void HandleFocusViolation()
+        {
+            // Không xử lý nếu đang trong thời gian phạt, đã nộp bài, hoặc đang nộp bài
+            if (IsInPenalty || IsExamSubmitted || IsSubmitting)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Bỏ qua vi phạm: IsInPenalty={IsInPenalty}, IsExamSubmitted={IsExamSubmitted}, IsSubmitting={IsSubmitting}");
+                return;
+            }
+
+            ViolationCount++;
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Vi phạm lần {ViolationCount} - Tab ra ngoài");
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ShowViolationDialog();
+            });
+        }
+
+        /// <summary>
+        /// Hiển thị dialog cảnh báo vi phạm
+        /// </summary>
+        private void ShowViolationDialog()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Hiển thị dialog vi phạm lần {ViolationCount}");
+
+                // Action khi hết thời gian phạt
+                Action onPenaltyComplete = () =>
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Hết thời gian phạt - cho phép tiếp tục");
+                    IsInPenalty = false;
+                    PenaltyEndTime = null;
+                };
+
+                // Action khi auto submit (lần 3)
+                Action onAutoSubmit = async () =>
+                {
+                    System.Diagnostics.Debug.WriteLine("[DEBUG] Vi phạm lần 3 - Auto submit bài thi");
+                    await SubmitExamAsync(true); // Auto submit
+                };
+
+                // Tạo và hiển thị dialog
+                var violationViewModel = new SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog.DialogCanhBaoViPhamViewModel(
+                    ViolationCount,
+                    onPenaltyComplete,
+                    onAutoSubmit
+                );
+
+                var violationDialog = new SEP490_G18_GESS_DESKTOPAPP.Views.Dialog.DialogCanhBaoViPhamView(violationViewModel);
+
+                // Tìm window chính làm owner
+                var mainWindow = Application.Current.Windows.OfType<Views.LamBaiThiView>().FirstOrDefault();
+                if (mainWindow != null)
+                {
+                    violationDialog.Owner = mainWindow;
+                }
+
+                // Thiết lập thời gian phạt nếu không phải vi phạm cuối
+                if (ViolationCount < 3)
+                {
+                    SetPenaltyTime(ViolationCount);
+                }
+
+                violationDialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ERROR] Lỗi hiển thị dialog vi phạm: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Thiết lập thời gian phạt dựa trên số lần vi phạm
+        /// QUAN TRỌNG: Thời gian làm bài VẪN TIẾP TỤC CHẠY
+        /// </summary>
+        /// <param name="violationCount">Số lần vi phạm</param>
+        private void SetPenaltyTime(int violationCount)
+        {
+            int penaltySeconds = violationCount switch
+            {
+                1 => 15, // Lần 1: 15 giây
+                2 => 30, // Lần 2: 30 giây  
+                _ => 0   // Lần 3: auto submit, không có thời gian chờ
+            };
+
+            if (penaltySeconds > 0)
+            {
+                IsInPenalty = true;
+                PenaltyEndTime = DateTime.Now.AddSeconds(penaltySeconds);
+
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Thiết lập phạt {penaltySeconds} giây đến {PenaltyEndTime}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] ⚠️ Thời gian làm bài VẪN TIẾP TỤC CHẠY!");
+
+                // KHÔNG tạm dừng timer bài thi - thời gian vẫn chạy bình thường
+                // _timer?.Stop(); // REMOVED: Không dừng timer nữa
+
+                // Tạo timer để theo dõi kết thúc thời gian phạt
+                var penaltyTimer = new DispatcherTimer();
+                penaltyTimer.Interval = TimeSpan.FromSeconds(1); // Cập nhật mỗi giây cho đồng hồ đếm ngược
+                penaltyTimer.Tick += (s, e) =>
+                {
+                    if (DateTime.Now >= PenaltyEndTime)
+                    {
+                        // Hết thời gian phạt
+                        penaltyTimer.Stop();
+                        IsInPenalty = false;
+                        PenaltyEndTime = null;
+
+                        // KHÔNG cần khởi động lại timer vì nó chưa bao giờ bị dừng
+                        // _timer?.Start(); // REMOVED
+
+                        System.Diagnostics.Debug.WriteLine("[DEBUG] Hết thời gian phạt - sinh viên có thể tương tác lại");
+                    }
+                };
+                penaltyTimer.Start();
+            }
+        }
+
+        /// <summary>
+        /// Kiểm tra xem có đang trong thời gian phạt hay không
+        /// </summary>
+        /// <returns>True nếu đang bị phạt</returns>
+        public bool IsCurrentlyInPenalty()
+        {
+            if (!IsInPenalty || !PenaltyEndTime.HasValue)
+                return false;
+
+            return DateTime.Now < PenaltyEndTime.Value;
+        }
+
+        /// <summary>
+        /// Reset trạng thái vi phạm (dùng cho testing hoặc trường hợp đặc biệt)
+        /// </summary>
+        public void ResetViolationState()
+        {
+            ViolationCount = 0;
+            IsInPenalty = false;
+            PenaltyEndTime = null;
+            System.Diagnostics.Debug.WriteLine("[DEBUG] Reset trạng thái vi phạm");
         }
 
         #endregion

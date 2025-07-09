@@ -25,12 +25,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         public DanhSachBaiThiView(DanhSachBaiThiSinhVienViewModel dsbtViewModel)
         {
             InitializeComponent();
-            this.ResizeMode = ResizeMode.CanMinimize;
-            this.WindowStyle = WindowStyle.SingleBorderWindow;
+            
+            // Apply consistent styling like KetQuaNopBaiView
             this.DataContext = dsbtViewModel;
+            
+            // Apply fade-in animation
             AnimationHelper.ApplyFadeIn(this);
         }
     }
+    
     // Converter cho STT
     public class AddOneMultiConverter : IMultiValueConverter
     {
@@ -46,5 +49,4 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             throw new NotImplementedException();
         }
     }
-
 }

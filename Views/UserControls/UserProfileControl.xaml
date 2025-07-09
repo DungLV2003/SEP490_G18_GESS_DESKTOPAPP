@@ -8,6 +8,16 @@
              d:DesignHeight="60" d:DesignWidth="60">
 
     <UserControl.Resources>
+        <!-- Color Resources - Đồng bộ với design system -->
+        <SolidColorBrush x:Key="PrimaryColor" Color="#3182CE"/>
+        <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E2E8F0"/>
+        <SolidColorBrush x:Key="DarkText" Color="#2D3748"/>
+        <SolidColorBrush x:Key="MediumText" Color="#4A5568"/>
+        <SolidColorBrush x:Key="LightText" Color="#718096"/>
+        <SolidColorBrush x:Key="ErrorColor" Color="#E53E3E"/>
+        <SolidColorBrush x:Key="IconBackground" Color="#F7FAFC"/>
+
         <!-- Style cho Avatar Button -->
         <Style x:Key="AvatarButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="50"/>
@@ -18,15 +28,15 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <!-- Avatar Circle với nền xám nhẹ -->
-                            <Ellipse Width="50" Height="50" Fill="#F5F5F5"/>
+                            <!-- Avatar Circle với design system color -->
+                            <Ellipse Width="50" Height="50" Fill="{StaticResource IconBackground}"/>
 
                             <!-- Chữ cái đầu của tên -->
                             <TextBlock x:Name="AvatarLetter"
                                        Text="{Binding AvatarLetter}"
                                        FontSize="20"
-                                       FontWeight="Bold"
-                                       Foreground="#333333"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource DarkText}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
 
@@ -49,49 +59,48 @@
 
         <!-- Style cho Dropdown Menu -->
         <Style x:Key="DropdownMenuStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#E1E5E9"/>
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="Black" 
+                    <DropShadowEffect Color="#000000" 
                                       Direction="270" 
-                                      ShadowDepth="12" 
-                                      Opacity="0.15" 
-                                      BlurRadius="25"/>
+                                      ShadowDepth="0" 
+                                      Opacity="0.08" 
+                                      BlurRadius="24"/>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <!-- Style cho Menu Item -->
         <Style x:Key="MenuItemStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="16,14"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="52"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                Padding="{TemplateBinding Padding}"
-                                CornerRadius="8"
-                                Margin="6,2">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                            VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#F5F7FA"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="Padding" Value="12,8"/> <!-- Giảm Padding để tiết kiệm không gian -->
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="Height" Value="60"/> <!-- Tăng Height để có thêm không gian -->
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="Button">
+                <Border Background="{TemplateBinding Background}"
+                        Padding="{TemplateBinding Padding}"
+                        CornerRadius="8"
+                        Margin="6,2">
+                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="Center"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#F7FAFC"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
 
         <!-- Style cho Language ComboBox -->
         <Style x:Key="LanguageComboBoxStyle" TargetType="ComboBox">
@@ -112,9 +121,9 @@
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{TemplateBinding SelectionBoxItem}" 
                                                VerticalAlignment="Center"
-                                               Foreground="#6B7280"/>
+                                               Foreground="{StaticResource LightText}"/>
                                     <Path Data="M 0 0 L 4 4 L 8 0 Z"
-                                          Fill="#6B7280"
+                                          Fill="{StaticResource LightText}"
                                           Width="8" Height="6"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
@@ -127,8 +136,8 @@
                                    IsOpen="{TemplateBinding IsDropDownOpen}"
                                    AllowsTransparency="True"
                                    Focusable="False">
-                                <Border Background="White"
-                                        BorderBrush="#E1E5E9"
+                                <Border Background="{StaticResource CardBackground}"
+                                        BorderBrush="{StaticResource BorderColor}"
                                         BorderThickness="1"
                                         CornerRadius="8"
                                         MinWidth="100">
@@ -154,7 +163,7 @@
                             <!-- Background -->
                             <Border x:Name="Background"
                                     CornerRadius="12"
-                                    Background="#E5E7EB"/>
+                                    Background="#E2E8F0"/>
                             
                             <!-- Thumb -->
                             <Border x:Name="Thumb"
@@ -172,7 +181,7 @@
                         
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Background" Property="Background" Value="#4A90E2"/>
+                                <Setter TargetName="Background" Property="Background" Value="{StaticResource PrimaryColor}"/>
                                 <Trigger.EnterActions>
                                     <BeginStoryboard>
                                         <Storyboard>
@@ -226,44 +235,48 @@
                             Padding="16,16,16,16">
                         <StackPanel>
                             <TextBlock Text="{Binding StudentName}" 
-                                       FontWeight="Bold" 
+                                       FontWeight="SemiBold" 
                                        FontSize="18"
-                                       Foreground="#1F2937"
+                                       Foreground="{StaticResource DarkText}"
                                        Margin="0,0,0,4"/>
                             <TextBlock Text="{Binding StudentEmail}" 
                                        FontSize="14"
-                                       Foreground="#6B7280"/>
+                                       Foreground="{StaticResource LightText}"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Separator -->
                     <Rectangle Height="1" 
-                               Fill="#E5E7EB" 
+                               Fill="{StaticResource BorderColor}" 
                                Margin="8,0"/>
 
                     <!-- Menu Items -->
                     <!-- Hướng dẫn -->
-                    <Button Style="{StaticResource MenuItemStyle}"
-                            Click="Guide_Click">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Background="#F3F4F6" 
-                                    CornerRadius="8" 
-                                    Width="36" Height="36"
-                                    Margin="0,0,12,0">
-                                <TextBlock Text="📖" FontSize="18" 
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Hướng dẫn" 
-                                       Foreground="#374151"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
+                   <Button Style="{StaticResource MenuItemStyle}"
+        Click="Guide_Click">
+    <StackPanel Orientation="Horizontal"
+                VerticalAlignment="Center"> <!-- Đảm bảo căn giữa theo chiều dọc -->
+        <Border Background="{StaticResource IconBackground}" 
+                CornerRadius="8" 
+                Width="40" Height="40" 
+                Margin="0,0,12,0"
+                BorderThickness="1"
+                BorderBrush="{StaticResource BorderColor}">
+            <TextBlock Text="📋" 
+                       FontSize="20" 
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Border>
+        <TextBlock Text="Hướng dẫn" 
+                   Foreground="{StaticResource DarkText}"
+                   VerticalAlignment="Center"/>
+    </StackPanel>
+</Button>
 
-                    <!-- Ngôn ngữ -->
                     <Border Background="Transparent" 
-                            Padding="16,14"
-                            Height="52">
+        Padding="12,8"
+                        Height="60">
+                       
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -272,35 +285,35 @@
                             </Grid.ColumnDefinitions>
 
                             <Border Grid.Column="0"
-                                    Background="#F3F4F6" 
-                                    CornerRadius="8" 
-                                    Width="36" Height="36"
-                                    Margin="0,0,12,0">
-                                <TextBlock Text="🌐" FontSize="18" 
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
-                            </Border>
+                Background="{StaticResource IconBackground}" 
+                CornerRadius="8" 
+                Width="40" Height="40" 
+                                Margin="0,0,12,0"
+                BorderThickness="1"
+                BorderBrush="{StaticResource BorderColor}">
+                                <TextBlock Text="🌐" 
+                       FontSize="20"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Border>
 
                             <TextBlock Grid.Column="1"
-                                       Text="Ngôn ngữ" 
-                                       Foreground="#374151"
-                                       VerticalAlignment="Center"/>
+                   Text="Ngôn ngữ" 
+                   Foreground="{StaticResource DarkText}"
+                   VerticalAlignment="Center"/>
 
                             <ComboBox Grid.Column="2"
-                                      x:Name="LanguageComboBox"
-                                      Style="{StaticResource LanguageComboBoxStyle}"
-                                      SelectedIndex="0"
-                                      VerticalAlignment="Center">
-                                <ComboBoxItem Content="Vietnamese 🇻🇳"/>
-                                <ComboBoxItem Content="English 🇺🇸"/>
-                            </ComboBox>
+                  x:Name="LanguageComboBox"
+                  Style="{StaticResource LanguageComboBoxStyle}"
+                  SelectedIndex="0"
+                  VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
-
                     <!-- Dark Mode -->
                     <Border Background="Transparent" 
-                            Padding="16,14"
-                            Height="52">
+        Padding="12,8" 
+                        Height="60">
+                       
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -309,31 +322,34 @@
                             </Grid.ColumnDefinitions>
 
                             <Border Grid.Column="0"
-                                    Background="#F3F4F6" 
-                                    CornerRadius="8" 
-                                    Width="36" Height="36"
-                                    Margin="0,0,12,0">
-                                <TextBlock Text="🌙" FontSize="18" 
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
-                            </Border>
+                Background="{StaticResource IconBackground}" 
+                CornerRadius="8" 
+                Width="40" Height="40" 
+                                Margin="0,0,12,0"
+                BorderThickness="1"
+                BorderBrush="{StaticResource BorderColor}">
+                                <TextBlock Text="🌙" 
+                       FontSize="20" 
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Border>
 
                             <TextBlock Grid.Column="1"
-                                       Text="Dark Mode" 
-                                       Foreground="#374151"
-                                       VerticalAlignment="Center"/>
+                   Text="Dark Mode" 
+                   Foreground="{StaticResource DarkText}"
+                   VerticalAlignment="Center"/>
 
                             <ToggleButton Grid.Column="2"
-                                          x:Name="DarkModeToggle"
-                                          Style="{StaticResource ToggleSwitchStyle}"
-                                          VerticalAlignment="Center"
-                                          Click="DarkMode_Click"/>
+                      x:Name="DarkModeToggle"
+                      Style="{StaticResource ToggleSwitchStyle}"
+                      VerticalAlignment="Center"
+                      Click="DarkMode_Click"/>
                         </Grid>
                     </Border>
 
                     <!-- Separator -->
                     <Rectangle Height="1" 
-                               Fill="#E5E7EB" 
+                               Fill="{StaticResource BorderColor}" 
                                Margin="8,8"/>
 
                     <!-- Đăng xuất -->
@@ -343,14 +359,17 @@
                         <StackPanel Orientation="Horizontal">
                             <Border Background="#FEF2F2" 
                                     CornerRadius="8" 
-                                    Width="36" Height="36"
-                                    Margin="0,0,12,0">
-                                <TextBlock Text="🚪" FontSize="18" 
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
+                                    Width="44" Height="44"
+                                    Margin="0,0,12,0"
+                                    BorderThickness="1"
+                                    BorderBrush="#FECACA">
+                                <TextBlock Text="🚪" 
+                                           FontSize="22"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
                             </Border>
                             <TextBlock Text="Đăng xuất" 
-                                       Foreground="#DC2626"
+                                       Foreground="{StaticResource ErrorColor}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
