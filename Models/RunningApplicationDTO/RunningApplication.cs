@@ -13,7 +13,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.RunningApplicationDTO
         public DateTime StartTime { get; set; }
         public string WindowTitle { get; set; }
         public bool IsCloseable { get; set; }
+        /// <summary>
+        /// Deprecated: Icon file path (not used anymore)
+        /// </summary>
         public string IconPath { get; set; }
+        /// <summary>
+        /// First letter of the application name for circular icon display
+        /// </summary>
         public string IconText { get; set; }
         public bool HasActiveWindow { get; set; }
         
