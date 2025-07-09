@@ -6,27 +6,31 @@
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
         xmlns:uc="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
         mc:Ignorable="d"
-        Title="HomePageView" WindowState="Maximized" Background="#F8F9FA">
-    
+        Title="HomePageView" WindowState="Maximized" Background="#F7F9FC">
+
     <Window.Resources>
-        
-        <!-- Định nghĩa màu sắc -->
-        <SolidColorBrush x:Key="PrimaryBlue" Color="#6366F1"/>
-        <SolidColorBrush x:Key="PrimaryBlueHover" Color="#5B5DEF"/>
-        <SolidColorBrush x:Key="LightGray" Color="#F1F5F9"/>
-        <SolidColorBrush x:Key="TextGray" Color="#64748B"/>
-        <SolidColorBrush x:Key="DarkText" Color="#1E293B"/>
-        <SolidColorBrush x:Key="GreenCheck" Color="#10B981"/>
+
+        <!-- Color Resources - Đồng bộ với design system -->
+        <SolidColorBrush x:Key="HeaderBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E2E8F0"/>
+        <SolidColorBrush x:Key="PrimaryColor" Color="#3182CE"/>
+        <SolidColorBrush x:Key="PrimaryLightColor" Color="#EBF8FF"/>
+        <SolidColorBrush x:Key="TextGray" Color="#4A5568"/>
+        <SolidColorBrush x:Key="DarkText" Color="#2D3748"/>
+        <SolidColorBrush x:Key="GreenCheck" Color="#16A34A"/>
 
         <!-- Style cho Card -->
         <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Padding" Value="32"/>
-            <Setter Property="Margin" Value="20"/>
+            <Setter Property="Margin" Value="16"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="#E2E8F0" Direction="270" ShadowDepth="4" BlurRadius="20" Opacity="0.3"/>
+                    <DropShadowEffect Color="#000000" Direction="270" ShadowDepth="0" BlurRadius="24" Opacity="0.08"/>
                 </Setter.Value>
             </Setter>
             <Setter Property="RenderTransform">
@@ -41,13 +45,13 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" 
-                                               To="1.02" Duration="0:0:0.4">
+                                               To="1.02" Duration="0:0:0.3">
                                     <DoubleAnimation.EasingFunction>
                                         <CubicEase EasingMode="EaseOut"/>
                                     </DoubleAnimation.EasingFunction>
                                 </DoubleAnimation>
                                 <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" 
-                                               To="1.02" Duration="0:0:0.4">
+                                               To="1.02" Duration="0:0:0.3">
                                     <DoubleAnimation.EasingFunction>
                                         <CubicEase EasingMode="EaseOut"/>
                                     </DoubleAnimation.EasingFunction>
@@ -59,13 +63,13 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" 
-                                               To="1" Duration="0:0:0.4">
+                                               To="1" Duration="0:0:0.3">
                                     <DoubleAnimation.EasingFunction>
                                         <CubicEase EasingMode="EaseOut"/>
                                     </DoubleAnimation.EasingFunction>
                                 </DoubleAnimation>
                                 <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" 
-                                               To="1" Duration="0:0:0.4">
+                                               To="1" Duration="0:0:0.3">
                                     <DoubleAnimation.EasingFunction>
                                         <CubicEase EasingMode="EaseOut"/>
                                     </DoubleAnimation.EasingFunction>
@@ -79,11 +83,11 @@
 
         <!-- Style cho Button chính -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
+            <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="32,16"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="24,12"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="RenderTransform">
@@ -106,18 +110,18 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource PrimaryBlueHover}"/>
+                    <Setter Property="Background" Value="#2C5282"/>
                     <Trigger.EnterActions>
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" 
-                                               To="1.01" Duration="0:0:0.6">
+                                               To="1.02" Duration="0:0:0.2">
                                     <DoubleAnimation.EasingFunction>
                                         <CubicEase EasingMode="EaseOut"/>
                                     </DoubleAnimation.EasingFunction>
                                 </DoubleAnimation>
                                 <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" 
-                                               To="1.01" Duration="0:0:0.6">
+                                               To="1.02" Duration="0:0:0.2">
                                     <DoubleAnimation.EasingFunction>
                                         <CubicEase EasingMode="EaseOut"/>
                                     </DoubleAnimation.EasingFunction>
@@ -129,13 +133,13 @@
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" 
-                                               To="1" Duration="0:0:0.6">
+                                               To="1" Duration="0:0:0.2">
                                     <DoubleAnimation.EasingFunction>
                                         <CubicEase EasingMode="EaseOut"/>
                                     </DoubleAnimation.EasingFunction>
                                 </DoubleAnimation>
                                 <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" 
-                                               To="1" Duration="0:0:0.6">
+                                               To="1" Duration="0:0:0.2">
                                     <DoubleAnimation.EasingFunction>
                                         <CubicEase EasingMode="EaseOut"/>
                                     </DoubleAnimation.EasingFunction>
@@ -144,90 +148,66 @@
                         </BeginStoryboard>
                     </Trigger.ExitActions>
                 </Trigger>
-                <!--<Trigger Property="IsPressed" Value="True">
-                    <Setter Property="RenderTransform">
-                        <Setter.Value>
-                            <ScaleTransform ScaleX="0.3" ScaleY="0.3"/>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>-->
             </Style.Triggers>
-        </Style>
-
-        <!-- Style cho header button -->
-        <Style x:Key="HeaderButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource PrimaryBlue}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="18"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="40,20"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="12"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" 
-                                            VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Icon cho checkmark -->
-        <Style x:Key="CheckIconStyle" TargetType="Ellipse">
-            <Setter Property="Fill" Value="{StaticResource GreenCheck}"/>
-            <Setter Property="Width" Value="20"/>
-            <Setter Property="Height" Value="20"/>
-            <Setter Property="Margin" Value="0,0,12,0"/>
         </Style>
     </Window.Resources>
 
     <Grid>
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                <GradientStop Color="#F8FAFC" Offset="0"/>
-                <GradientStop Color="#F1F5F9" Offset="1"/>
-            </LinearGradientBrush>
-        </Grid.Background>
-
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="67*"/>
+            <ColumnDefinition Width="64*"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- User Profile Control Header -->
-        <Grid Grid.Row="0" Margin="0,10,20,10">
-            <uc:UserProfileControl HorizontalAlignment="Right" VerticalAlignment="Top"/>
-        </Grid>
+        <!-- Header Section - Đồng bộ với 2 trang kia -->
+        <Border Grid.Row="0" Background="{StaticResource HeaderBackground}" 
+        CornerRadius="16"
+        Margin="24,24,24,12"
+        BorderThickness="1"
+        BorderBrush="{StaticResource BorderColor}" Grid.ColumnSpan="3">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Opacity="0.08" 
+                        ShadowDepth="0" BlurRadius="24"/>
+            </Border.Effect>
+            <Grid Margin="24,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-        <!-- Header -->
-        <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,40,0,20">
-            <TextBlock Text="Hệ thống thi trực tuyến"
-                       FontSize="40"
-                       FontWeight="Bold"
-                       Foreground="{StaticResource PrimaryBlue}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,16"/>
+                <!-- Title -->
+                <TextBlock Grid.Column="0" 
+                   Text="Hệ thống thi trực tuyến" 
+                   Foreground="#1A202C" 
+                   FontSize="28" 
+                   FontWeight="SemiBold" 
+                   VerticalAlignment="Center" 
+                   HorizontalAlignment="Center"/>
 
-            <TextBlock Text="Chào mừng bạn đến với hệ thống thi trực tuyến. Vui lòng chọn một"
-                       FontSize="16"
-                       Foreground="{StaticResource TextGray}"
-                       HorizontalAlignment="Center"
-                       Margin="0,0,0,4"/>
+                <!-- User Profile Control -->
+                <uc:UserProfileControl Grid.Column="1" 
+                                     HorizontalAlignment="Right" 
+                                     VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
 
-            <TextBlock Text="trong các tùy chọn dưới đây để tiếp tục."
+        <!-- Welcome Text -->
+        <StackPanel Grid.Row="1" Orientation="Vertical" Margin="24,12,24,24" Grid.ColumnSpan="3">
+
+
+            <TextBlock Text="Vui lòng chọn một trong các tùy chọn dưới đây để tiếp tục"
                        FontSize="16"
                        Foreground="{StaticResource TextGray}"
                        HorizontalAlignment="Center"/>
         </StackPanel>
 
         <!-- Main Content -->
-        <Grid Grid.Row="2" Margin="40,0,40,40">
+        <Grid Grid.Row="1" Margin="24,57,24,24" Grid.ColumnSpan="3" Grid.RowSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -237,47 +217,51 @@
             <Border Grid.Column="0" Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <!-- Header của card -->
-                    <Border Background="{StaticResource PrimaryBlue}" 
+                    <Border Background="{StaticResource PrimaryLightColor}" 
                             CornerRadius="12" 
-                            Padding="24,16" 
-                            Margin="0,0,0,24">
+                            Padding="20,16" 
+                            Margin="0,0,0,24"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BorderColor}">
                         <StackPanel Orientation="Vertical">
                             <TextBlock Text="Lịch sử thi của sinh viên"
-                                       FontSize="20"
-                                       FontWeight="Bold"
-                                       Foreground="White"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource PrimaryColor}"
                                        HorizontalAlignment="Center"/>
                             <TextBlock Text="Xem lại các bài thi đã hoàn thành"
                                        FontSize="14"
-                                       Foreground="White"
+                                       Foreground="{StaticResource TextGray}"
                                        HorizontalAlignment="Center"
-                                       Opacity="0.9"
                                        Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Icon và mô tả -->
-                    <Border Background="{StaticResource LightGray}"
-                            CornerRadius="50"
+                    <Border Background="#F7FAFC"
+                            CornerRadius="16"
                             Width="80"
                             Height="80"
-                            Margin="0,0,0,24">
+                            Margin="0,0,0,20"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BorderColor}">
                         <TextBlock Text="🕒"
-                                   FontSize="36"
+                                   FontSize="32"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                     </Border>
 
-                    <TextBlock Text="Xem lại kết quả các bài thi bạn đã tham gia trước đây."
+                    <TextBlock Text="Xem lại kết quả các bài thi bạn đã tham gia trước đây và theo dõi tiến độ học tập của mình."
                                FontSize="14"
                                Foreground="{StaticResource TextGray}"
                                TextWrapping="Wrap"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"
+                               LineHeight="20"
                                Margin="0,0,0,24"/>
 
                     <!-- Danh sách tính năng -->
-                    <StackPanel Margin="0,0,0,32"  HorizontalAlignment="Center">
+                    <StackPanel Margin="0,0,0,32" HorizontalAlignment="Left">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <Border Background="{StaticResource GreenCheck}"
                                     CornerRadius="10"
@@ -286,7 +270,7 @@
                                     Margin="0,0,12,0">
                                 <TextBlock Text="✓"
                                            Foreground="White"
-                                           FontWeight="Bold"
+                                           FontWeight="SemiBold"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            FontSize="12"/>
@@ -305,14 +289,13 @@
                                     Margin="0,0,12,0">
                                 <TextBlock Text="✓"
                                            Foreground="White"
-                                           FontWeight="Bold"
+                                           FontWeight="SemiBold"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            FontSize="12"/>
                             </Border>
-                            <TextBlock Text="Lưu lại các bài thi theo môn học"
+                            <TextBlock Text="Theo dõi lịch sử thi theo học kỳ"
                                        FontSize="14"
-
                                        Foreground="{StaticResource DarkText}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
@@ -322,7 +305,7 @@
                     <Button Content="Xem lịch sử thi"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Command="{Binding ViewHistory}"
-                            HorizontalAlignment="Stretch" Margin="0,60,0,0"/>
+                            HorizontalAlignment="Stretch"/>
                 </StackPanel>
             </Border>
 
@@ -330,47 +313,51 @@
             <Border Grid.Column="1" Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <!-- Header của card -->
-                    <Border Background="{StaticResource PrimaryBlue}" 
+                    <Border Background="{StaticResource PrimaryLightColor}" 
                             CornerRadius="12" 
-                            Padding="24,16" 
-                            Margin="0,0,0,24">
+                            Padding="20,16" 
+                            Margin="0,0,0,24"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BorderColor}">
                         <StackPanel Orientation="Vertical">
                             <TextBlock Text="Tham gia thi"
-                                       FontSize="20"
-                                       FontWeight="Bold"
-                                       Foreground="White"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource PrimaryColor}"
                                        HorizontalAlignment="Center"/>
                             <TextBlock Text="Tham gia các bài thi hiện có"
                                        FontSize="14"
-                                       Foreground="White"
+                                       Foreground="{StaticResource TextGray}"
                                        HorizontalAlignment="Center"
-                                       Opacity="0.9"
                                        Margin="0,4,0,0"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Icon và mô tả -->
-                    <Border Background="{StaticResource LightGray}"
-                            CornerRadius="50"
+                    <Border Background="#F7FAFC"
+                            CornerRadius="16"
                             Width="80"
                             Height="80"
-                            Margin="0,0,0,24">
+                            Margin="0,0,0,20"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BorderColor}">
                         <TextBlock Text="📝"
-                                   FontSize="36"
+                                   FontSize="32"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                     </Border>
 
-                    <TextBlock Text="Tham gia các bài thi đã được lên lịch cho kỳ học hiện tại."
+                    <TextBlock Text="Tham gia các bài thi đã được lên lịch cho kỳ học hiện tại và kiểm tra kiến thức của bạn."
                                FontSize="14"
                                Foreground="{StaticResource TextGray}"
                                TextWrapping="Wrap"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"
+                               LineHeight="20"
                                Margin="0,0,0,24"/>
 
                     <!-- Danh sách tính năng -->
-                    <StackPanel Margin="0,0,0,32"  HorizontalAlignment="Center">
+                    <StackPanel Margin="0,0,0,32" HorizontalAlignment="Left">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <Border Background="{StaticResource GreenCheck}"
                                     CornerRadius="10"
@@ -379,7 +366,7 @@
                                     Margin="0,0,12,0">
                                 <TextBlock Text="✓"
                                            Foreground="White"
-                                           FontWeight="Bold"
+                                           FontWeight="SemiBold"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            FontSize="12"/>
@@ -390,7 +377,7 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" >
+                        <StackPanel Orientation="Horizontal">
                             <Border Background="{StaticResource GreenCheck}"
                                     CornerRadius="10"
                                     Width="20"
@@ -398,7 +385,7 @@
                                     Margin="0,0,12,0">
                                 <TextBlock Text="✓"
                                            Foreground="White"
-                                           FontWeight="Bold"
+                                           FontWeight="SemiBold"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            FontSize="12"/>
@@ -410,11 +397,11 @@
                         </StackPanel>
                     </StackPanel>
 
-                     <!--Button--> 
+                    <!-- Button -->
                     <Button Content="Tham gia thi ngay"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Command="{Binding ExamList}"
-                            HorizontalAlignment="Stretch" Margin="0,60,0,0"/>
+                            HorizontalAlignment="Stretch"/>
                 </StackPanel>
             </Border>
         </Grid>

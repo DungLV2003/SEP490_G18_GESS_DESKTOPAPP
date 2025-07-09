@@ -6,14 +6,14 @@
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
         xmlns:uc="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
         mc:Ignorable="d"
-        Title="DanhSachBaiThiView" Background="#F8FAFC" WindowState="Maximized">
+        Title="DanhSachBaiThiView" Background="#F7F9FC" WindowState="Maximized">
     <Window.Resources>
         <Style x:Key="BackButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#343A40"/>
+            <Setter Property="Foreground" Value="#2D3748"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="Height" Value="44"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="ToolTip" Value="Quay lại"/>
             <Setter Property="Template">
@@ -21,14 +21,14 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="ButtonBorder"
                         Background="{TemplateBinding Background}" 
-                        CornerRadius="20"
+                        CornerRadius="12"
                         BorderThickness="1"
                         BorderBrush="Transparent">
                             <Path x:Name="ArrowIcon"
                           Data="M15,7 L9,1 L7.5,2.5 L11.25,6.25 L1,6.25 L1,7.75 L11.25,7.75 L7.5,11.5 L9,13 Z"
-                          Fill="#343A40"
-                          Width="16"
-                          Height="16"
+                          Fill="#2D3748"
+                          Width="18"
+                          Height="18"
                           Stretch="Uniform"
                           HorizontalAlignment="Center"
                           VerticalAlignment="Center"
@@ -40,25 +40,28 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F8F9FA"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#DEE2E6"/>
-                                <Setter TargetName="ArrowIcon" Property="Fill" Value="#007BFF"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EDF2F7"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#E2E8F0"/>
+                                <Setter TargetName="ArrowIcon" Property="Fill" Value="#3182CE"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+        
         <!-- Solid Brushes -->
-        <SolidColorBrush x:Key="HeaderBackground" Color="#E9ECEF"/>
-        <SolidColorBrush x:Key="TabBackground" Color="#6C757D"/>
+        <SolidColorBrush x:Key="HeaderBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TabBackground" Color="#3182CE"/>
+        <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E2E8F0"/>
 
         <!-- Button Styles -->
         <Style x:Key="TabButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#343A40"/>
+            <Setter Property="Foreground" Value="#4A5568"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="Padding" Value="24,12"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -66,14 +69,15 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="8,8,0,0" 
+                                CornerRadius="12,12,0,0" 
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" 
                                             VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#5C636A"/>
+                                <Setter Property="Background" Value="#EBF8FF"/>
+                                <Setter Property="Foreground" Value="#3182CE"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -82,15 +86,16 @@
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsMultiExamSelected}" Value="True">
                     <Setter Property="Background" Value="{StaticResource TabBackground}"/>
+                    <Setter Property="Foreground" Value="White"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
         <Style x:Key="TabButtonStyle2" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#343A40"/>
+            <Setter Property="Foreground" Value="#4A5568"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="Padding" Value="24,12"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -98,14 +103,15 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="8,8,0,0" 
+                                CornerRadius="12,12,0,0" 
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" 
                                             VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#6C757D"/>
+                                <Setter Property="Background" Value="#EBF8FF"/>
+                                <Setter Property="Foreground" Value="#3182CE"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -114,29 +120,35 @@
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsPracticeExamSelected}" Value="True">
                     <Setter Property="Background" Value="{StaticResource TabBackground}"/>
+                    <Setter Property="Foreground" Value="White"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
         <Style x:Key="ActionButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#6C757D"/>
+            <Setter Property="Background" Value="#3182CE"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="4" 
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" 
                                             VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#5C636A"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#2C5282"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#2A4365"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -145,21 +157,62 @@
         </Style>
 
         <Style x:Key="DisabledButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#DC3545"/>
+            <Setter Property="Background" Value="#E53E3E"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="20,4"/>
+            <Setter Property="Padding" Value="12,6"/>
             <Setter Property="FontSize" Value="11"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="4" 
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="6" 
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" 
                                             VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#C53030"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#9C2A2A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CloseAllButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#38A169"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="6" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#2F855A"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#276749"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -174,13 +227,15 @@
 
         <!-- Header Section với Title và Back Button -->
         <Border Grid.Row="0" Background="{StaticResource HeaderBackground}" 
-        CornerRadius="12,12,0,0"
-        Margin="20,20,20,20">
+        CornerRadius="16"
+        Margin="24,24,24,12"
+        BorderThickness="1"
+        BorderBrush="{StaticResource BorderColor}">
             <Border.Effect>
-                <DropShadowEffect Color="Black" Opacity="0.1" 
-                        ShadowDepth="2" BlurRadius="8"/>
+                <DropShadowEffect Color="#000000" Opacity="0.08" 
+                        ShadowDepth="0" BlurRadius="24"/>
             </Border.Effect>
-            <Grid Margin="20,15">
+            <Grid Margin="24,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -192,15 +247,15 @@
                 Style="{StaticResource BackButtonStyle}"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Margin="0,0,15,0"
+                Margin="0,0,20,0"
                 Command="{Binding BackCommand}"/>
 
                 <!-- Title -->
                 <TextBlock Grid.Column="1"
                    Text="Danh sách bài thi" 
-                   FontSize="24" 
-                   FontWeight="Bold" 
-                   Foreground="#343A40" 
+                   FontSize="28" 
+                   FontWeight="SemiBold" 
+                   Foreground="#1A202C" 
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"/>
 
@@ -213,7 +268,7 @@
 
         <!-- Loading Indicator -->
         <Grid Grid.Row="1">
-            <Border Background="#80FFFFFF">
+            <Border Background="#F0FFFFFF">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -227,21 +282,20 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock Text="Đang tải dữ liệu..." 
                                FontSize="18" 
-                               Foreground="#6C757D"
+                               Foreground="#4A5568"
+                               FontWeight="Medium"
                                HorizontalAlignment="Center"/>
                     <ProgressBar IsIndeterminate="True" 
-                                 Width="200" Height="4" 
-                                 Margin="0,10,0,0"/>
+                                 Width="240" Height="6" 
+                                 Margin="0,16,0,0"
+                                 Background="#E2E8F0"
+                                 Foreground="#3182CE"/>
                 </StackPanel>
             </Border>
 
             <!-- Main Content -->
-            <Border CornerRadius="15,15,15,15" 
-                    Margin="20,0,20,20">
-                <Border.Effect>
-                    <DropShadowEffect Color="Black" Opacity="0.05" 
-                                    ShadowDepth="0" BlurRadius="20"/>
-                </Border.Effect>
+            <Border CornerRadius="16" 
+                    Margin="24,12,24,24">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70*"/>
@@ -250,60 +304,65 @@
 
                     <!-- Table Content -->
                     <Border Grid.Column="0" 
-                            Background="White" 
-                            CornerRadius="12,12,12,12" 
-                            BorderThickness="0">
+                            Background="{StaticResource CardBackground}" 
+                            CornerRadius="16" 
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BorderColor}">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#000000" Opacity="0.08" 
+                                            ShadowDepth="0" BlurRadius="24"/>
+                        </Border.Effect>
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel>
-                                <!-- Tab Section - LIỀN VỚI BẢNG -->
-                                <Border Background="White" CornerRadius="12,12,12,12" >
-                                    <StackPanel Orientation="Horizontal" Margin="0,0">
+                                <!-- Tab Section -->
+                                <Border Background="Transparent" CornerRadius="16,16,0,0" >
+                                    <StackPanel Orientation="Horizontal" Margin="16,16,16,0">
                                         <Button Content="Trắc nghiệm" 
                                                 Style="{StaticResource TabButtonStyle}"
                                                 Command="{Binding LoadMultiExamCommand}"/>
                                         <Button Content="Tự luận" 
                                                 Style="{StaticResource TabButtonStyle2}" 
                                                 Command="{Binding LoadPracticeExamCommand}"
-                                                Margin="2,0,0,0"/>
+                                                Margin="4,0,0,0"/>
                                     </StackPanel>
                                 </Border>
 
                                 <!-- Table Header -->
-                                <Border Background="#DEE2E6">
-                                    <Grid Margin="20,15">
+                                <Border Background="#F7FAFC" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,1">
+                                    <Grid Margin="24,16">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="40"/>
-                                            <ColumnDefinition Width="280"/>
-                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="2*"/>
                                             <ColumnDefinition Width="100"/>
-                                            <ColumnDefinition Width="120"/>
-                                            <ColumnDefinition Width="140"/>
-                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="90"/>
+                                            <ColumnDefinition Width="110"/>
+                                            <ColumnDefinition Width="130"/>
                                             <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="110"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="STT" FontWeight="Bold"
-                                                 Foreground="#343A40" FontSize="14"
+                                        <TextBlock Grid.Column="0" Text="STT" FontWeight="SemiBold"
+                                                 Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
-                                        <TextBlock Grid.Column="1" Text="Tên bài thi" FontWeight="Bold"
-                                                 Foreground="#343A40" FontSize="14"
+                                        <TextBlock Grid.Column="1" Text="Tên bài thi" FontWeight="SemiBold"
+                                                 Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
-                                        <TextBlock Grid.Column="2" Text="Môn" FontWeight="Bold"
-                                                 Foreground="#343A40" FontSize="14"
+                                        <TextBlock Grid.Column="2" Text="Môn" FontWeight="SemiBold"
+                                                 Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
-                                        <TextBlock Grid.Column="3" Text="Thời gian" FontWeight="Bold"
-                                                 Foreground="#343A40" FontSize="14"
+                                        <TextBlock Grid.Column="3" Text="Thời gian" FontWeight="SemiBold"
+                                                 Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
-                                        <TextBlock Grid.Column="4" Text="Ngày thi" FontWeight="Bold"
-                                                 Foreground="#343A40" FontSize="14"
+                                        <TextBlock Grid.Column="4" Text="Ngày thi" FontWeight="SemiBold"
+                                                 Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
-                                        <TextBlock Grid.Column="5" Text="Ca thi" FontWeight="Bold"
-                                                 Foreground="#343A40" FontSize="14"
+                                        <TextBlock Grid.Column="5" Text="Ca thi" FontWeight="SemiBold"
+                                                 Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
-                                        <TextBlock Grid.Column="6" Text="Phòng thi" FontWeight="Bold"
-                                                 Foreground="#343A40" FontSize="14"
+                                        <TextBlock Grid.Column="6" Text="Phòng thi" FontWeight="SemiBold"
+                                                 Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
-                                        <TextBlock Grid.Column="7" Text="Thao tác" FontWeight="Bold"
-                                                 Foreground="#343A40" FontSize="14"
+                                        <TextBlock Grid.Column="7" Text="Thao tác" FontWeight="SemiBold"
+                                                 Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
                                     </Grid>
                                 </Border>
@@ -312,33 +371,33 @@
                                 <ItemsControl ItemsSource="{Binding ExamList}" AlternationCount="2">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border BorderBrush="#CED4DA" BorderThickness="0,0,0,1">
+                                            <Border BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1">
                                                 <Border.Style>
                                                     <Style TargetType="Border">
                                                         <Setter Property="Background" Value="White"/>
                                                         <Style.Triggers>
                                                             <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                                                                <Setter Property="Background" Value="#F8F9FA"/>
+                                                                <Setter Property="Background" Value="#FAFAFA"/>
                                                             </Trigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
 
-                                                <Grid Margin="20,15">
+                                                <Grid Margin="24,18">
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="40"/>
-                                                        <ColumnDefinition Width="280"/>
-                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="60"/>
+                                                        <ColumnDefinition Width="2*"/>
                                                         <ColumnDefinition Width="100"/>
-                                                        <ColumnDefinition Width="120"/>
-                                                        <ColumnDefinition Width="140"/>
-                                                        <ColumnDefinition Width="120"/>
+                                                        <ColumnDefinition Width="90"/>
+                                                        <ColumnDefinition Width="110"/>
+                                                        <ColumnDefinition Width="130"/>
                                                         <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="110"/>
                                                     </Grid.ColumnDefinitions>
 
                                                     <!-- STT bắt đầu từ 1 -->
-                                                    <TextBlock Grid.Column="0" FontSize="14" Foreground="#495057" 
-         HorizontalAlignment="Center" TextAlignment="Center">
+                                                    <TextBlock Grid.Column="0" FontSize="14" Foreground="#4A5568" 
+         HorizontalAlignment="Center" TextAlignment="Center" FontWeight="Medium">
                                                         <TextBlock.Text>
                                                             <MultiBinding StringFormat="{}{0}">
                                                                 <MultiBinding.Converter>
@@ -353,23 +412,24 @@
                                                     <!-- Tên bài thi -->
                                                     <TextBlock Grid.Column="1" 
                                                              Text="{Binding ExamName}" 
-                                                             FontSize="14" Foreground="#495057" 
+                                                             FontSize="14" Foreground="#2D3748" 
                                                              TextWrapping="Wrap" 
                                                              TextTrimming="CharacterEllipsis"
                                                              MaxHeight="50"
-                                                             Padding="5,0"
+                                                             Padding="8,0"
+                                                             FontWeight="Medium"
                                                                HorizontalAlignment="Center" TextAlignment="Center"/>
 
                                                     <!-- Môn học -->
                                                     <TextBlock Grid.Column="2" 
                                                              Text="{Binding SubjectName}" 
-                                                             FontSize="14" Foreground="#495057" 
+                                                             FontSize="14" Foreground="#4A5568" 
                                                              TextWrapping="Wrap"
                                                              HorizontalAlignment="Center" TextAlignment="Center"/>
 
                                                     <!-- Thời gian -->
                                                     <TextBlock Grid.Column="3" 
-                                                             FontSize="14" Foreground="#495057"
+                                                             FontSize="14" Foreground="#4A5568"
                                                              HorizontalAlignment="Center" TextAlignment="Center">
                                                         <TextBlock.Text>
                                                             <MultiBinding StringFormat="{}{0} phút">
@@ -381,7 +441,7 @@
                                                     <!-- Ngày thi -->
                                                     <TextBlock Grid.Column="4" 
            Text="{Binding ExamDay, StringFormat='dd/MM/yyyy', TargetNullValue='-', FallbackValue='-'}"
-           FontSize="14" Foreground="#495057"
+           FontSize="14" Foreground="#4A5568"
            HorizontalAlignment="Center" TextAlignment="Center"/>
 
                                                     <!-- Ca thi: nếu null thì chỉ hiển thị "-" -->
@@ -404,10 +464,10 @@
 
                                                             <!-- Tên ca thi -->
                                                             <TextBlock Text="{Binding ExamSlotName}"
-                                                                     FontSize="14" Foreground="#495057" 
-                                                                     TextAlignment="Center" FontWeight="SemiBold"/>
+                                                                     FontSize="14" Foreground="#2D3748" 
+                                                                     TextAlignment="Center" FontWeight="Medium"/>
                                                             <!-- Khoảng thời gian -->
-                                                            <TextBlock FontSize="12" Foreground="#6C757D" 
+                                                            <TextBlock FontSize="12" Foreground="#718096" 
            TextAlignment="Center" Margin="0,2,0,0">
                                                                 <TextBlock.Text>
                                                                     <MultiBinding StringFormat="({0:hh\:mm} - {1:hh\:mm})">
@@ -419,7 +479,7 @@
                                                         </StackPanel>
 
                                                         <!-- Ca thi null hoặc empty -->
-                                                        <TextBlock Text="-" FontSize="14" Foreground="#495057" 
+                                                        <TextBlock Text="-" FontSize="14" Foreground="#4A5568" 
                                                                  HorizontalAlignment="Center" TextAlignment="Center">
                                                             <TextBlock.Style>
                                                                 <Style TargetType="TextBlock">
@@ -439,7 +499,7 @@
 
                                                     <!-- Phòng thi -->
                                                     <TextBlock Grid.Column="6" 
-                                                             FontSize="14" Foreground="#495057"
+                                                             FontSize="14" Foreground="#4A5568"
                                                              HorizontalAlignment="Center" TextAlignment="Center">
                                                         <TextBlock.Text>
                                                             <Binding Path="RoomName">
@@ -454,6 +514,8 @@
                                                         Content="Vào Thi" 
                                                         Style="{StaticResource ActionButtonStyle}"
                                                         HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        MinWidth="90"
                                                         Command="{Binding DataContext.JoinExamCommand, 
                                                                  RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                                         CommandParameter="{Binding}"/>
@@ -477,76 +539,224 @@
                                     </Grid.Style>
                                     <TextBlock Text="Không có dữ liệu bài thi" 
                                              FontSize="16" 
-                                             Foreground="#6C757D"
+                                             Foreground="#718096"
+                                             FontWeight="Medium"
                                              HorizontalAlignment="Center"
-                                             Margin="20,40"/>
+                                             Margin="24,48"/>
                                 </Grid>
                             </StackPanel>
                         </ScrollViewer>
                     </Border>
 
-                    <!-- Applications Status Panel - giữ nguyên -->
+                    <!-- Applications Status Panel - Dynamic -->
                     <Border Grid.Column="1" 
-                            Background="#E9ECEF" 
-                            CornerRadius="12,12,12,12" 
-                            Margin="20,0,0,0">
+                            Background="{StaticResource CardBackground}" 
+                            CornerRadius="16" 
+                            Margin="16,0,0,0"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BorderColor}">
                         <Border.Effect>
-                            <DropShadowEffect Color="Black" Opacity="0.05" 
-                                            ShadowDepth="0" BlurRadius="10"/>
+                            <DropShadowEffect Color="#000000" Opacity="0.08" 
+                                            ShadowDepth="0" BlurRadius="24"/>
                         </Border.Effect>
-                        <Grid Margin="15,15">
+                        <Grid Margin="20">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <Border Grid.Row="0" Background="#DC3545" 
+                            
+                            <!-- Warning Banner -->
+                            <Border Grid.Row="0" Background="#FED7D7" 
                                     CornerRadius="12" 
-                                    Padding="8,6" 
-                                    Margin="0,0,0,10">
+                                    Padding="12,8" 
+                                    Margin="0,0,0,16"
+                                    BorderThickness="1"
+                                    BorderBrush="#FEB2B2">
                                 <TextBlock Text="⚠ Vui lòng tắt tất cả ứng dụng để vào thi" 
                                          FontSize="12" 
-                                         Foreground="White" 
+                                         Foreground="#C53030" 
                                          FontWeight="Medium" 
-                                         HorizontalAlignment="Center"/>
+                                         HorizontalAlignment="Center"
+                                         TextWrapping="Wrap"/>
                             </Border>
+                            
+                            <!-- Title -->
                             <TextBlock Grid.Row="1" Text="Ứng dụng bị cấm" 
-                                     FontWeight="Bold" FontSize="16" 
-                                     Foreground="#343A40" Margin="0,0,0,10" 
+                                     FontWeight="SemiBold" FontSize="16" 
+                                     Foreground="#2D3748" Margin="0,0,0,12" 
                                      HorizontalAlignment="Center"/>
-                            <StackPanel Grid.Row="2">
-                                <Grid Margin="0,5">
+                            
+                            <!-- Header for Applications -->
+                            <Border Grid.Row="2" Background="Transparent" CornerRadius="8" Margin="0,0,0,8" Padding="12,10">
+                                <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="150"/>
-                                        <ColumnDefinition Width="100"/>
-                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="40"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="70"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Chrome" FontSize="13" 
-                                             Foreground="#343A40" VerticalAlignment="Center" 
-                                             HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="1" Text="Đang mở" FontSize="13" 
-                                             Foreground="#343A40" VerticalAlignment="Center" 
-                                             HorizontalAlignment="Center"/>
-                                    <Button Grid.Column="2" Content="Tắt" 
-                                            Style="{StaticResource DisabledButtonStyle}" 
-                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="Ứng dụng" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Left" Foreground="#4A5568" Padding="8,0"/>
+                                    <TextBlock Grid.Column="2" Text="Trạng thái" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="#4A5568"/>
+                                    <TextBlock Grid.Column="3" Text="Thao tác" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="#4A5568"/>
                                 </Grid>
-                                <Grid Margin="0,5">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="150"/>
-                                        <ColumnDefinition Width="100"/>
-                                        <ColumnDefinition Width="100"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Word" FontSize="13" 
-                                             Foreground="#343A40" VerticalAlignment="Center" 
-                                             HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="1" Text="Đang mở" FontSize="13" 
-                                             Foreground="#343A40" VerticalAlignment="Center" 
-                                             HorizontalAlignment="Center"/>
-                                    <Button Grid.Column="2" Content="Tắt" 
-                                            Style="{StaticResource DisabledButtonStyle}" 
-                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Grid>
+                            </Border>
+                            
+                            <!-- Loading Indicator -->
+                            <Border Grid.Row="3" Background="Transparent">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsLoadingApplications}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="Đang tìm ứng dụng..." 
+                                               FontSize="14" 
+                                               Foreground="#718096"
+                                               FontWeight="Medium"
+                                               HorizontalAlignment="Center"/>
+                                    <ProgressBar IsIndeterminate="True" 
+                                                 Width="160" Height="4" 
+                                                 Margin="0,12,0,0"
+                                                 Background="#E2E8F0"
+                                                 Foreground="#3182CE"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- Applications List -->
+                            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer.Style>
+                                    <Style TargetType="ScrollViewer">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsLoadingApplications}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ScrollViewer.Style>
+                                
+                                <StackPanel>
+                                    <ItemsControl ItemsSource="{Binding RunningApplications}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#F7FAFC" CornerRadius="8" Margin="0,0,0,8" Padding="12,10" BorderThickness="1" BorderBrush="#E2E8F0">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="40"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="80"/>
+                                                            <ColumnDefinition Width="70"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <!-- App Icon -->
+                                                        <TextBlock Grid.Column="0" 
+                                                                 Text="{Binding IconText}" 
+                                                                 FontSize="16" 
+                                                                 VerticalAlignment="Center" 
+                                                                 HorizontalAlignment="Center"/>
+                                                        
+                                                        <!-- Application Name -->
+                                                        <TextBlock Grid.Column="1" 
+                                                                 Text="{Binding ApplicationName}" 
+                                                                 FontSize="12" 
+                                                                 Foreground="#2D3748" 
+                                                                 VerticalAlignment="Center" 
+                                                                 HorizontalAlignment="Left"
+                                                                 TextWrapping="Wrap"
+                                                                 Padding="8,0"
+                                                                 FontWeight="Medium"
+                                                                 ToolTip="{Binding ProcessName}"/>
+                                                        
+                                                        <!-- Status -->
+                                                        <TextBlock Grid.Column="2" 
+                                                                 Text="{Binding Status}" 
+                                                                 FontSize="11" 
+                                                                 Foreground="#718096" 
+                                                                 VerticalAlignment="Center" 
+                                                                 HorizontalAlignment="Center"
+                                                                 TextWrapping="Wrap"/>
+                                                        
+                                                        <!-- Close Button -->
+                                                        <Button Grid.Column="3" 
+                                                                Content="Tắt" 
+                                                                Style="{StaticResource DisabledButtonStyle}" 
+                                                                HorizontalAlignment="Center" 
+                                                                VerticalAlignment="Center"
+                                                                FontSize="10"
+                                                                Padding="8,4"
+                                                                IsEnabled="{Binding IsCloseable}"
+                                                                Command="{Binding DataContext.CloseApplicationCommand, 
+                                                                         RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                                                CommandParameter="{Binding}"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    
+                                    <!-- Message when no blocked applications -->
+                                    <Grid>
+                                        <Grid.Style>
+                                            <Style TargetType="Grid">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding RunningApplications.Count}" Value="0"/>
+                                                            <Condition Binding="{Binding IsLoadingApplications}" Value="False"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </MultiDataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Grid.Style>
+                                        <Border Background="#F0FDF4" CornerRadius="12" Padding="16" BorderThickness="1" BorderBrush="#BBF7D0">
+                                            <TextBlock Text=" Không có ứng dụng bị cấm đang chạy" 
+                                                     FontSize="13" 
+                                                     Foreground="#16A34A"
+                                                     FontWeight="Medium"
+                                                     HorizontalAlignment="Center"
+                                                     VerticalAlignment="Center"
+                                                     TextAlignment="Center"
+                                                     TextWrapping="Wrap"/>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                            
+                            <!-- Control Buttons -->
+                            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+                                <Button Content="Làm mới" 
+                                        Style="{StaticResource ActionButtonStyle}"
+                                        FontSize="11"
+                                        Padding="10,6"
+                                        Margin="0,0,8,0"
+                                        Command="{Binding RefreshApplicationsCommand}"/>
+                                
+                                <Button Content="Tắt tất cả" 
+                                        Command="{Binding CloseAllApplicationsCommand}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource CloseAllButtonStyle}">
+                                            <Setter Property="FontSize" Value="11"/>
+                                            <Setter Property="Padding" Value="10,6"/>
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RunningApplications.Count}" Value="0">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                             </StackPanel>
                         </Grid>
                     </Border>

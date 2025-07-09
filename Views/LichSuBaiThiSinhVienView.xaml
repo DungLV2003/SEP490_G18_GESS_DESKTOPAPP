@@ -6,23 +6,26 @@
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
         xmlns:uc="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
         mc:Ignorable="d"
-        Title="Lịch sử bài thi" Background="#F5F6FA" WindowState="Maximized">
+        Title="Lịch sử bài thi" Background="#F7F9FC" WindowState="Maximized">
     <Window.Resources>
-        <!-- Gradient cho header -->
-        <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,0">
-            <GradientStop Color="#1976D2" Offset="0"/>
-            <GradientStop Color="#2196F3" Offset="1"/>
-        </LinearGradientBrush>
+        <!-- Color Resources -->
+        <SolidColorBrush x:Key="HeaderBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E2E8F0"/>
+        <SolidColorBrush x:Key="PrimaryColor" Color="#3182CE"/>
+        <SolidColorBrush x:Key="PrimaryLightColor" Color="#EBF8FF"/>
 
         <!-- Style cho panels với shadow -->
         <Style x:Key="ShadowPanel" TargetType="Border">
-            <Setter Property="CornerRadius" Value="18"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="Margin" Value="20,0,20,0"/>
-            <Setter Property="Padding" Value="28"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="Margin" Value="24,0,24,0"/>
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="#1976D2" BlurRadius="16" ShadowDepth="0" Opacity="0.08"/>
+                    <DropShadowEffect Color="#000000" BlurRadius="24" ShadowDepth="0" Opacity="0.08"/>
                 </Setter.Value>
             </Setter>
         </Style>
@@ -30,12 +33,12 @@
         <!-- Style cho ComboBox đã sửa -->
         <Style x:Key="ModernComboBox" TargetType="ComboBox">
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="Margin" Value="0,0,0,14"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Padding" Value="16,12"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
@@ -44,10 +47,10 @@
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="8">
+                                    CornerRadius="12">
                                 <Grid>
                                     <ContentPresenter x:Name="ContentSite"
-                                                    Margin="12,0,30,0"
+                                                    Margin="16,0,36,0"
                                                     VerticalAlignment="Center"
                                                     HorizontalAlignment="Left"
                                                     Content="{TemplateBinding SelectionBoxItem}"
@@ -63,10 +66,10 @@
                                                 Background="Transparent"
                                                 BorderThickness="0"
                                                 HorizontalAlignment="Right"
-                                                Width="30">
+                                                Width="36">
                                         <Path x:Name="Arrow"
                                             Data="M 0 0 L 4 4 L 8 0 Z"
-                                            Fill="#6B7280"
+                                            Fill="#718096"
                                             Width="8" Height="6"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"/>
@@ -85,15 +88,15 @@
                                     MinWidth="{TemplateBinding ActualWidth}"
                                     MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                     <Border x:Name="DropDownBorder"
-                                        Background="White"
+                                        Background="{StaticResource CardBackground}"
                                         BorderThickness="1"
-                                        BorderBrush="#D1D5DB"
-                                        CornerRadius="8"
-                                        Margin="0,2,0,0">
+                                        BorderBrush="{StaticResource BorderColor}"
+                                        CornerRadius="12"
+                                        Margin="0,4,0,0">
                                         <Border.Effect>
-                                            <DropShadowEffect Color="Black" Opacity="0.1" BlurRadius="10" ShadowDepth="2"/>
+                                            <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="16" ShadowDepth="0"/>
                                         </Border.Effect>
-                                        <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                        <ScrollViewer Margin="8" SnapsToDevicePixels="True">
                                             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
                                         </ScrollViewer>
                                     </Border>
@@ -102,10 +105,10 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
                             </Trigger>
                             <Trigger Property="IsDropDownOpen" Value="True">
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#2196F3"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
                                 <Setter TargetName="Arrow" Property="Data" Value="M 0 4 L 4 0 L 8 4 Z"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -116,7 +119,7 @@
 
         <!-- Style cho ComboBoxItem -->
         <Style TargetType="ComboBoxItem">
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Padding" Value="16,12"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
@@ -128,18 +131,18 @@
                                 Background="{TemplateBinding Background}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                CornerRadius="6"
-                                Margin="2">
+                                CornerRadius="8"
+                                Margin="4">
                             <ContentPresenter Margin="{TemplateBinding Padding}"
                                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#E3F2FD"/>
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource PrimaryLightColor}"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#2196F3"/>
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource PrimaryColor}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -150,26 +153,30 @@
 
         <!-- Style cho môn học items -->
         <Style x:Key="SubjectItemStyle" TargetType="Border">
-            <Setter Property="Margin" Value="0,3"/>
-            <Setter Property="Padding" Value="14,10"/>
-            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Background" Value="#E3F2FD"/>
+            <Setter Property="Background" Value="#F7FAFC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#BBDEFB"/>
+                    <Setter Property="Background" Value="{StaticResource PrimaryLightColor}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <!-- Converter để xử lý background cho selected subject -->
         <local:SubjectSelectionConverter x:Key="SubjectSelectionConverter"/>
+        
         <Style x:Key="BackButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#343A40"/>
+            <Setter Property="Foreground" Value="#2D3748"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="Height" Value="44"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="ToolTip" Value="Quay lại"/>
             <Setter Property="Template">
@@ -177,14 +184,14 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="ButtonBorder"
                 Background="{TemplateBinding Background}" 
-                CornerRadius="20"
+                CornerRadius="12"
                 BorderThickness="1"
                 BorderBrush="Transparent">
                             <Path x:Name="ArrowIcon"
                   Data="M15,7 L9,1 L7.5,2.5 L11.25,6.25 L1,6.25 L1,7.75 L11.25,7.75 L7.5,11.5 L9,13 Z"
-                  Fill="#343A40"
-                  Width="16"
-                  Height="16"
+                  Fill="#2D3748"
+                  Width="18"
+                  Height="18"
                   Stretch="Uniform"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center"
@@ -196,9 +203,9 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F8F9FA"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#DEE2E6"/>
-                                <Setter TargetName="ArrowIcon" Property="Fill" Value="#007BFF"/>
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EDF2F7"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+                                <Setter TargetName="ArrowIcon" Property="Fill" Value="{StaticResource PrimaryColor}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -209,14 +216,21 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="90"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header với gradient -->
-        <!-- Header với gradient và Back button -->
-        <Border Grid.Row="0" Background="{StaticResource HeaderGradient}">
-            <Grid>
+        <!-- Header Section -->
+        <Border Grid.Row="0" Background="{StaticResource HeaderBackground}" 
+        CornerRadius="16"
+        Margin="24,24,24,12"
+        BorderThickness="1"
+        BorderBrush="{StaticResource BorderColor}">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Opacity="0.08" 
+                        ShadowDepth="0" BlurRadius="24"/>
+            </Border.Effect>
+            <Grid Margin="24,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -228,28 +242,27 @@
                 Style="{StaticResource BackButtonStyle}"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Margin="20,0,0,0"
+                Margin="0,0,20,0"
                 Command="{Binding BackCommand}"/>
 
                 <!-- Title -->
                 <TextBlock Grid.Column="1" 
                    Text="Lịch sử bài thi" 
-                   Foreground="White" 
+                   Foreground="#1A202C" 
                    FontSize="28" 
-                   FontWeight="Bold" 
+                   FontWeight="SemiBold" 
                    VerticalAlignment="Center" 
                    HorizontalAlignment="Center"/>
 
                 <!-- User Profile Control -->
                 <uc:UserProfileControl Grid.Column="2" 
                                      HorizontalAlignment="Right" 
-                                     VerticalAlignment="Center"
-                                     Margin="0,0,20,0"/>
+                                     VerticalAlignment="Center"/>
             </Grid>
         </Border>
 
         <!-- Loading Indicator -->
-        <Border Grid.Row="1" Background="#80FFFFFF" Panel.ZIndex="100">
+        <Border Grid.Row="1" Background="#F0FFFFFF" Panel.ZIndex="100">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -263,16 +276,19 @@
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="Đang tải dữ liệu..." 
                            FontSize="18" 
-                           Foreground="#6C757D"
+                           Foreground="#4A5568"
+                           FontWeight="Medium"
                            HorizontalAlignment="Center"/>
                 <ProgressBar IsIndeterminate="True" 
-                             Width="200" Height="4" 
-                             Margin="0,10,0,0"/>
+                             Width="240" Height="6" 
+                             Margin="0,16,0,0"
+                             Background="{StaticResource BorderColor}"
+                             Foreground="{StaticResource PrimaryColor}"/>
             </StackPanel>
         </Border>
 
         <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="0,24,0,24">
+        <Grid Grid.Row="1" Margin="0,12,0,24">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="450"/>
                 <ColumnDefinition Width="*"/>
@@ -282,14 +298,17 @@
             <Border Grid.Column="0" Style="{StaticResource ShadowPanel}">
                 <StackPanel>
                     <TextBlock Text="Bộ lọc" 
-                               FontSize="19" 
-                               FontWeight="Bold" 
-                               Margin="0,0,0,20"/>
+                               FontSize="20" 
+                               FontWeight="SemiBold" 
+                               Foreground="#2D3748"
+                               Margin="0,0,0,24"/>
 
                     <!-- Kỳ học filter -->
                     <TextBlock Text="Kỳ học" 
                                FontWeight="SemiBold" 
-                               Margin="0,0,0,6"/>
+                               FontSize="14"
+                               Foreground="#4A5568"
+                               Margin="0,0,0,8"/>
                     <ComboBox ItemsSource="{Binding SemesterList}" 
                               SelectedItem="{Binding SelectedSemester}" 
                               DisplayMemberPath="SemesterName"
@@ -298,11 +317,13 @@
                     <!-- Năm học filter -->
                     <TextBlock Text="Năm học" 
                                FontWeight="SemiBold" 
-                               Margin="0,0,0,6"/>
+                               FontSize="14"
+                               Foreground="#4A5568"
+                               Margin="0,0,0,8"/>
                     <ComboBox ItemsSource="{Binding YearList}" 
                               SelectedItem="{Binding SelectedYear}"
                               Style="{StaticResource ModernComboBox}"
-                              Margin="0,0,0,22">
+                              Margin="0,0,0,24">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding StringFormat=Năm {0}}"/>
@@ -313,7 +334,9 @@
                     <!-- Danh sách môn học -->
                     <TextBlock Text="Danh sách môn học" 
                                FontWeight="SemiBold" 
-                               Margin="0,0,0,10"/>
+                               FontSize="16"
+                               Foreground="#2D3748"
+                               Margin="0,0,0,12"/>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Height="350">
                         <ItemsControl ItemsSource="{Binding SubjectList}">
                             <ItemsControl.ItemTemplate>
@@ -328,19 +351,71 @@
                                         </Border.Background>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="📘" 
-                                                       FontSize="17" 
-                                                       Margin="0,0,10,0"/>
+                                                       FontSize="18" 
+                                                       Margin="0,0,12,0"/>
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Code}" 
-                                                               FontWeight="Bold" 
-                                                               Foreground="#1976D2" 
-                                                               FontSize="15"/>
-                                                    <TextBlock Text=" - " FontSize="15"/>
+                                                               FontWeight="SemiBold" 
+                                                               FontSize="15"
+                                                               x:Name="SubjectCode">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="{StaticResource PrimaryColor}"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Value="True">
+                                                                        <DataTrigger.Binding>
+                                                                            <MultiBinding Converter="{StaticResource SubjectSelectionConverter}">
+                                                                                <Binding Path="DataContext.SelectedSubject" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                                                                <Binding Path="."/>
+                                                                            </MultiBinding>
+                                                                        </DataTrigger.Binding>
+                                                                        <Setter Property="Foreground" Value="White"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <TextBlock Text=" - " FontSize="15" x:Name="Separator">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Value="True">
+                                                                        <DataTrigger.Binding>
+                                                                            <MultiBinding Converter="{StaticResource SubjectSelectionConverter}">
+                                                                                <Binding Path="DataContext.SelectedSubject" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                                                                <Binding Path="."/>
+                                                                            </MultiBinding>
+                                                                        </DataTrigger.Binding>
+                                                                        <Setter Property="Foreground" Value="White"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
                                                 </StackPanel>
                                                 <TextBlock Text="{Binding Name}" 
-                                                           FontSize="15"
-                                                           TextWrapping="Wrap"/>
+                                                           FontSize="14"
+                                                           TextWrapping="Wrap"
+                                                           x:Name="SubjectName">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="#1A202C"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Value="True">
+                                                                    <DataTrigger.Binding>
+                                                                        <MultiBinding Converter="{StaticResource SubjectSelectionConverter}">
+                                                                            <Binding Path="DataContext.SelectedSubject" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                                                            <Binding Path="."/>
+                                                                        </MultiBinding>
+                                                                    </DataTrigger.Binding>
+                                                                    <Setter Property="Foreground" Value="White"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
                                             </StackPanel>
                                         </StackPanel>
                                     </Border>
@@ -352,10 +427,10 @@
             </Border>
 
             <!-- Right Panel - Chi tiết lịch sử bài thi -->
-            <Border Grid.Column="1" Style="{StaticResource ShadowPanel}" Margin="0,0,36,0">
+            <Border Grid.Column="1" Style="{StaticResource ShadowPanel}" Margin="16,0,24,0">
                 <StackPanel>
                     <!-- Subject Header -->
-                    <TextBlock FontSize="22" FontWeight="Bold" Margin="0,0,0,2">
+                    <TextBlock FontSize="22" FontWeight="SemiBold" Foreground="#2D3748" Margin="0,0,0,4">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0} - {1}">
                                 <Binding Path="SelectedSubject.Code" FallbackValue=""/>
@@ -364,7 +439,7 @@
                         </TextBlock.Text>
                     </TextBlock>
 
-                    <TextBlock FontSize="15" Foreground="Gray" Margin="0,0,0,22">
+                    <TextBlock FontSize="15" Foreground="#718096" Margin="0,0,0,24">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}Học kỳ {0}, năm {1}">
                                 <Binding Path="SelectedSemester.SemesterName" FallbackValue=""/>
@@ -373,15 +448,13 @@
                         </TextBlock.Text>
                     </TextBlock>
 
-                    <!-- Exam Table với cột NGÀY THI -->
-                    <Border BorderBrush="#E3E3E3" 
-                            BorderThickness="1" 
-                            CornerRadius="12" 
+                    <!-- Exam Table -->
+                    <Border 
                             Padding="0" 
-                            Margin="0,0,0,22">
+                            Margin="0,0,0,24">
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="44"/>
+                                <RowDefinition Height="50"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
@@ -394,51 +467,51 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Table Headers -->
-                            <Border Grid.Row="0" Grid.Column="0" Background="#1976D2" CornerRadius="12,0,0,0">
-                                <TextBlock Text="TÊN BÀI THI" 
-                                           Foreground="White" 
-                                           FontWeight="Bold" 
-                                           FontSize="15" 
+                            <Border Grid.Row="0" Grid.Column="0" Background="#F7FAFC" BorderBrush="{StaticResource BorderColor}" BorderThickness="1,1,0,1" >
+                                <TextBlock Text="Tên bài thi" 
+                                           Foreground="#2D3748" 
+                                           FontWeight="SemiBold" 
+                                           FontSize="14" 
                                            VerticalAlignment="Center" 
                                            HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="1" Background="#1976D2">
-                                <TextBlock Text="LOẠI BÀI THI" 
-                                           Foreground="White" 
-                                           FontWeight="Bold" 
-                                           FontSize="15" 
+                            <Border Grid.Row="0" Grid.Column="1" Background="#F7FAFC" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,1">
+                                <TextBlock Text="Loại bài thi" 
+                                           Foreground="#2D3748" 
+                                           FontWeight="SemiBold" 
+                                           FontSize="14" 
                                            VerticalAlignment="Center" 
                                            HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="2" Background="#1976D2">
-                                <TextBlock Text="LOẠI ĐỀ THI" 
-                                           Foreground="White" 
-                                           FontWeight="Bold" 
-                                           FontSize="15" 
+                            <Border Grid.Row="0" Grid.Column="2" Background="#F7FAFC" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,1">
+                                <TextBlock Text="Loại đề thi" 
+                                           Foreground="#2D3748" 
+                                           FontWeight="SemiBold" 
+                                           FontSize="14" 
                                            VerticalAlignment="Center" 
                                            HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="3" Background="#1976D2">
-                                <TextBlock Text="THỜI GIAN THI" 
-                                           Foreground="White" 
-                                           FontWeight="Bold" 
-                                           FontSize="15" 
+                            <Border Grid.Row="0" Grid.Column="3" Background="#F7FAFC" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,1">
+                                <TextBlock Text="Thời gian" 
+                                           Foreground="#2D3748" 
+                                           FontWeight="SemiBold" 
+                                           FontSize="14" 
                                            VerticalAlignment="Center" 
                                            HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="4" Background="#1976D2">
-                                <TextBlock Text="NGÀY THI" 
-                                           Foreground="White" 
-                                           FontWeight="Bold" 
-                                           FontSize="15" 
+                            <Border Grid.Row="0" Grid.Column="4" Background="#F7FAFC" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,1">
+                                <TextBlock Text="Ngày thi" 
+                                           Foreground="#2D3748" 
+                                           FontWeight="SemiBold" 
+                                           FontSize="14" 
                                            VerticalAlignment="Center" 
                                            HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="5" Background="#1976D2" CornerRadius="0,12,0,0">
-                                <TextBlock Text="ĐIỂM SỐ" 
-                                           Foreground="White" 
-                                           FontWeight="Bold" 
-                                           FontSize="15" 
+                            <Border Grid.Row="0" Grid.Column="5" Background="#F7FAFC" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,1,1" >
+                                <TextBlock Text="Điểm số" 
+                                           Foreground="#2D3748" 
+                                           FontWeight="SemiBold" 
+                                           FontSize="14" 
                                            VerticalAlignment="Center" 
                                            HorizontalAlignment="Center"/>
                             </Border>
@@ -448,7 +521,7 @@
                                 <ItemsControl ItemsSource="{Binding ExamHistoryList}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid Margin="0,8,0,8">
+                                            <Grid Margin="0,12,0,12">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="2*"/>
                                                     <ColumnDefinition Width="1.2*"/>
@@ -463,20 +536,22 @@
                                                            Text="{Binding ExamName}" 
                                                            VerticalAlignment="Center" 
                                                            HorizontalAlignment="Center" 
+                                                           Foreground="#2D3748"
+                                                           FontWeight="Medium"
                                                            FontSize="14"/>
 
                                                 <!-- Loại bài thi với badge -->
                                                 <Border Grid.Column="1" 
-                                                        Background="#E3F2FD" 
-                                                        CornerRadius="12" 
-                                                        Padding="8,4" 
+                                                        Background="{StaticResource PrimaryLightColor}" 
+                                                        CornerRadius="8" 
+                                                        Padding="12,6" 
                                                         Margin="8,0" 
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding ExamType}" 
-                                                               Foreground="#1976D2" 
-                                                               FontWeight="Bold" 
-                                                               FontSize="13" 
+                                                               Foreground="{StaticResource PrimaryColor}" 
+                                                               FontWeight="Medium" 
+                                                               FontSize="12" 
                                                                TextAlignment="Center"/>
                                                 </Border>
 
@@ -485,12 +560,14 @@
                                                            Text="{Binding CategoryExamName}" 
                                                            VerticalAlignment="Center" 
                                                            HorizontalAlignment="Center" 
+                                                           Foreground="#4A5568"
                                                            FontSize="14"/>
 
                                                 <!-- Thời gian thi -->
                                                 <TextBlock Grid.Column="3" 
                                                            VerticalAlignment="Center" 
                                                            HorizontalAlignment="Center" 
+                                                           Foreground="#4A5568"
                                                            FontSize="14">
                                                     <TextBlock.Text>
                                                         <MultiBinding StringFormat="{}{0} phút">
@@ -504,21 +581,24 @@
                                                            Text="{Binding SubmittedDateTime, StringFormat='dd/MM/yyyy'}" 
                                                            VerticalAlignment="Center" 
                                                            HorizontalAlignment="Center" 
+                                                           Foreground="#4A5568"
                                                            FontSize="14"/>
 
                                                 <!-- Điểm số với badge -->
                                                 <Border Grid.Column="5" 
-                                                        Background="#E8F5E9" 
-                                                        CornerRadius="16" 
-                                                        Padding="12,4" 
+                                                        Background="#F0FDF4" 
+                                                        CornerRadius="8" 
+                                                        Padding="12,6" 
                                                         Margin="8,0" 
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center"
+                                                        BorderThickness="1"
+                                                        BorderBrush="#BBF7D0"
                                                         MinWidth="50">
                                                     <TextBlock Text="{Binding Score}" 
-                                                               Foreground="#43A047" 
-                                                               FontWeight="Bold" 
-                                                               FontSize="15" 
+                                                               Foreground="#16A34A" 
+                                                               FontWeight="SemiBold" 
+                                                               FontSize="14" 
                                                                HorizontalAlignment="Center"/>
                                                 </Border>
                                             </Grid>

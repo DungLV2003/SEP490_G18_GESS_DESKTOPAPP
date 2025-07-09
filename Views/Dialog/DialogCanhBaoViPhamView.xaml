@@ -1,0 +1,184 @@
+<Window x:Class="SEP490_G18_GESS_DESKTOPAPP.Views.Dialog.DialogCanhBaoViPhamView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.Dialog"
+        Title="⚠️ Cảnh báo vi phạm" 
+        Width="600" Height="550"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Background="#FFEBEE">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        
+        <!-- Style cho countdown timer -->
+        <Style x:Key="CountdownTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="36"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#DC3545"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+        </Style>
+        
+        <!-- Style cho button -->
+        <Style x:Key="DialogButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="24,12">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#E5E7EB"/>
+                    <Setter Property="Foreground" Value="#9CA3AF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Border BorderBrush="#DC3545" BorderThickness="3" CornerRadius="12" Background="White" Margin="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header với icon cảnh báo -->
+            <Border Grid.Row="0" Background="#DC3545" CornerRadius="8,8,0,0" Padding="20,16">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="⚠️" FontSize="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <Binding Path="ViolationCount" StringFormat="Cảnh báo vi phạm lần {0}"/>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- Nội dung chính -->
+            <StackPanel Grid.Row="1" Margin="24,20">
+                <!-- Thông điệp cảnh báo -->
+                <TextBlock Text="{Binding WarningMessage}" 
+                         FontSize="16" 
+                         Foreground="#374151"
+                         TextWrapping="Wrap"
+                         TextAlignment="Center"
+                         Margin="0,0,0,20"
+                         LineHeight="24"/>
+
+                <!-- Countdown Timer (chỉ hiện khi ShowCountdown = true) -->
+                <Border Visibility="{Binding ShowCountdown, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Background="#FFF3CD"
+                        BorderBrush="#FFC107"
+                        BorderThickness="2"
+                        CornerRadius="12"
+                        Padding="20"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="⏱️ Thời gian phạt còn lại:" 
+                                 FontSize="14"
+                                 FontWeight="SemiBold"
+                                 Foreground="#856404"
+                                 HorizontalAlignment="Center"
+                                 Margin="0,0,0,8"/>
+                        
+                        <TextBlock Text="{Binding CountdownText}" 
+                                 Style="{StaticResource CountdownTextStyle}"/>
+                        
+                        <TextBlock Text="(Thời gian làm bài vẫn tiếp tục chạy)" 
+                                 FontSize="12"
+                                 Foreground="#856404"
+                                 HorizontalAlignment="Center"
+                                 FontStyle="Italic"
+                                 Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Cảnh báo cho lần vi phạm tiếp theo -->
+                <Border Background="#E1F5FE"
+                        BorderBrush="#29B6F6"
+                        BorderThickness="2"
+                        CornerRadius="8"
+                        Padding="16"
+                        Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="💡" FontSize="16" VerticalAlignment="Top" Margin="0,2,8,0"/>
+                        <TextBlock Text="{Binding NextViolationWarning}" 
+                                 FontSize="13"
+                                 Foreground="#0277BD"
+                                 TextWrapping="Wrap"
+                                 FontWeight="Medium"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- Hướng dẫn -->
+            <Border Grid.Row="2" 
+                    Background="#F8F9FA" 
+                    Padding="16,12" 
+                    Margin="16,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="📋" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Hướng dẫn:" 
+                             FontSize="13" 
+                             FontWeight="SemiBold" 
+                             Foreground="#6B7280"
+                             VerticalAlignment="Center"
+                             Margin="0,0,8,0"/>
+                    <TextBlock FontSize="13" 
+                             Foreground="#6B7280"
+                             VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <Binding Path="ShowCountdown">
+                                <Binding.Converter>
+                                    <local:ShowCountdownToInstructionConverter/>
+                                </Binding.Converter>
+                            </Binding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- Button (chỉ hiển thị cho vi phạm lần 3) -->
+            <Border Grid.Row="3" 
+                    Padding="24,16"
+                    Visibility="{Binding ShowButton, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Button Content="{Binding ButtonText}"
+                        Style="{StaticResource DialogButtonStyle}"
+                        Click="ContinueButton_Click">
+                    <Button.Background>
+                        <Binding Path="ViolationCount">
+                            <Binding.Converter>
+                                <local:ViolationCountToButtonColorConverter/>
+                            </Binding.Converter>
+                        </Binding>
+                    </Button.Background>
+                    <Button.Foreground>
+                        <Binding Path="ViolationCount">
+                            <Binding.Converter>
+                                <local:ViolationCountToButtonTextColorConverter/>
+                            </Binding.Converter>
+                        </Binding>
+                    </Button.Foreground>
+                </Button>
+            </Border>
+        </Grid>
+    </Border>
+</Window> 

@@ -54,7 +54,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         {
             InitializeComponent();
             this.DataContext = hpViewModel;
-
+            this.ResizeMode = ResizeMode.CanResize; // hoặc CanMinimize
+            this.WindowStyle = WindowStyle.SingleBorderWindow;
+            this.AllowsTransparency = false; // nếu bạn có dùng
+            this.Background = Brushes.White;
             // Cấu hình window để fullscreen và không thể resize
             SetupWindow();
 

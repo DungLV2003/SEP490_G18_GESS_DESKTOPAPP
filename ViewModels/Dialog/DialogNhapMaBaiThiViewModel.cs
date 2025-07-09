@@ -3,12 +3,14 @@ using SEP490_G18_GESS_DESKTOPAPP.Helpers;
 using SEP490_G18_GESS_DESKTOPAPP.Models.DanhSachBaiThiSinhVienDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Models.Enum;
 using SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO;
+using SEP490_G18_GESS_DESKTOPAPP.Models.RunningApplicationDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interfaces;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels.Base;
 using SEP490_G18_GESS_DESKTOPAPP.Views;
 using SEP490_G18_GESS_DESKTOPAPP.Views.Dialog;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +26,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
         private readonly ExamListOfStudentResponse _examInfo;
         private readonly Guid _studentId;
         private readonly ExamType _examType;
+        private readonly ObservableCollection<RunningApplication> _runningApplications;
 
         #region Properties
         private string _examCode;
@@ -66,12 +69,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             ILamBaiThiService lamBaiThiService,
             ExamListOfStudentResponse examInfo,
             Guid studentId,
-            ExamType examType)
+            ExamType examType,
+            ObservableCollection<RunningApplication> runningApplications = null)
         {
             _lamBaiThiService = lamBaiThiService;
             _examInfo = examInfo;
             _studentId = studentId;
             _examType = examType;
+            _runningApplications = runningApplications ?? new ObservableCollection<RunningApplication>();
 
             // Auto-fill exam code based on exam type
             ExamCode = _examType == ExamType.MultipleChoice
@@ -88,6 +93,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             {
                 IsLoading = true;
 
+                // Check for blocked applications BEFORE proceeding
+                if (_runningApplications?.Count > 0)
+                {
+                    // Show warning dialog - notification only
+                    ShowBlockedApplicationsNotification();
+                    return;
+                }
+
+                // No blocked applications - proceed with exam
                 if (_examType == ExamType.MultipleChoice)
                 {
                     await HandleMultipleChoiceExamAsync();
@@ -105,6 +119,60 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             {
                 IsLoading = false;
             }
+        }
+
+        private void ShowBlockedApplicationsNotification()
+        {
+            try
+            {
+                // Ẩn dialog nhập OTP trước khi hiện dialog cảnh báo
+                var currentDialog = GetCurrentDialog();
+                if (currentDialog != null)
+                {
+                    currentDialog.Visibility = Visibility.Hidden;
+                }
+
+                var dialogViewModel = new DialogCanhBaoUngDungCamViewModel(
+                    _runningApplications,
+                    _examInfo,
+                    isNotificationOnly: true, // Chỉ thông báo - không có action buttons
+                    onCancelAction: () =>
+                    {
+                        System.Diagnostics.Debug.WriteLine("User acknowledged blocked apps notification");
+                        
+                        // Hiện lại dialog nhập OTP khi đóng dialog cảnh báo
+                        Application.Current.Dispatcher.BeginInvoke(() =>
+                        {
+                            if (currentDialog != null)
+                            {
+                                currentDialog.Visibility = Visibility.Visible;
+                                currentDialog.Activate();
+                            }
+                        });
+                    });
+
+                var dialog = new DialogCanhBaoUngDungCamView(dialogViewModel);
+
+                // Set owner to main window instead of current dialog
+                var mainWindow = Application.Current.Windows.OfType<Window>()
+                    .FirstOrDefault(w => w.GetType().Name != "DialogNhapMaBaiThiView" && w.IsVisible);
+
+                if (mainWindow != null)
+                {
+                    dialog.Owner = mainWindow;
+                }
+
+                dialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ShowBlockedApplicationsNotification Error: {ex.Message}");
+            }
+        }
+
+        private DialogNhapMaBaiThiView GetCurrentDialog()
+        {
+            return Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
         }
 
         private async System.Threading.Tasks.Task HandleMultipleChoiceExamAsync()
@@ -144,13 +212,32 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
+                    var currentDialog = GetCurrentDialog();
+                    
+                    // Ẩn dialog nhập OTP trước khi hiện dialog lỗi
+                    if (currentDialog != null)
+                    {
+                        currentDialog.Visibility = Visibility.Hidden;
+                    }
 
                     // Xử lý message lỗi cụ thể từ API
                     string errorTitle = "Xác thực thất bại";
                     string errorMessage = apiEx.Message;
                     string errorDetail = "";
-                    Action retryAction = () => OTPCode = string.Empty;
+                    Action retryAction = () => 
+                    {
+                        OTPCode = string.Empty;
+                        
+                        // Hiện lại dialog nhập OTP khi đóng dialog lỗi
+                        Application.Current.Dispatcher.BeginInvoke(() =>
+                        {
+                            if (currentDialog != null)
+                            {
+                                currentDialog.Visibility = Visibility.Visible;
+                                currentDialog.Activate();
+                            }
+                        });
+                    };
 
                     // Map error messages to user-friendly messages
                     switch (apiEx.Message)
@@ -168,21 +255,54 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                         case "Bài thi chưa được mở.":
                             errorMessage = "Bài thi chưa được mở!";
                             errorDetail = "Bài thi này chưa đến thời gian mở. Vui lòng quay lại sau.";
-                            retryAction = null; // Không cho retry
+                            retryAction = () =>
+                            {
+                                // Hiện lại dialog nhập OTP nhưng không reset OTP
+                                Application.Current.Dispatcher.BeginInvoke(() =>
+                                {
+                                    if (currentDialog != null)
+                                    {
+                                        currentDialog.Visibility = Visibility.Visible;
+                                        currentDialog.Activate();
+                                    }
+                                });
+                            };
                             break;
 
                         case "Bạn không thuộc lớp của bài thi này.":
                             errorTitle = "Không có quyền truy cập";
                             errorMessage = "Bạn không thuộc lớp của bài thi này@";
                             errorDetail = "Vui lòng liên hệ với giáo viên để được hỗ trợ.";
-                            retryAction = null;
+                            retryAction = () =>
+                            {
+                                // Hiện lại dialog nhập OTP
+                                Application.Current.Dispatcher.BeginInvoke(() =>
+                                {
+                                    if (currentDialog != null)
+                                    {
+                                        currentDialog.Visibility = Visibility.Visible;
+                                        currentDialog.Activate();
+                                    }
+                                });
+                            };
                             break;
 
                         case "Bạn chưa được điểm danh.":
                             errorTitle = "Chưa điểm danh";
                             errorMessage = "Bạn chưa được điểm danh!";
                             errorDetail = "Vui lòng liên hệ với giáo viên để được điểm danh trước khi vào thi.";
-                            retryAction = null;
+                            retryAction = () =>
+                            {
+                                // Hiện lại dialog nhập OTP
+                                Application.Current.Dispatcher.BeginInvoke(() =>
+                                {
+                                    if (currentDialog != null)
+                                    {
+                                        currentDialog.Visibility = Visibility.Visible;
+                                        currentDialog.Activate();
+                                    }
+                                });
+                            };
                             break;
 
                         default:
@@ -192,15 +312,48 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                             break;
                     }
 
-                    DialogHelper.ShowErrorDialog(errorTitle, errorMessage, errorDetail, retryAction, currentDialog);
+                    // Find main window for owner instead of current dialog
+                    var mainWindow = Application.Current.Windows.OfType<Window>()
+                        .FirstOrDefault(w => w.GetType().Name != "DialogNhapMaBaiThiView" && w.IsVisible);
+
+                    DialogHelper.ShowErrorDialog(errorTitle, errorMessage, errorDetail, retryAction, mainWindow);
                 });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
-                    DialogHelper.ShowGeneralErrorDialog(ex.Message, currentDialog);
+                    var currentDialog = GetCurrentDialog();
+                    
+                    // Ẩn dialog nhập OTP trước khi hiện dialog lỗi
+                    if (currentDialog != null)
+                    {
+                        currentDialog.Visibility = Visibility.Hidden;
+                    }
+
+                    Action retryAction = () =>
+                    {
+                        // Hiện lại dialog nhập OTP khi đóng dialog lỗi
+                        Application.Current.Dispatcher.BeginInvoke(() =>
+                        {
+                            if (currentDialog != null)
+                            {
+                                currentDialog.Visibility = Visibility.Visible;
+                                currentDialog.Activate();
+                            }
+                        });
+                    };
+
+                    // Find main window for owner
+                    var mainWindow = Application.Current.Windows.OfType<Window>()
+                        .FirstOrDefault(w => w.GetType().Name != "DialogNhapMaBaiThiView" && w.IsVisible);
+
+                    DialogHelper.ShowErrorDialog(
+                        "Lỗi hệ thống", 
+                        "Có lỗi không mong muốn xảy ra!", 
+                        ex.Message, 
+                        retryAction, 
+                        mainWindow);
                 });
             }
         }
@@ -242,13 +395,32 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
+                    var currentDialog = GetCurrentDialog();
+                    
+                    // Ẩn dialog nhập OTP trước khi hiện dialog lỗi
+                    if (currentDialog != null)
+                    {
+                        currentDialog.Visibility = Visibility.Hidden;
+                    }
 
                     // Xử lý message lỗi cụ thể từ API cho bài thi tự luận
                     string errorTitle = "Xác thực thất bại";
                     string errorMessage = apiEx.Message;
                     string errorDetail = "";
-                    Action retryAction = () => OTPCode = string.Empty;
+                    Action retryAction = () => 
+                    {
+                        OTPCode = string.Empty;
+                        
+                        // Hiện lại dialog nhập OTP khi đóng dialog lỗi
+                        Application.Current.Dispatcher.BeginInvoke(() =>
+                        {
+                            if (currentDialog != null)
+                            {
+                                currentDialog.Visibility = Visibility.Visible;
+                                currentDialog.Activate();
+                            }
+                        });
+                    };
 
                     // Map error messages cho practice exam
                     switch (apiEx.Message)
@@ -266,21 +438,54 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                         case "Bài thi chưa được mở.":
                             errorMessage = "Bài thi chưa được mở";
                             errorDetail = "Bài thi tự luận này chưa đến thời gian mở. Vui lòng quay lại sau.";
-                            retryAction = null;
+                            retryAction = () =>
+                            {
+                                // Hiện lại dialog nhập OTP nhưng không reset OTP
+                                Application.Current.Dispatcher.BeginInvoke(() =>
+                                {
+                                    if (currentDialog != null)
+                                    {
+                                        currentDialog.Visibility = Visibility.Visible;
+                                        currentDialog.Activate();
+                                    }
+                                });
+                            };
                             break;
 
                         case "Bạn không thuộc lớp của bài thi này.":
                             errorTitle = "Không có quyền truy cập";
                             errorMessage = "Bạn không thuộc lớp của bài thi này";
                             errorDetail = "Vui lòng liên hệ với giáo viên để được hỗ trợ.";
-                            retryAction = null;
+                            retryAction = () =>
+                            {
+                                // Hiện lại dialog nhập OTP
+                                Application.Current.Dispatcher.BeginInvoke(() =>
+                                {
+                                    if (currentDialog != null)
+                                    {
+                                        currentDialog.Visibility = Visibility.Visible;
+                                        currentDialog.Activate();
+                                    }
+                                });
+                            };
                             break;
 
                         case "Bạn chưa được điểm danh.":
                             errorTitle = "Chưa điểm danh";
                             errorMessage = "Bạn chưa được điểm danh";
                             errorDetail = "Vui lòng liên hệ với giáo viên để được điểm danh trước khi vào thi.";
-                            retryAction = null;
+                            retryAction = () =>
+                            {
+                                // Hiện lại dialog nhập OTP
+                                Application.Current.Dispatcher.BeginInvoke(() =>
+                                {
+                                    if (currentDialog != null)
+                                    {
+                                        currentDialog.Visibility = Visibility.Visible;
+                                        currentDialog.Activate();
+                                    }
+                                });
+                            };
                             break;
 
                         default:
@@ -288,15 +493,48 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                             break;
                     }
 
-                    DialogHelper.ShowErrorDialog(errorTitle, errorMessage, errorDetail, retryAction, currentDialog);
+                    // Find main window for owner instead of current dialog
+                    var mainWindow = Application.Current.Windows.OfType<Window>()
+                        .FirstOrDefault(w => w.GetType().Name != "DialogNhapMaBaiThiView" && w.IsVisible);
+
+                    DialogHelper.ShowErrorDialog(errorTitle, errorMessage, errorDetail, retryAction, mainWindow);
                 });
             }
             catch (Exception ex)
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    var currentDialog = Application.Current.Windows.OfType<DialogNhapMaBaiThiView>().FirstOrDefault();
-                    DialogHelper.ShowGeneralErrorDialog(ex.Message, currentDialog);
+                    var currentDialog = GetCurrentDialog();
+                    
+                    // Ẩn dialog nhập OTP trước khi hiện dialog lỗi
+                    if (currentDialog != null)
+                    {
+                        currentDialog.Visibility = Visibility.Hidden;
+                    }
+
+                    Action retryAction = () =>
+                    {
+                        // Hiện lại dialog nhập OTP khi đóng dialog lỗi
+                        Application.Current.Dispatcher.BeginInvoke(() =>
+                        {
+                            if (currentDialog != null)
+                            {
+                                currentDialog.Visibility = Visibility.Visible;
+                                currentDialog.Activate();
+                            }
+                        });
+                    };
+
+                    // Find main window for owner
+                    var mainWindow = Application.Current.Windows.OfType<Window>()
+                        .FirstOrDefault(w => w.GetType().Name != "DialogNhapMaBaiThiView" && w.IsVisible);
+
+                    DialogHelper.ShowErrorDialog(
+                        "Lỗi hệ thống", 
+                        "Có lỗi không mong muốn xảy ra!", 
+                        ex.Message, 
+                        retryAction, 
+                        mainWindow);
                 });
             }
         }
