@@ -120,11 +120,23 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         private int _timerTickCount = 0;
         private DateTime _lastEventTime = DateTime.MinValue;
 
-        // Danh sách ứng dụng cần theo dõi - chỉ browser
+        // Danh sách ứng dụng cần theo dõi - browsers và các ứng dụng khác
         private readonly List<string> _blockedApplications = new List<string>
         {
-            // TẠMIỜI: Bỏ chặn Chrome để test
-            /*"chrome",*/ "firefox", "msedge", "brave", "opera" // Chỉ browsers
+            // Browsers
+           /* "chrome",*/ "firefox", "msedge", "brave", "opera",
+            // Communication Apps
+            "zalo", "discord", "telegram", "viber", "whatsapp", "messenger", "teams", "zoom", "skype",
+            // Remote Access Apps
+            "teamviewer", "ultraviewer", "deskin", "anydesk", "remotedesktop", "chrome remote", "vnc",
+            // Media & Entertainment
+            "spotify", "youtube", "vlc", "itunes", "tiktok", "facebook",
+            // Games
+            "steam", "origin", "epicgames", "battlenet", "roblox", "minecraft",
+            // Development Tools
+            //"visualstudio", "vscode", "notepad++", "sublime", "atom", "intellij", "eclipse",
+            // Other Tools
+            "obs", "photoshop", "gimp", "utorrent", "bittorrent", "winrar", "7zip"
         };
 
         // Temporary StudentId - trong thực tế sẽ lấy từ session/login
@@ -1400,20 +1412,20 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
                 var processName = process.ProcessName.ToLower();
                 
-                // For browsers: only target processes with active windows (tabs)
+                // For blocked applications: only target processes with active windows
                 if (_blockedApplications.Any(blocked => processName.Contains(blocked)))
                 {
                     // Must have a visible main window to be considered "in use"
                     var hasActiveWindow = !string.IsNullOrEmpty(process.MainWindowTitle) && 
                                          process.MainWindowHandle != IntPtr.Zero;
                     
-                    System.Diagnostics.Debug.WriteLine($"Browser {process.ProcessName} (PID: {process.Id}): " +
+                    System.Diagnostics.Debug.WriteLine($"App {process.ProcessName} (PID: {process.Id}): " +
                         $"HasActiveWindow={hasActiveWindow}, Title='{process.MainWindowTitle}'");
                     
                     return hasActiveWindow;
                 }
 
-                return false; // Only care about browsers now
+                return false; // Only care about blocked applications
             }
             catch
             {
@@ -1447,11 +1459,60 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         {
             var friendlyNames = new Dictionary<string, string>
             {
+                // Browsers
                 //{ "chrome", "Google Chrome" },
                 { "firefox", "Mozilla Firefox" },
                 { "msedge", "Microsoft Edge" },
                 { "brave", "Brave Browser" },
-                { "opera", "Opera Browser" }
+                { "opera", "Opera Browser" },
+                // Communication Apps
+                { "zalo", "Zalo" },
+                { "discord", "Discord" },
+                { "telegram", "Telegram" },
+                { "viber", "Viber" },
+                { "whatsapp", "WhatsApp" },
+                { "messenger", "Messenger" },
+                { "teams", "Microsoft Teams" },
+                { "zoom", "Zoom" },
+                { "skype", "Skype" },
+                // Remote Access Apps
+                { "teamviewer", "TeamViewer" },
+                { "ultraviewer", "UltraViewer" },
+                { "deskin", "DeskIn" },
+                { "anydesk", "AnyDesk" },
+                { "remotedesktop", "Remote Desktop" },
+                { "chrome remote", "Chrome Remote Desktop" },
+                { "vnc", "VNC Viewer" },
+                // Media & Entertainment
+                { "spotify", "Spotify" },
+                { "youtube", "YouTube" },
+                { "vlc", "VLC Media Player" },
+                { "itunes", "iTunes" },
+                { "tiktok", "TikTok" },
+                { "facebook", "Facebook" },
+                // Games
+                { "steam", "Steam" },
+                { "origin", "Origin" },
+                { "epicgames", "Epic Games" },
+                { "battlenet", "Battle.net" },
+                { "roblox", "Roblox" },
+                { "minecraft", "Minecraft" },
+                // Development Tools
+                //{ "visualstudio", "Visual Studio" },
+                //{ "vscode", "Visual Studio Code" },
+                { "notepad++", "Notepad++" },
+                { "sublime", "Sublime Text" },
+                { "atom", "Atom" },
+                { "intellij", "IntelliJ IDEA" },
+                { "eclipse", "Eclipse" },
+                // Other Tools
+                { "obs", "OBS Studio" },
+                { "photoshop", "Adobe Photoshop" },
+                { "gimp", "GIMP" },
+                { "utorrent", "uTorrent" },
+                { "bittorrent", "BitTorrent" },
+                { "winrar", "WinRAR" },
+                { "7zip", "7-Zip" }
             };
 
             var lowerProcessName = processName.ToLower();
@@ -1474,30 +1535,82 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         {
             var lowerProcessName = processName.ToLower();
             
-            // Map process names to application keys - ONLY BROWSERS
+            // Map process names to application keys
+            // Browsers
             //if (lowerProcessName.Contains("chrome")) return "chrome";
             if (lowerProcessName.Contains("firefox")) return "firefox";
             if (lowerProcessName.Contains("msedge") || lowerProcessName.Contains("edge")) return "edge";
             if (lowerProcessName.Contains("brave")) return "brave";
             if (lowerProcessName.Contains("opera")) return "opera";
             
+            // Communication Apps
+            if (lowerProcessName.Contains("zalo")) return "zalo";
+            if (lowerProcessName.Contains("discord")) return "discord";
+            if (lowerProcessName.Contains("telegram")) return "telegram";
+            if (lowerProcessName.Contains("viber")) return "viber";
+            if (lowerProcessName.Contains("whatsapp")) return "whatsapp";
+            if (lowerProcessName.Contains("messenger")) return "messenger";
+            if (lowerProcessName.Contains("teams")) return "teams";
+            if (lowerProcessName.Contains("zoom")) return "zoom";
+            if (lowerProcessName.Contains("skype")) return "skype";
+            
+            // Remote Access Apps
+            if (lowerProcessName.Contains("teamviewer")) return "teamviewer";
+            if (lowerProcessName.Contains("ultraviewer")) return "ultraviewer";
+            if (lowerProcessName.Contains("deskin")) return "deskin";
+            if (lowerProcessName.Contains("anydesk")) return "anydesk";
+            if (lowerProcessName.Contains("remotedesktop")) return "remotedesktop";
+            if (lowerProcessName.Contains("chrome remote")) return "chromeremote";
+            if (lowerProcessName.Contains("vnc")) return "vnc";
+            
+            // Media & Entertainment
+            if (lowerProcessName.Contains("spotify")) return "spotify";
+            if (lowerProcessName.Contains("youtube")) return "youtube";
+            if (lowerProcessName.Contains("vlc")) return "vlc";
+            if (lowerProcessName.Contains("itunes")) return "itunes";
+            if (lowerProcessName.Contains("tiktok")) return "tiktok";
+            if (lowerProcessName.Contains("facebook")) return "facebook";
+            
+            // Games
+            if (lowerProcessName.Contains("steam")) return "steam";
+            if (lowerProcessName.Contains("origin")) return "origin";
+            if (lowerProcessName.Contains("epicgames")) return "epicgames";
+            if (lowerProcessName.Contains("battlenet")) return "battlenet";
+            if (lowerProcessName.Contains("roblox")) return "roblox";
+            if (lowerProcessName.Contains("minecraft")) return "minecraft";
+            
+            // Development Tools
+            //if (lowerProcessName.Contains("visualstudio")) return "visualstudio";
+            //if (lowerProcessName.Contains("vscode")) return "vscode";
+            if (lowerProcessName.Contains("notepad++")) return "notepadplus";
+            if (lowerProcessName.Contains("sublime")) return "sublime";
+            if (lowerProcessName.Contains("atom")) return "atom";
+            if (lowerProcessName.Contains("intellij")) return "intellij";
+            if (lowerProcessName.Contains("eclipse")) return "eclipse";
+            
+            // Other Tools
+            if (lowerProcessName.Contains("obs")) return "obs";
+            if (lowerProcessName.Contains("photoshop")) return "photoshop";
+            if (lowerProcessName.Contains("gimp")) return "gimp";
+            if (lowerProcessName.Contains("utorrent")) return "utorrent";
+            if (lowerProcessName.Contains("bittorrent")) return "bittorrent";
+            if (lowerProcessName.Contains("winrar")) return "winrar";
+            if (lowerProcessName.Contains("7zip")) return "7zip";
+            
             return processName; // Default to process name if no match
         }
 
         private string GetAppIcon(string processName)
         {
-            var appKey = GetApplicationKey(processName);
+            var friendlyName = GetFriendlyName(processName);
             
-            var iconMap = new Dictionary<string, string>
+            // Trả về chữ cái đầu của tên ứng dụng
+            if (!string.IsNullOrEmpty(friendlyName))
             {
-                //{ "chrome", "🌐" },
-                { "firefox", "🦊" },
-                { "edge", "🌊" },
-                { "brave", "🦁" },
-                { "opera", "🎭" }
-            };
+                return friendlyName.Substring(0, 1).ToUpper();
+            }
             
-            return iconMap.TryGetValue(appKey, out string icon) ? icon : "🌐";
+            return "A"; // Default letter
         }
         #endregion
     }

@@ -657,12 +657,26 @@
                                                             <ColumnDefinition Width="70"/>
                                                         </Grid.ColumnDefinitions>
                                                         
-                                                        <!-- App Icon -->
-                                                        <TextBlock Grid.Column="0" 
-                                                                 Text="{Binding IconText}" 
-                                                                 FontSize="16" 
-                                                                 VerticalAlignment="Center" 
-                                                                 HorizontalAlignment="Center"/>
+                                                        <!-- App Icon - Circular with Letter -->
+                                                        <Grid Grid.Column="0" 
+                                                              Width="32" Height="32"
+                                                              VerticalAlignment="Center"
+                                                              HorizontalAlignment="Center">
+                                                            <!-- Background Circle -->
+                                                            <Ellipse Width="32" Height="32" 
+                                                                     Fill="#F7FAFC"/>
+                                                            <!-- Border Circle -->
+                                                            <Ellipse Width="32" Height="32" 
+                                                                     Stroke="#E2E8F0" 
+                                                                     StrokeThickness="1"/>
+                                                            <!-- Letter -->
+                                                            <TextBlock Text="{Binding IconText}" 
+                                                                       FontSize="14"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="#2D3748"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                                        </Grid>
                                                         
                                                         <!-- Application Name -->
                                                         <TextBlock Grid.Column="1" 
