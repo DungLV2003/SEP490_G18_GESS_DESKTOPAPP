@@ -3,9 +3,17 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
+	  <PublishSingleFile>true</PublishSingleFile>
+	  <SelfContained>true</SelfContained>
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	  <!-- Hoặc win-x86 nếu nhắm đến máy 32-bit -->
+	  <IncludeAllContentForSelfContained>true</IncludeAllContentForSelfContained>
+	  <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	  <!-- Giảm kích thước file -->
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <AssemblyName>GESS Exam</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

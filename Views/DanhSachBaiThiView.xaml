@@ -336,8 +336,9 @@
                                             <ColumnDefinition Width="100"/>
                                             <ColumnDefinition Width="90"/>
                                             <ColumnDefinition Width="110"/>
-                                            <ColumnDefinition Width="130"/>
+                                            <ColumnDefinition Width="120"/>
                                             <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="110"/>
                                             <ColumnDefinition Width="110"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="STT" FontWeight="SemiBold"
@@ -355,13 +356,16 @@
                                         <TextBlock Grid.Column="4" Text="Ngày thi" FontWeight="SemiBold"
                                                  Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
-                                        <TextBlock Grid.Column="5" Text="Ca thi" FontWeight="SemiBold"
+                                        <TextBlock Grid.Column="5" Text="Trạng thái" FontWeight="SemiBold"
                                                  Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
-                                        <TextBlock Grid.Column="6" Text="Phòng thi" FontWeight="SemiBold"
+                                        <TextBlock Grid.Column="6" Text="Ca thi" FontWeight="SemiBold"
                                                  Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
-                                        <TextBlock Grid.Column="7" Text="Thao tác" FontWeight="SemiBold"
+                                        <TextBlock Grid.Column="7" Text="Phòng thi" FontWeight="SemiBold"
+                                                 Foreground="#2D3748" FontSize="14"
+                                                 HorizontalAlignment="Center" TextAlignment="Center"/>
+                                        <TextBlock Grid.Column="8" Text="Thao tác" FontWeight="SemiBold"
                                                  Foreground="#2D3748" FontSize="14"
                                                  HorizontalAlignment="Center" TextAlignment="Center"/>
                                     </Grid>
@@ -390,8 +394,9 @@
                                                         <ColumnDefinition Width="100"/>
                                                         <ColumnDefinition Width="90"/>
                                                         <ColumnDefinition Width="110"/>
-                                                        <ColumnDefinition Width="130"/>
+                                                        <ColumnDefinition Width="120"/>
                                                         <ColumnDefinition Width="100"/>
+                                                        <ColumnDefinition Width="110"/>
                                                         <ColumnDefinition Width="110"/>
                                                     </Grid.ColumnDefinitions>
 
@@ -440,12 +445,59 @@
 
                                                     <!-- Ngày thi -->
                                                     <TextBlock Grid.Column="4" 
-           Text="{Binding ExamDay, StringFormat='dd/MM/yyyy', TargetNullValue='-', FallbackValue='-'}"
+           Text="{Binding ExamDate, StringFormat='dd/MM/yyyy', TargetNullValue='-', FallbackValue='-'}"
            FontSize="14" Foreground="#4A5568"
            HorizontalAlignment="Center" TextAlignment="Center"/>
 
+                                                    <!-- Trạng thái -->
+                                                    <Grid Grid.Column="5" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <Border CornerRadius="12" Padding="8,4" Margin="2">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Background" Value="#F7FAFC"/>
+                                                                    <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                                                    <Setter Property="BorderThickness" Value="1"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="Chưa thi">
+                                                                            <Setter Property="Background" Value="#F0FDF4"/>
+                                                                            <Setter Property="BorderBrush" Value="#BBF7D0"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="Đã thi">
+                                                                            <Setter Property="Background" Value="#FEF2F2"/>
+                                                                            <Setter Property="BorderBrush" Value="#FECACA"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Status}" Value="Đang thi">
+                                                                            <Setter Property="Background" Value="#FEF3C7"/>
+                                                                            <Setter Property="BorderBrush" Value="#FDE68A"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <TextBlock FontSize="12" FontWeight="Medium" 
+                                                                     Text="{Binding Status, TargetNullValue='Chưa rõ', FallbackValue='Chưa rõ'}"
+                                                                     HorizontalAlignment="Center" TextAlignment="Center">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Foreground" Value="#4A5568"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Status}" Value="Chưa thi">
+                                                                                <Setter Property="Foreground" Value="#16A34A"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Status}" Value="Đã thi">
+                                                                                <Setter Property="Foreground" Value="#DC2626"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Status}" Value="Đang thi">
+                                                                                <Setter Property="Foreground" Value="#D97706"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                        </Border>
+                                                    </Grid>
+
                                                     <!-- Ca thi: nếu null thì chỉ hiển thị "-" -->
-                                                    <Grid Grid.Column="5">
+                                                    <Grid Grid.Column="6">
                                                         <!-- Ca thi có dữ liệu -->
                                                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                                             <StackPanel.Style>
@@ -456,6 +508,12 @@
                                                                             <Setter Property="Visibility" Value="Collapsed"/>
                                                                         </DataTrigger>
                                                                         <DataTrigger Binding="{Binding ExamSlotName}" Value="">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding StartTime}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding EndTime}" Value="{x:Null}">
                                                                             <Setter Property="Visibility" Value="Collapsed"/>
                                                                         </DataTrigger>
                                                                     </Style.Triggers>
@@ -469,6 +527,19 @@
                                                             <!-- Khoảng thời gian -->
                                                             <TextBlock FontSize="12" Foreground="#718096" 
            TextAlignment="Center" Margin="0,2,0,0">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding StartTime}" Value="{x:Null}">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding EndTime}" Value="{x:Null}">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
                                                                 <TextBlock.Text>
                                                                     <MultiBinding StringFormat="({0:hh\:mm} - {1:hh\:mm})">
                                                                         <Binding Path="StartTime"/>
@@ -491,6 +562,12 @@
                                                                         <DataTrigger Binding="{Binding ExamSlotName}" Value="">
                                                                             <Setter Property="Visibility" Value="Visible"/>
                                                                         </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding StartTime}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding EndTime}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
                                                                     </Style.Triggers>
                                                                 </Style>
                                                             </TextBlock.Style>
@@ -498,7 +575,7 @@
                                                     </Grid>
 
                                                     <!-- Phòng thi -->
-                                                    <TextBlock Grid.Column="6" 
+                                                    <TextBlock Grid.Column="7" 
                                                              FontSize="14" Foreground="#4A5568"
                                                              HorizontalAlignment="Center" TextAlignment="Center">
                                                         <TextBlock.Text>
@@ -510,7 +587,7 @@
                                                     </TextBlock>
 
                                                     <!-- Button Vào Thi -->
-                                                    <Button Grid.Column="7" 
+                                                    <Button Grid.Column="8" 
                                                         Content="Vào Thi" 
                                                         Style="{StaticResource ActionButtonStyle}"
                                                         HorizontalAlignment="Center"

@@ -1,0 +1,175 @@
+<Window x:Class="SEP490_G18_GESS_DESKTOPAPP.Views.Dialog.DialogXacNhanTatUngDungView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Xác nhận tắt ứng dụng"
+        Height="320"
+        Width="480"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        KeyDown="Window_KeyDown">
+
+    <Window.Resources>
+        <!-- Button Styles -->
+        <Style x:Key="ConfirmButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#E53E3E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#C53030"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#9C2A2A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CancelButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#4A5568"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F7FAFC"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#CBD5E0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EDF2F7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#FFFFFF" 
+            CornerRadius="16" 
+            BorderThickness="1" 
+            BorderBrush="#E2E8F0"
+            Margin="8">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" 
+                              Opacity="0.15" 
+                              ShadowDepth="0" 
+                              BlurRadius="32"/>
+        </Border.Effect>
+
+        <Grid Margin="32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Warning Icon -->
+            <Grid Grid.Row="0" 
+                  HorizontalAlignment="Center" 
+                  VerticalAlignment="Center" 
+                  Margin="0,0,0,20">
+                <Ellipse Width="64" Height="64" 
+                         Fill="#FED7D7"/>
+                <Ellipse Width="48" Height="48" 
+                         Fill="#FEB2B2"/>
+                <!-- Warning Triangle Icon -->
+                <Path Data="M12,2 L21,20 L3,20 Z M12,17 L12,17 M12,9 L12,13"
+                      Stroke="#E53E3E" 
+                      StrokeThickness="2.5" 
+                      Fill="Transparent"
+                      Width="24" Height="24"
+                      Stretch="Uniform"/>
+            </Grid>
+
+            <!-- Title -->
+            <TextBlock Grid.Row="1"
+                       Text="Xác nhận tắt ứng dụng"
+                       FontSize="22"
+                       FontWeight="SemiBold"
+                       Foreground="#1A202C"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Margin="0,0,0,12"/>
+
+            <!-- Warning Message -->
+            <TextBlock Grid.Row="2"
+                       FontSize="15"
+                       Foreground="#4A5568"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       LineHeight="22"
+                       Margin="0,0,0,16"
+                       TextWrapping="Wrap">
+                <Run Text="Bạn có chắc chắn muốn tắt "/>
+                                 <Run Text="{Binding ApplicationName, Mode=OneWay, FallbackValue='ứng dụng này'}" FontWeight="SemiBold"/>
+                <Run Text=" không?"/>
+            </TextBlock>
+
+            <!-- Additional Info -->
+            <TextBlock Grid.Row="3"
+                       Text="Hành động này sẽ đóng ứng dụng hoàn toàn."
+                       FontSize="13"
+                       Foreground="#718096"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Margin="0,0,0,24"/>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="4" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Center">
+                <Button Content="Hủy" 
+                        Style="{StaticResource CancelButtonStyle}"
+                        Margin="0,0,12,0"
+                        MinWidth="100"
+                        Command="{Binding CancelCommand}"/>
+                
+                <Button Content="Tắt ứng dụng" 
+                        Style="{StaticResource ConfirmButtonStyle}"
+                        MinWidth="120"
+                        Command="{Binding ConfirmCommand}"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window> 
