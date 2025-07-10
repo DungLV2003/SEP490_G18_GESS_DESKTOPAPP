@@ -1208,6 +1208,29 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             try
             {
+                // Show confirmation dialog before closing
+                var dialogViewModel = new DialogXacNhanTatUngDungViewModel(
+                    app,
+                    onConfirm: () => CloseApplicationConfirmed(app)
+                );
+
+                var dialog = new DialogXacNhanTatUngDungView(dialogViewModel);
+                var result = dialog.ShowDialog();
+
+                // Note: The actual closing will be handled by the onConfirm action if user confirms
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"CloseApplication Error: {ex}");
+            }
+        }
+
+        private async void CloseApplicationConfirmed(RunningApplication app)
+        {
+            if (app == null || !app.IsCloseable) return;
+
+            try
+            {
                 // INSTANT UI UPDATE - Remove ngay lập tức
                 var appKey = GetApplicationKey(app.ProcessName);
                 var appToRemove = RunningApplications.FirstOrDefault(a => GetApplicationKey(a.ProcessName) == appKey);
@@ -1239,7 +1262,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"CloseApplication Error: {ex}");
+                System.Diagnostics.Debug.WriteLine($"CloseApplicationConfirmed Error: {ex}");
             }
         }
 
