@@ -69,8 +69,55 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views.UserControls
         {
             UserMenuPopup.IsOpen = false;
             
+                            Console.WriteLine("=== GUIDE BUTTON CLICKED ===");
+            
+            try
+            {
+                // Console log token để test API
+                var tokenInfo = Helpers.ApiHelper.GetCurrentTokenInfo();
+                Console.WriteLine($"TokenInfo retrieved. AccessToken null/empty: {string.IsNullOrEmpty(tokenInfo?.AccessToken)}");
+                
+                if (tokenInfo != null && !string.IsNullOrEmpty(tokenInfo.AccessToken))
+                {
+                    Console.WriteLine("=== TOKEN INFO FOR API TESTING ===");
+                    Console.WriteLine($"Access Token: {tokenInfo.AccessToken}");
+                    Console.WriteLine($"Refresh Token: {tokenInfo.RefreshToken}");
+                    Console.WriteLine($"Expiry: {tokenInfo.Expiry}");
+                    Console.WriteLine($"Is Expired: {tokenInfo.IsExpired}");
+                    Console.WriteLine("==================================");
+                    
+                    // Copy vào clipboard luôn cho tiện
+                    System.Windows.Clipboard.SetText(tokenInfo.AccessToken);
+                    
+                    // Hiển thị full token info trong MessageBox để dễ thấy
+                    var tokenDisplay = $"=== TOKEN INFO FOR API TESTING ===\n\n" +
+                                     $"Access Token:\n{tokenInfo.AccessToken}\n\n" +
+                                     $"Refresh Token:\n{tokenInfo.RefreshToken}\n\n" +
+                                     $"Expiry: {tokenInfo.Expiry}\n" +
+                                     $"Is Expired: {tokenInfo.IsExpired}\n\n" +
+                                     $"✅ Access Token đã được copy vào clipboard!";
+                    
+                    MessageBox.Show(tokenDisplay, "Token Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    Console.WriteLine("No token available. Please login first.");
+                    Console.WriteLine($"TokenInfo is null: {tokenInfo == null}");
+                    if (tokenInfo != null)
+                    {
+                        Console.WriteLine($"AccessToken is null/empty: {string.IsNullOrEmpty(tokenInfo.AccessToken)}");
+                    }
+                    MessageBox.Show("No token available. Please login first.", "No Token", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting token: {ex.Message}");
+                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            
             // TODO: Open guide/help
-            MessageBox.Show("Chức năng hướng dẫn đang được phát triển", "Thông báo", 
+            MessageBox.Show("Token đã được in ra console. Kiểm tra Output window (Debug).", "Thông báo", 
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
 

@@ -93,6 +93,25 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             {
                 IsLoading = true;
 
+                // Debug log for exam entry process
+                System.Diagnostics.Debug.WriteLine($"🎯 [EXAM ENTRY] Starting exam entry process");
+                System.Diagnostics.Debug.WriteLine($"🎯 [EXAM ENTRY] Exam Type: {_examType}");
+                System.Diagnostics.Debug.WriteLine($"🎯 [EXAM ENTRY] Student ID: {_studentId}");
+                System.Diagnostics.Debug.WriteLine($"🎯 [EXAM ENTRY] Exam ID: {_examInfo.ExamId}");
+                System.Diagnostics.Debug.WriteLine($"🎯 [EXAM ENTRY] OTP Code: {OTPCode}");
+                
+                Console.WriteLine($"🎯 [EXAM ENTRY] Starting {_examType} exam entry process");
+
+                // Check current token before making request
+                var tokenInfo = Helpers.ApiHelper.GetCurrentTokenInfo();
+                System.Diagnostics.Debug.WriteLine($"🔑 [EXAM ENTRY] Token available: {!string.IsNullOrEmpty(tokenInfo?.AccessToken)}");
+                if (!string.IsNullOrEmpty(tokenInfo?.AccessToken))
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔑 [EXAM ENTRY] Token expiry: {tokenInfo.Expiry}");
+                    System.Diagnostics.Debug.WriteLine($"🔑 [EXAM ENTRY] Token expired: {tokenInfo.IsExpired}");
+                }
+                Console.WriteLine($"🔑 [EXAM ENTRY] Token available: {!string.IsNullOrEmpty(tokenInfo?.AccessToken)}");
+
                 // Check for blocked applications BEFORE proceeding
                 if (_runningApplications?.Count > 0)
                 {
@@ -138,8 +157,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                     isNotificationOnly: true, // Chỉ thông báo - không có action buttons
                     onCancelAction: () =>
                     {
-                        System.Diagnostics.Debug.WriteLine("User acknowledged blocked apps notification");
-                        
                         // Hiện lại dialog nhập OTP khi đóng dialog cảnh báo
                         Application.Current.Dispatcher.BeginInvoke(() =>
                         {
@@ -166,7 +183,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ShowBlockedApplicationsNotification Error: {ex.Message}");
+                // Log error silently - no action needed
             }
         }
 

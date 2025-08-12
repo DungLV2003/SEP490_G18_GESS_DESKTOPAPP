@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SEP490_G18_GESS_DESKTOPAPP.Helpers;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Implement;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Implements;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interface;
@@ -26,9 +27,16 @@ namespace SEP490_G18_GESS_DESKTOPAPP
             AppHost = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddHttpClient<IDanhSachBaiThiService, DanhSachBaiThiService>();
-                    services.AddHttpClient<ILamBaiThiService, LamBaiThiService>();
-                    services.AddHttpClient<ILichSuBaiThiSinhVienService, LichSuBaiThiSinhVienService>();
+                    // Đăng ký AuthTokenHandler
+                    services.AddTransient<AuthTokenHandler>();
+                    
+                    // Cấu hình HttpClient với AuthTokenHandler để tự động thêm Authorization header
+                    services.AddHttpClient<IDanhSachBaiThiService, DanhSachBaiThiService>()
+                        .AddHttpMessageHandler<AuthTokenHandler>();
+                    services.AddHttpClient<ILamBaiThiService, LamBaiThiService>()
+                        .AddHttpMessageHandler<AuthTokenHandler>();
+                    services.AddHttpClient<ILichSuBaiThiSinhVienService, LichSuBaiThiSinhVienService>()
+                        .AddHttpMessageHandler<AuthTokenHandler>();
                     services.AddSingleton<INavigationService, NavigationService>();
                     // ======= Đăng ký Authentication & User Services =======
                     services.AddSingleton<IGoogleAuthService>(provider =>
