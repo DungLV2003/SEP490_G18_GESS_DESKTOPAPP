@@ -567,100 +567,19 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] New practice exam - Full duration: {Duration} minutes");
             }
 
-            // Get all questions
-            var questionOrders = await _lamBaiThiService.GetQuestionAndAnswerByPracExamIdAsync(_examId);
-            if (questionOrders == null || questionOrders.Count == 0)
+            // Load questions directly from examInfo instead of making additional API call
+            // This prevents duplicate questions caused by inconsistent data between APIs
+            if (examInfo.Questions != null && examInfo.Questions.Count > 0)
             {
-                System.Diagnostics.Debug.WriteLine("[ERROR] InitializePracticeExam: No question orders found");
-
-                // Fallback: Load directly from examInfo if questionOrders is empty
-                if (examInfo.Questions != null && examInfo.Questions.Count > 0)
-                {
-                    LoadPracticeQuestionsFromExamInfo(examInfo);
-                    return;
-                }
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Loading {examInfo.Questions.Count} questions directly from examInfo");
+                LoadPracticeQuestionsFromExamInfo(examInfo);
                 return;
             }
-
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] Found {questionOrders.Count} question orders");
-
-            TotalQuestions = questionOrders.Count;
-
-            // Clear existing data
-            _allPracticeQuestions.Clear();
-            QuestionNumbers.Clear();
-
-            // Load all practice questions với PropertyChanged binding
-            foreach (var questionOrder in questionOrders.OrderBy(q => q.QuestionOrder))
+            else
             {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] Processing question order {questionOrder.QuestionOrder}");
-
-                // Handle API ordering inconsistency - try both 0-based and 1-based matching
-                var questionDetail = examInfo.Questions.FirstOrDefault(q => q.QuestionOrder == questionOrder.QuestionOrder) ??
-                                   examInfo.Questions.FirstOrDefault(q => q.QuestionOrder == questionOrder.QuestionOrder - 1);
-
-                if (questionDetail != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Found question detail: {questionDetail.Content?.Substring(0, Math.Min(50, questionDetail.Content?.Length ?? 0))}...");
-
-                    var practiceVm = new PracticeQuestionViewModel
-                    {
-                        PracticeQuestionId = questionOrder.PracticeQuestionId,
-                        QuestionOrder = questionOrder.QuestionOrder,
-                        Content = questionDetail.Content,
-                        Score = questionDetail.Score,
-                        TotalQuestions = TotalQuestions
-                    };
-
-                    // QUAN TRỌNG: Set answer và setup binding
-                    // Nếu có sẵn answer content từ server thì set (TH3 - tiếp tục thi), nếu không thì để trống (TH1, TH2)
-                    if (!string.IsNullOrWhiteSpace(questionDetail.AnswerContent))
-                    {
-                        // DECODE line breaks nếu có (từ format ___NEWLINE___ về \n)
-                        var decodedAnswer = questionDetail.AnswerContent.Replace("___NEWLINE___", "\n");
-                        practiceVm.SetAnswerSilently(decodedAnswer);
-                        
-                        System.Diagnostics.Debug.WriteLine($"[DEBUG] TH3 - Loaded saved answer for Question {practiceVm.PracticeQuestionId}: '{decodedAnswer.Substring(0, Math.Min(50, decodedAnswer.Length))}...'");
-                    }
-                    else
-                    {
-                        practiceVm.ClearAnswer(); // Đảm bảo bắt đầu với answer trống
-                        System.Diagnostics.Debug.WriteLine($"[DEBUG] TH1/TH2 - Question {practiceVm.PracticeQuestionId} starts with empty answer");
-                    }
-
-                    // QUAN TRỌNG: Subscribe to PropertyChanged để detect answer changes
-                    SetupPracticeQuestionBinding(practiceVm);
-
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Created PracticeVM: ID={practiceVm.PracticeQuestionId}, Content='{practiceVm.Content}', Score={practiceVm.Score}, HasAnswer={practiceVm.HasAnswer}");
-
-                    _allPracticeQuestions.Add(practiceVm);
-
-                    // Add to navigation - Use 1-based numbering for UI display
-                    QuestionNumbers.Add(new QuestionNumberItem
-                    {
-                        Number = _allPracticeQuestions.Count, // Use sequential numbering for display
-                        IsAnswered = practiceVm.HasAnswer,
-                        IsMarked = false,
-                        IsCurrent = _allPracticeQuestions.Count == 1 // First question should be current
-                    });
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"[ERROR] No question detail found for order {questionOrder.QuestionOrder}");
-                }
+                System.Diagnostics.Debug.WriteLine("[ERROR] InitializePracticeExam: No questions found in examInfo");
+                return;
             }
-
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] InitializePracticeExam: Loaded {_allPracticeQuestions.Count} practice questions");
-
-            // Show first question
-            CurrentQuestionIndex = 0;
-            UpdateCurrentPracticeQuestion();
-
-            // Force UI refresh
-            OnPropertyChanged(nameof(ExamType));
-            OnPropertyChanged(nameof(CurrentPracticeQuestion));
-            OnPropertyChanged(nameof(TotalQuestions));
-            OnPropertyChanged(nameof(QuestionNumbers));
         }
         private void SetupPracticeQuestionBinding(PracticeQuestionViewModel practiceVm)
         {
@@ -723,7 +642,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
                 var practiceVm = new PracticeQuestionViewModel
                 {
-                    PracticeQuestionId = i + 1, // Use index as ID if not available
+                    PracticeQuestionId = questionDetail.PracticeQuestionId, // Use actual PracticeQuestionId from API
                     QuestionOrder = questionDetail.QuestionOrder,
                     Content = questionDetail.Content,
                     Score = questionDetail.Score,
@@ -735,12 +654,12 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 {
                     var decodedAnswer = questionDetail.AnswerContent.Replace("___NEWLINE___", "\n");
                     practiceVm.SetAnswerSilently(decodedAnswer);
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Fallback - Loaded saved answer for Question {i + 1}: '{decodedAnswer.Substring(0, Math.Min(50, decodedAnswer.Length))}...'");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Fallback - Loaded saved answer for PracticeQuestionId {questionDetail.PracticeQuestionId}: '{decodedAnswer.Substring(0, Math.Min(50, decodedAnswer.Length))}...'");
                 }
                 else
                 {
                     practiceVm.ClearAnswer();
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Fallback - Question {i + 1} starts with empty answer");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Fallback - PracticeQuestionId {questionDetail.PracticeQuestionId} starts with empty answer");
                 }
 
                 // Setup binding cho từng question
