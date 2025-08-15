@@ -476,6 +476,85 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
             }
         }
 
+        public async Task<ExamStatusCheckResponse?> CheckExamStatusAsync(ExamStatusCheckRequest request)
+        {
+            try
+            {
+                var url = $"https://localhost:7074/api/Exam/check-status";
+
+                var requestPayload = JsonSerializer.Serialize(request);
+                Console.WriteLine($"[DEBUG] 🌐 ExamStatus HTTP Request:");
+                Console.WriteLine($"[DEBUG]   - URL: {url}");
+                Console.WriteLine($"[DEBUG]   - Payload: {requestPayload}");
+                
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 🌐 ExamStatus HTTP Request:");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - URL: {url}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - Payload: {requestPayload}");
+
+                var content = new StringContent(
+                    requestPayload,
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var response = await _httpClient.PostAsync(url, content);
+                var json = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"[DEBUG] 📥 ExamStatus HTTP Response:");
+                Console.WriteLine($"[DEBUG]   - Status: {response.StatusCode}");
+                Console.WriteLine($"[DEBUG]   - Content: {json}");
+                
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 📥 ExamStatus HTTP Response:");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - Status: {response.StatusCode}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - Content: {json}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"[ERROR] ❌ ExamStatus Check failed with status: {response.StatusCode}");
+                    Console.WriteLine($"[ERROR] Response content: {json}");
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] ❌ ExamStatus Check failed with status: {response.StatusCode}");
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] Response content: {json}");
+                    return null;
+                }
+
+                // Parse trực tiếp response body (không có wrapper APIResponse)
+                var examStatusResponse = JsonSerializer.Deserialize<ExamStatusCheckResponse>(json, _jsonOptions);
+                
+                if (examStatusResponse?.Exams != null && examStatusResponse.Exams.Count > 0)
+                {
+                    var firstExam = examStatusResponse.Exams[0];
+                    Console.WriteLine($"[DEBUG] ✅ Parsed ExamStatus Response:");
+                    Console.WriteLine($"[DEBUG]   - ExamId: {firstExam.ExamId}");
+                    Console.WriteLine($"[DEBUG]   - ExamName: {firstExam.ExamName}");
+                    Console.WriteLine($"[DEBUG]   - ExamType: {firstExam.ExamType}");
+                    Console.WriteLine($"[DEBUG]   - Status: {firstExam.Status}");
+                    
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ✅ Parsed ExamStatus Response:");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamId: {firstExam.ExamId}");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamName: {firstExam.ExamName}");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamType: {firstExam.ExamType}");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG]   - Status: {firstExam.Status}");
+                }
+                else
+                {
+                    Console.WriteLine($"[DEBUG] ⚠️ API response has no exams");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ⚠️ API response has no exams");
+                }
+
+                return examStatusResponse;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] ❌ CheckExamStatusAsync Exception:");
+                Console.WriteLine($"[ERROR]   - Message: {ex.Message}");
+                Console.WriteLine($"[ERROR]   - StackTrace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR] ❌ CheckExamStatusAsync Exception:");
+                System.Diagnostics.Debug.WriteLine($"[ERROR]   - Message: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR]   - StackTrace: {ex.StackTrace}");
+                return null;
+            }
+        }
+
         #endregion
     }
 }

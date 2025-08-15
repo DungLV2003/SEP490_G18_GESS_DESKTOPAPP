@@ -25,6 +25,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         private readonly INavigationService _navigationService;
         private DispatcherTimer _timer;
         private DispatcherTimer _autoSaveTimer;
+        private DispatcherTimer _examStatusTimer;
         private int _totalSeconds;
 
         #region Properties
@@ -217,6 +218,21 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
         // Violation tracking properties - Theo dõi vi phạm tab ra ngoài
         private int _violationCount = 0;
+        
+        // Flag để đánh dấu khi đang trong quá trình auto-submit do đóng ca
+        private bool _isAutoSubmittingDueToExamClosure = false;
+        
+        // Flag riêng để đánh dấu khi đang trong quá trình đóng ca (không phải penalty cheat)
+        private bool _isExamBeingClosed = false;
+        
+        /// <summary>
+        /// Có đang trong quá trình đóng ca hay không (để UI hiển thị khác với penalty cheat)
+        /// </summary>
+        public bool IsExamBeingClosed
+        {
+            get => _isExamBeingClosed;
+            set => SetProperty(ref _isExamBeingClosed, value);
+        }
         /// <summary>
         /// Số lần vi phạm tab ra ngoài (1, 2, 3)
         /// </summary>
@@ -262,9 +278,9 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         }
 
         /// <summary>
-        /// Có thể tương tác với bài thi hay không (không bị phạt và không loading)
+        /// Có thể tương tác với bài thi hay không (không bị phạt, không loading, và không đang đóng ca)
         /// </summary>
-        public bool CanInteractWithExam => !IsInPenalty && !IsLoading;
+        public bool CanInteractWithExam => !IsInPenalty && !IsLoading && !_isExamBeingClosed;
 
         private bool _isExamSubmitted = false;
         /// <summary>
@@ -349,6 +365,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 // Start timer
                 StartTimer();
                 StartAutoSave();
+                StartExamStatusChecker();
 
                 System.Diagnostics.Debug.WriteLine("[DEBUG] InitializeExam: Completed successfully");
             }
@@ -952,6 +969,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 _timer.Stop();
                 _autoSaveTimer?.Stop();
+                _examStatusTimer?.Stop();
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 🛑 All timers stopped due to timeout");
 
                 // Show notification before auto submit
                 Application.Current.Dispatcher.Invoke(() =>
@@ -1010,6 +1029,161 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             };
             _autoSaveTimer.Start();
             System.Diagnostics.Debug.WriteLine($"[DEBUG] ✅ Auto-save timer started - will save every 10 seconds");
+        }
+
+        private void StartExamStatusChecker()
+        {
+            Console.WriteLine($"[DEBUG] 🚀 Initializing exam status checker...");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] 🚀 Initializing exam status checker...");
+            _examStatusTimer = new DispatcherTimer();
+            _examStatusTimer.Interval = TimeSpan.FromSeconds(5); // Check every 5 seconds as requested
+            _examStatusTimer.Tick += async (s, e) => {
+                Console.WriteLine($"[DEBUG] 🔍 EXAM STATUS CHECK TICK at {DateTime.Now:HH:mm:ss.fff}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 🔍 EXAM STATUS CHECK TICK at {DateTime.Now:HH:mm:ss.fff}");
+                await CheckExamStatusAsync();
+            };
+            _examStatusTimer.Start();
+            Console.WriteLine($"[DEBUG] ✅ Exam status checker started successfully - will check every 5 seconds");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] ✅ Exam status checker started successfully - will check every 5 seconds");
+            Console.WriteLine($"[DEBUG] 📊 Timer Status: IsEnabled={_examStatusTimer.IsEnabled}, Interval={_examStatusTimer.Interval}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] 📊 Timer Status: IsEnabled={_examStatusTimer.IsEnabled}, Interval={_examStatusTimer.Interval}");
+        }
+
+        private async Task CheckExamStatusAsync()
+        {
+            try
+            {
+                if (IsSubmitting) 
+                {
+                    Console.WriteLine($"[DEBUG] ⏸️ Skipping exam status check - already submitting");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ⏸️ Skipping exam status check - already submitting");
+                    return;
+                }
+
+                Console.WriteLine($"[DEBUG] 📋 Preparing exam status check:");
+                Console.WriteLine($"[DEBUG]   - ExamId: {_examId}");
+                Console.WriteLine($"[DEBUG]   - ExamType: {ExamType}");
+                
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 📋 Preparing exam status check:");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamId: {_examId}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamType: {ExamType}");
+
+                var request = new ExamStatusCheckRequest
+                {
+                    ExamIds = new List<int> { _examId },
+                    ExamType = ExamType == ExamType.MultipleChoice ? "Multi" : "Practice"
+                };
+
+                Console.WriteLine($"[DEBUG] 🌐 Calling CheckExamStatusAsync API...");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 🌐 Calling CheckExamStatusAsync API...");
+                var response = await _lamBaiThiService.CheckExamStatusAsync(request);
+                
+                if (response == null || response.Exams == null || response.Exams.Count == 0)
+                {
+                    Console.WriteLine($"[DEBUG] ❌ API returned null or empty response");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ❌ API returned null or empty response");
+                    return;
+                }
+
+                var currentExam = response.Exams.FirstOrDefault(e => e.ExamId == _examId);
+                if (currentExam == null)
+                {
+                    Console.WriteLine($"[DEBUG] ❌ Exam with ID {_examId} not found in response");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ❌ Exam with ID {_examId} not found in response");
+                    return;
+                }
+
+                Console.WriteLine($"[DEBUG] 📥 API Response received:");
+                Console.WriteLine($"[DEBUG]   - ExamId: {currentExam.ExamId}");
+                Console.WriteLine($"[DEBUG]   - ExamName: {currentExam.ExamName}");
+                Console.WriteLine($"[DEBUG]   - ExamType: {currentExam.ExamType}");
+                Console.WriteLine($"[DEBUG]   - Status: {currentExam.Status}");
+                
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 📥 API Response received:");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamId: {currentExam.ExamId}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamName: {currentExam.ExamName}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamType: {currentExam.ExamType}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - Status: {currentExam.Status}");
+                
+                               // Check if status indicates exam should be closed/submitted
+               if (currentExam.Status?.ToLower().Contains("đã đóng ca") == true)
+               {
+                   Console.WriteLine($"[DEBUG] 🚨🚨🚨 AUTO-SUBMIT TRIGGERED! 🚨🚨🚨");
+                   Console.WriteLine($"[DEBUG] Reason: Exam status changed to 'Đã đóng ca'");
+                   Console.WriteLine($"[DEBUG] Exam Status: {currentExam.Status}");
+                   
+                   System.Diagnostics.Debug.WriteLine($"[DEBUG] 🚨🚨🚨 AUTO-SUBMIT TRIGGERED! 🚨🚨🚨");
+                   System.Diagnostics.Debug.WriteLine($"[DEBUG] Reason: Exam status changed to 'Đã đóng ca'");
+                   System.Diagnostics.Debug.WriteLine($"[DEBUG] Exam Status: {currentExam.Status}");
+                   
+                   // Set flag để ngăn vi phạm focus trong quá trình auto-submit
+                   _isAutoSubmittingDueToExamClosure = true;
+                   Console.WriteLine($"[DEBUG] 🚫 Set _isAutoSubmittingDueToExamClosure = true to prevent focus violations");
+                   System.Diagnostics.Debug.WriteLine($"[DEBUG] 🚫 Set _isAutoSubmittingDueToExamClosure = true to prevent focus violations");
+                   
+                   // Stop all timers
+                   Console.WriteLine($"[DEBUG] ⏹️ Stopping all timers due to exam closure...");
+                   System.Diagnostics.Debug.WriteLine($"[DEBUG] ⏹️ Stopping all timers due to exam closure...");
+                   _examStatusTimer?.Stop();
+                   _timer?.Stop();
+                   _autoSaveTimer?.Stop();
+
+                                       // Set flag để chặn tương tác với bài thi ngay lập tức (không phải penalty cheat)
+                    IsExamBeingClosed = true;
+                    Console.WriteLine($"[DEBUG] 🚫 Set IsExamBeingClosed = true to block exam interaction immediately");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] 🚫 Set IsExamBeingClosed = true to block exam interaction immediately");
+
+                   // Show notification to user - BLOCKING MODAL
+                   System.Diagnostics.Debug.WriteLine($"[DEBUG] 💬 Showing BLOCKING notification to user...");
+                   Application.Current.Dispatcher.Invoke(() =>
+                   {
+                       // Tìm window chính làm owner để đảm bảo MessageBox hiển thị trên cùng và block interaction
+                       var mainWindow = Application.Current.Windows.OfType<Views.LamBaiThiView>().FirstOrDefault();
+                       if (mainWindow != null)
+                       {
+                           MessageBox.Show(
+                               mainWindow,
+                               "Ca thi đã được đóng bởi giáo viên/khảo thí.\nBài thi sẽ được tự động nộp.\n\nBạn không thể tiếp tục làm bài.",
+                               "Thông báo từ hệ thống",
+                               MessageBoxButton.OK,
+                               MessageBoxImage.Warning
+                           );
+                       }
+                       else
+                       {
+                           // Fallback nếu không tìm thấy window
+                           MessageBox.Show(
+                               "Ca thi đã được đóng bởi giáo viên/khảo thí.\nBài thi sẽ được tự động nộp.\n\nBạn không thể tiếp tục làm bài.",
+                               "Thông báo từ hệ thống",
+                               MessageBoxButton.OK,
+                               MessageBoxImage.Warning
+                           );
+                       }
+                   });
+
+                   // Auto-submit immediately without confirmation
+                   Console.WriteLine($"[DEBUG] 📤 Starting auto-submit process (no confirmation needed)...");
+                   System.Diagnostics.Debug.WriteLine($"[DEBUG] 📤 Starting auto-submit process (no confirmation needed)...");
+                   await SubmitExamAsync(isAutoSubmit: true);
+                   Console.WriteLine($"[DEBUG] ✅ Auto-submit completed");
+                   System.Diagnostics.Debug.WriteLine($"[DEBUG] ✅ Auto-submit completed");
+               }
+                else
+                {
+                    Console.WriteLine($"[DEBUG] ✅ Exam still active - Continue: {currentExam.Status}");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] ✅ Exam still active - Continue: {currentExam.Status}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] ❌ CheckExamStatusAsync EXCEPTION:");
+                Console.WriteLine($"[ERROR]   - Message: {ex.Message}");
+                Console.WriteLine($"[ERROR]   - StackTrace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR] ❌ CheckExamStatusAsync EXCEPTION:");
+                System.Diagnostics.Debug.WriteLine($"[ERROR]   - Message: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR]   - StackTrace: {ex.StackTrace}");
+                // Don't throw exception to avoid disrupting the exam
+            }
         }
         #endregion
 
@@ -1166,9 +1340,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 // Stop timers when actually submitting
                 _timer?.Stop();
                 _autoSaveTimer?.Stop();
+                _examStatusTimer?.Stop();
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] 🛑 All timers stopped before submit");
 
                 // Set flag submitted để ngăn vi phạm focus tiếp theo
                 IsExamSubmitted = true;
+                
+                // Reset flag auto-submit do đóng ca
+                _isAutoSubmittingDueToExamClosure = false;
+                IsExamBeingClosed = false;
 
                 // Chỉ hiển thị loading nếu không phải auto submit (để tránh delay khi thoát)
                 if (!isAutoSubmit)
@@ -1504,6 +1684,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 return;
             }
 
+            // THÊM: Kiểm tra xem có đang trong quá trình auto-submit do đóng ca không
+            if (_isAutoSubmittingDueToExamClosure)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Bỏ qua vi phạm vì đang trong quá trình auto-submit do đóng ca");
+                return;
+            }
+
             ViolationCount++;
             System.Diagnostics.Debug.WriteLine($"[DEBUG] Vi phạm lần {ViolationCount} - Tab ra ngoài");
 
@@ -1634,6 +1821,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             ViolationCount = 0;
             IsInPenalty = false;
             PenaltyEndTime = null;
+            _isAutoSubmittingDueToExamClosure = false;
+            IsExamBeingClosed = false;
             System.Diagnostics.Debug.WriteLine("[DEBUG] Reset trạng thái vi phạm");
         }
 

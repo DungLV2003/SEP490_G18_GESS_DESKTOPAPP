@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implements
@@ -36,7 +37,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implements
         }
 
         /// <summary>
-        /// Lấy Google ID Token thông qua OAuth flow
+        /// Lấy Google ID Token thông qua OAuth flow với timeout
         /// </summary>
         public async Task<string> GetGoogleIdTokenAsync()
         {
@@ -49,19 +50,40 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implements
                     ClientSecret = _clientSecret
                 };
 
-                var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    clientSecrets,
-                    scopes,
-                    "user",
-                    CancellationToken.None,
-                    new NoDataStore()
-                );
+                // Sử dụng CancellationTokenSource với timeout 60 giây
+                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60)))
+                {
+                    try
+                    {
+                        var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                            clientSecrets,
+                            scopes,
+                            "user",
+                            cts.Token, // Sử dụng timeout token
+                            new NoDataStore()
+                        );
 
-                return credential.Token.IdToken;
+                        if (string.IsNullOrEmpty(credential?.Token?.IdToken))
+                        {
+                            throw new Exception("Không thể lấy được ID Token từ Google");
+                        }
+
+                        return credential.Token.IdToken;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw new Exception("Quá trình đăng nhập đã bị hủy hoặc quá thời gian chờ. Vui lòng thử lại.");
+                    }
+                }
+            }
+            catch (Exception ex) when (ex.Message.Contains("access_denied") || ex.Message.Contains("Cancelled"))
+            {
+                throw new Exception("Người dùng đã hủy quá trình đăng nhập. Vui lòng thử lại.");
             }
             catch (Exception ex)
             {
-                throw new Exception($"Lỗi khi lấy Google ID Token: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"GetGoogleIdTokenAsync Error: {ex.Message}");
+                throw new Exception($"Lỗi khi đăng nhập Google: {ex.Message}");
             }
         }
 

@@ -59,5 +59,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Interfaces
         /// Nộp bài thi tự luận
         /// </summary>
         Task<SubmitPracticeExamResponseDTO?> SubmitPracticeExamAsync(SubmitPracticeExamRequest dto);
+
+        /// <summary>
+        /// Kiểm tra trạng thái thi (để auto-submit khi giáo viên đóng ca)
+        /// </summary>
+        Task<ExamStatusCheckResponse?> CheckExamStatusAsync(ExamStatusCheckRequest request);
     }
 }

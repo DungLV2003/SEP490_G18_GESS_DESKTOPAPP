@@ -885,5 +885,13 @@
                 Panel.ZIndex="98">
             <!-- Chỉ làm background màu đỏ nhẹ, không có nội dung -->
         </Border>
+        
+        <!-- Exam Closure Overlay - Background màu cam nhẹ khi đóng ca -->
+        <Border Background="#40FF8C00" 
+                Grid.ColumnSpan="2"
+                Visibility="{Binding IsExamBeingClosed, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Panel.ZIndex="98">
+            <!-- Chỉ làm background màu cam nhẹ, không có nội dung -->
+        </Border>
     </Grid>
 </Window>
