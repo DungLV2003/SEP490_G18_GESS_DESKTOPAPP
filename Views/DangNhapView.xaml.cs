@@ -202,6 +202,15 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
 
             txtError.Text = message;
             txtError.Visibility = Visibility.Visible;
+            
+            // Auto-hide error message after 8 seconds để người dùng có thể thử lại
+            var timer = new System.Windows.Threading.DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(8);
+            timer.Tick += (s, e) => {
+                timer.Stop();
+                ClearErrorMessage();
+            };
+            timer.Start();
         }
 
         private void ClearErrorMessage()
@@ -215,9 +224,13 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             return ex switch
             {
                 System.Net.Http.HttpRequestException => ERROR_NETWORK,
-                TaskCanceledException => "Quá thời gian chờ. Vui lòng thử lại.",
+                TaskCanceledException => "Quá thời gian chờ hoặc đã đóng trình duyệt. Vui lòng thử lại.",
+                OperationCanceledException => "Quá trình đăng nhập đã bị hủy. Vui lòng thử lại.",
                 UnauthorizedAccessException => "Không có quyền truy cập. Vui lòng liên hệ quản trị viên.",
-                _ => $"Đã xảy ra lỗi: {ex.Message}"
+                _ when ex.Message.Contains("access_denied") => "Người dùng đã từ chối quyền truy cập. Vui lòng thử lại và cho phép quyền truy cập.",
+                _ when ex.Message.Contains("Cancelled") => "Quá trình đăng nhập đã bị hủy. Vui lòng thử lại.",
+                _ when ex.Message.Contains("timeout") || ex.Message.Contains("quá thời gian") => "Quá thời gian chờ. Vui lòng kiểm tra kết nối internet và thử lại.",
+                _ => ex.Message.Contains("Lỗi khi") ? ex.Message : $"Đã xảy ra lỗi: {ex.Message}"
             };
         }
 
