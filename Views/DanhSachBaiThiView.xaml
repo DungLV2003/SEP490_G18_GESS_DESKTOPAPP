@@ -259,6 +259,8 @@
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"/>
 
+
+
                 <!-- User Profile Control -->
                 <uc:UserProfileControl Grid.Column="2" 
                                      HorizontalAlignment="Right" 
