@@ -721,6 +721,23 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             var currentStyle = GetWindowLong(hwnd, GWL_STYLE);
             SetWindowLong(hwnd, GWL_STYLE, currentStyle & ~WS_SYSMENU);
         }
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Window_KeyDown: Key={e.Key}, Modifiers={Keyboard.Modifiers}");
+            
+            // Cho phép tất cả các phím thường (bao gồm chữ z) được xử lý bình thường
+            // Chỉ chặn các phím tắt hệ thống nguy hiểm
+            if (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.F4)
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] Window_KeyDown: Blocked Alt+F4");
+                e.Handled = true;
+                return;
+            }
+            
+            // Cho phép tất cả các phím khác
+            e.Handled = false;
+        }
+
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             System.Diagnostics.Debug.WriteLine($"[DEBUG] OnPreviewKeyDown: Key={e.Key}, Modifiers={Keyboard.Modifiers}");

@@ -164,6 +164,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         public ICommand LoadPracticeExamCommand { get; }
         public ICommand JoinExamCommand { get; }
         public ICommand RefreshCommand { get; }
+
         // Thêm vào Commands section
         public ICommand BackCommand { get; }
         // Commands cho quản lý ứng dụng
@@ -231,6 +232,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 execute: async () => await RefreshCurrentTabAsync(),
                 canExecute: () => !IsLoading
             );
+
+
 
             // Command có parameter
             JoinExamCommand = new RelayCommand<ExamListOfStudentResponse>(
