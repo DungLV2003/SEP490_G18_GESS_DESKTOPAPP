@@ -1,12 +1,7 @@
 ﻿using SEP490_G18_GESS_DESKTOPAPP.Models.LichSuBaiThiSinhVienDTO;
 using SEP490_G18_GESS_DESKTOPAPP.Services.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
 {
@@ -133,18 +128,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
         {
             try
             {
-                // GIỮ NGUYÊN: Đã đúng theo URL bạn cung cấp
-                var url = $"{BASE_URL_SEMESTERS}/by-year";
-                var queryParams = new List<string>();
-
-                if (year.HasValue)
-                    queryParams.Add($"year={year.Value}");
-
-                queryParams.Add($"userId={userId}");
-
-                if (queryParams.Count > 0)
-                    url += "?" + string.Join("&", queryParams);
-
+                // Sử dụng API CurrentSemester thay vì by-year (vì by-year không tồn tại trong database)
+                //var url = $"{BASE_URL_SEMESTERS}/by-year";
+                var url = $"{BASE_URL_SEMESTERS}/CurrentSemester";
+                
                 System.Diagnostics.Debug.WriteLine($"API Call: {url}");
                 var response = await _httpClient.GetAsync(url);
 
@@ -155,6 +142,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                 }
 
                 var json = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"Semesters API Response JSON: {json}");
+                
                 var result = JsonSerializer.Deserialize<List<SemesterResponse>>(json, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
