@@ -5,6 +5,7 @@ using SEP490_G18_GESS_DESKTOPAPP.Services.Interfaces;
 using SEP490_G18_GESS_DESKTOPAPP.ViewModels.Base;
 using SEP490_G18_GESS_DESKTOPAPP.Views;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -116,12 +117,18 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             get
             {
                 var studentIdString = _userService.GetStudentId();
+                System.Diagnostics.Debug.WriteLine($"UserService.GetStudentId() returned: {studentIdString}");
+                
                 if (Guid.TryParse(studentIdString, out Guid studentId))
                 {
+                    System.Diagnostics.Debug.WriteLine($"Using studentId from UserService: {studentId}");
                     return studentId;
                 }
-                // Fallback nếu chưa có thông tin
-                return Guid.Parse("59e9f29d-ff3a-4917-b179-08ddb30066ed");
+                
+                // Fallback nếu chưa có thông tin - sử dụng ID từ API test
+                var fallbackId = Guid.Parse("ed93af85-23f3-4e93-4589-08dddaf14d1c");
+                System.Diagnostics.Debug.WriteLine($"Using fallback studentId: {fallbackId}");
+                return fallbackId;
             }
         }
         #endregion
@@ -172,83 +179,81 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     SelectedSubject = null;
                 });
 
-                // BƯỚC 1: Load danh sách môn học đầu tiên (không filter)
-                System.Diagnostics.Debug.WriteLine("Step 1: Loading initial subjects...");
-                var initialSubjects = await _lichSuBaiThiService.GetAllSubjectBySemesterOfStudentAsync(_currentStudentId);
-
-                if (initialSubjects == null || initialSubjects.Count == 0)
-                {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        ErrorMessage = "Không có môn học nào được tìm thấy.";
-                        IsLoading = false;
-                    });
-                    return;
-                }
-
-                // BƯỚC 2: Tìm semester và year mới nhất từ danh sách môn học
-                var latestSubject = initialSubjects
-                    .Where(s => s.Year > 0 && s.SemesterId.HasValue)
-                    .OrderByDescending(s => s.Year)
-                    .ThenByDescending(s => s.SemesterId)
-                    .FirstOrDefault();
-
-                if (latestSubject == null)
-                {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        ErrorMessage = "Không tìm thấy thông tin kỳ học hợp lệ.";
-                        IsLoading = false;
-                    });
-                    return;
-                }
-
-                var currentYear = latestSubject.Year;
-                var currentSemesterId = latestSubject.SemesterId.Value;
-
-                System.Diagnostics.Debug.WriteLine($"Step 2: Found latest - Year: {currentYear}, Semester: {currentSemesterId}");
+                // BƯỚC 1: Lấy danh sách năm học của sinh viên (không hard-code)
+                int currentYear = DateTime.Now.Year; // fallback
+                int currentSemesterId = 1; // fallback
+                
+                System.Diagnostics.Debug.WriteLine($"Step 2: Defaults - Year: {currentYear}, Semester: {currentSemesterId}");
 
                 // BƯỚC 3: Load danh sách tất cả năm học
-                System.Diagnostics.Debug.WriteLine("Step 3: Loading all years...");
+                System.Diagnostics.Debug.WriteLine($"Step 3: Loading all years for studentId: {_currentStudentId}...");
+                Console.WriteLine($"Step 3: Loading all years for studentId: {_currentStudentId}...");
                 var allYears = await _lichSuBaiThiService.GetAllYearOfStudentAsync(_currentStudentId);
+                
+                // Debug info (không hiển thị dialog)
+                System.Diagnostics.Debug.WriteLine($"Years API Result: {(allYears == null ? "NULL" : $"Found {allYears.Count} years: {string.Join(", ", allYears)}")}");
+                
+                System.Diagnostics.Debug.WriteLine($"All years result: {(allYears == null ? "NULL" : $"{allYears.Count} years")}");
+                Console.WriteLine($"All years result: {(allYears == null ? "NULL" : $"{allYears.Count} years")}");
+                if (allYears != null)
+                {
+                    foreach (var year in allYears)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  - Year: {year}");
+                        Console.WriteLine($"  - Year: {year}");
+                    }
+                }
 
-                // BƯỚC 4: Load danh sách semester theo năm hiện tại
+                // Nếu API trả về danh sách năm, chọn phần tử đầu tiên làm năm mặc định
+                if (allYears != null && allYears.Count > 0)
+                {
+                    currentYear = allYears.First();
+                }
+
+                // BƯỚC 4: Load danh sách semester theo năm đã chọn
                 System.Diagnostics.Debug.WriteLine($"Step 4: Loading semesters for year {currentYear}...");
                 var currentSemesters = await _lichSuBaiThiService.GetSemestersByYearAsync(currentYear, _currentStudentId);
 
                 // BƯỚC 6: Update UI
-                await Application.Current.Dispatcher.InvokeAsync(() =>
+                await Application.Current.Dispatcher.InvokeAsync(async () =>
                 {
-                    // Set years
+                    // Set years theo đúng thứ tự API trả về và chọn phần tử đầu tiên
                     if (allYears != null && allYears.Count > 0)
                     {
-                        foreach (var year in allYears.OrderByDescending(y => y))
+                        foreach (var year in allYears)
                         {
                             YearList.Add(year);
                         }
+                        currentYear = YearList.First();
+                        SelectedYear = currentYear;
                     }
 
-                    // Set semesters
+                    // Load semesters theo năm đã chọn và chọn kỳ đầu tiên
                     if (currentSemesters != null && currentSemesters.Count > 0)
                     {
                         foreach (var semester in currentSemesters)
                         {
                             SemesterList.Add(semester);
                         }
+                        currentSemesterId = SemesterList.First().SemesterId;
+                        SelectedSemester = SemesterList.First();
                     }
 
-                    // Set subjects
-                    if (initialSubjects != null && initialSubjects.Count > 0)
+                    // Load subjects theo kỳ/năm đã chọn và auto-chọn môn đầu tiên
+                    if (SelectedSemester != null && SelectedYear.HasValue)
                     {
-                        foreach (var subject in initialSubjects)
+                        var initialSubjectsForSemester = await _lichSuBaiThiService.GetAllSubjectBySemesterOfStudentAsync(
+                            _currentStudentId, SelectedSemester.SemesterId, SelectedYear.Value);
+                        
+                        if (initialSubjectsForSemester != null && initialSubjectsForSemester.Count > 0)
                         {
-                            SubjectList.Add(subject);
+                            foreach (var subject in initialSubjectsForSemester)
+                            {
+                                SubjectList.Add(subject);
+                            }
+                            SelectedSubject = SubjectList.FirstOrDefault();
                         }
                     }
-
-                    // Set selected values (không trigger events)
-                    SelectedYear = currentYear;
-                    SelectedSemester = SemesterList.FirstOrDefault(s => s.SemesterId == currentSemesterId);
                 });
             }
             catch (Exception ex)
@@ -292,7 +297,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                             SemesterList.Add(semester);
                         }
                         // Auto select first semester
-                        SelectedSemester = semesters.FirstOrDefault();
+                        SelectedSemester = SemesterList.FirstOrDefault();
                     }
                 });
             }
@@ -329,6 +334,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                         {
                             SubjectList.Add(subject);
                         }
+                        System.Diagnostics.Debug.WriteLine($"Loaded {subjects.Count} subjects for semester {SelectedSemester.SemesterName}");
+
+                        // Auto-select first subject and load history
+                        SelectedSubject = SubjectList.FirstOrDefault();
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"No subjects found for semester {SelectedSemester.SemesterName}");
                     }
                 });
             }

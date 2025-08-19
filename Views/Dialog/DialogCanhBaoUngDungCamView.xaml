@@ -258,36 +258,44 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- App Icon - Circular with Letter -->
-                                        <Grid Grid.Column="0" 
-                                              Width="48" Height="48"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,12,0">
-                                            <!-- Background Circle -->
-                                            <Ellipse Width="48" Height="48" 
-                                                     Fill="#F7FAFC"/>
-                                            <!-- Border Circle -->
-                                            <Ellipse Width="48" Height="48" 
-                                                     Stroke="#E2E8F0" 
-                                                     StrokeThickness="1"/>
-                                            <!-- Letter -->
-                                            <TextBlock Text="{Binding IconText}" 
-                                                       FontSize="18"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="#2D3748"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"/>
-                                        </Grid>
-
-                                        <!-- App Info -->
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <!-- App Icon and Name -->
+                                        <StackPanel Grid.Column="0" 
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,12,0">
+                                            <!-- App Icon - Circular with Letter -->
+                                            <Grid Width="48" Height="48"
+                                                  HorizontalAlignment="Center">
+                                                <!-- Background Circle -->
+                                                <Ellipse Width="48" Height="48" 
+                                                         Fill="#F7FAFC"/>
+                                                <!-- Border Circle -->
+                                                <Ellipse Width="48" Height="48" 
+                                                         Stroke="#E2E8F0" 
+                                                         StrokeThickness="1"/>
+                                                <!-- Letter -->
+                                                <TextBlock Text="{Binding IconText}" 
+                                                           FontSize="18"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#2D3748"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                            <!-- App Name below icon -->
                                             <TextBlock Text="{Binding ApplicationName}" 
-                                                     FontSize="16" 
-                                                     FontWeight="SemiBold"
-                                                     Foreground="#212121"/>
+                                                     FontSize="12" 
+                                                     FontWeight="Medium"
+                                                     Foreground="#212121"
+                                                     HorizontalAlignment="Center"
+                                                     Margin="0,4,0,0"/>
+                                        </StackPanel>
+
+                                        <!-- App Status -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Status}" 
                                                      FontSize="12" 
-                                                     Foreground="#757575"/>
+                                                     Foreground="#757575"
+                                                     HorizontalAlignment="Center"/>
                                         </StackPanel>
 
                                         <!-- Close Button - only show in interactive mode -->

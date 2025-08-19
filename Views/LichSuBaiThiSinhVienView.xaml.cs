@@ -46,6 +46,22 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
     }
 
     // Converters cần thiết
+    public class ExamTypeToVietnameseConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var raw = value?.ToString()?.Trim().ToLowerInvariant();
+            if (string.IsNullOrEmpty(raw)) return "";
+            if (raw.Contains("multi") || raw.Contains("trac") || raw.Contains("trắc")) return "Trắc nghiệm";
+            if (raw.Contains("practice") || raw.Contains("tu luan") || raw.Contains("tự luận") || raw.Contains("essay")) return "Tự luận";
+            return char.ToUpper(raw[0]) + raw.Substring(1);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
     public class SelectedSubjectToBackgroundConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
