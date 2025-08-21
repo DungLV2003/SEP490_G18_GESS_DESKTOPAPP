@@ -510,14 +510,32 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 }
             }
 
-            // Xáo trộn câu hỏi
-            var random = new Random();
-            questionsWithDetails = questionsWithDetails.OrderBy(q => random.Next()).ToList();
-
-            // Re-assign QuestionOrder after shuffling
-            for (int i = 0; i < questionsWithDetails.Count; i++)
+            // SẮP XẾP THEO THỨ TỰ TỪ SERVER (questionOrder) ĐỂ TIẾP TỤC BÀI THI KHÔNG BỊ TRỘN
+            // Nếu server có cung cấp QuestionOrder trong examInfo.Questions thì sắp theo đó
+            if (examInfo.Questions != null && examInfo.Questions.Count > 0)
             {
-                questionsWithDetails[i].QuestionOrder = i + 1;
+                var orderMap = examInfo.Questions
+                    .ToDictionary(q => q.MultiQuestionId, q => q.QuestionOrder);
+
+                questionsWithDetails = questionsWithDetails
+                    .OrderBy(q => orderMap.TryGetValue(q.QuestionId, out var ord) ? ord : int.MaxValue)
+                    .ToList();
+
+                for (int i = 0; i < questionsWithDetails.Count; i++)
+                {
+                    // Giữ nguyên thứ tự từ server nếu có, fallback gán tăng dần
+                    var serverOrder = orderMap.TryGetValue(questionsWithDetails[i].QuestionId, out var ord)
+                        ? ord : (i + 1);
+                    questionsWithDetails[i].QuestionOrder = serverOrder;
+                }
+            }
+            else
+            {
+                // Fallback: không shuffle để tránh trộn thứ tự
+                for (int i = 0; i < questionsWithDetails.Count; i++)
+                {
+                    questionsWithDetails[i].QuestionOrder = i + 1;
+                }
             }
 
             // Clear and add to _allQuestions
@@ -967,22 +985,42 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
             if (_totalSeconds <= 0)
             {
+                // Clamp to zero and update display immediately
+                _totalSeconds = 0;
+                UpdateTimerDisplay();
+
+                // Stop all timers
                 _timer.Stop();
                 _autoSaveTimer?.Stop();
                 _examStatusTimer?.Stop();
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] 🛑 All timers stopped due to timeout");
 
-                // Show notification before auto submit
+                // Set submitting flag EARLY to suppress focus-violation handlers during dialogs
+                IsSubmitting = true;
+
+                // Show notification before auto submit (owned by exam window to avoid deactivation side-effects)
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    MessageBox.Show(
-                        "Thời gian làm bài đã hết. Bài thi sẽ được tự động nộp.",
-                        "Hết giờ",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information
-                    );
+                    var owner = Application.Current.Windows.OfType<LamBaiThiView>().FirstOrDefault();
+                    if (owner != null)
+                    {
+                        MessageBox.Show(owner,
+                            "Thời gian làm bài đã hết. Bài thi sẽ được tự động nộp.",
+                            "Hết giờ",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            "Thời gian làm bài đã hết. Bài thi sẽ được tự động nộp.",
+                            "Hết giờ",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
                 });
 
+                // Auto-submit
                 _ = SubmitExamAsync(true);
             }
             else

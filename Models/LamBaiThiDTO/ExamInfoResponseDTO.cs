@@ -26,6 +26,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO
         public string UrlImg { get; set; }
         public int ChapterId { get; set; }
         public int LevelQuestionId { get; set; }
+        public int QuestionOrder { get; set; }
         // Thêm các trường khác nếu cần
     }
 
