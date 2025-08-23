@@ -43,6 +43,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             set => SetProperty(ref _otpCode, value);
         }
 
+
+
         private bool _isLoading;
         public bool IsLoading
         {
@@ -77,6 +79,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             _studentId = studentId;
             _examType = examType;
             _runningApplications = runningApplications ?? new ObservableCollection<RunningApplication>();
+
+
 
             // Auto-fill exam code based on exam type
             ExamCode = _examType == ExamType.MultipleChoice
@@ -198,7 +202,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
             {
                 ExamId = _examInfo.ExamId,
                 Code = OTPCode,
-                StudentId = _studentId
+                StudentId = _studentId,
             };
 
             try

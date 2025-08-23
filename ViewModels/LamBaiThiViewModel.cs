@@ -407,107 +407,108 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] New exam - Full duration: {Duration} minutes");
             }
 
-            // Get all questions for the exam
-            var questionList = await _lamBaiThiService.GetAllQuestionMultiExamByMultiExamIdAsync(_examId);
-            if (questionList == null || questionList.Count == 0) return;
+            // QUAN TRỌNG: Sử dụng câu hỏi từ examInfo thay vì gọi API riêng biệt
+            // Điều này đảm bảo tính nhất quán với response xác thực
+            if (examInfo.Questions == null || examInfo.Questions.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("[ERROR] InitializeMultipleChoiceExam: No questions found in examInfo");
+                return;
+            }
 
-            TotalQuestions = questionList.Count;
+            TotalQuestions = examInfo.Questions.Count;
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] InitializeMultipleChoiceExam: Using {TotalQuestions} questions from examInfo");
 
             // Create a list to hold all questions with their details
             var questionsWithDetails = new List<QuestionViewModel>();
 
-            // Load all questions and their answers
-            for (int i = 0; i < questionList.Count; i++)
+            // Load questions directly from examInfo
+            for (int i = 0; i < examInfo.Questions.Count; i++)
             {
-                var questionSimple = questionList[i];
-                var questionDetail = examInfo.Questions.FirstOrDefault(q => q.MultiQuestionId == questionSimple.Id);
+                var questionDetail = examInfo.Questions[i];
+                
+                // Get answers for this question
+                var answers = await _lamBaiThiService.GetAllMultiAnswerOfQuestionAsync(questionDetail.MultiQuestionId);
 
-                if (questionDetail != null)
+                var correctAnswersCount = answers?.Count(a => a.IsCorrect) ?? 0;
+                var isMultipleChoice = correctAnswersCount > 1;
+
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Question {i + 1} (ID: {questionDetail.MultiQuestionId}): {correctAnswersCount} correct answers → IsMultipleChoice = {isMultipleChoice}");
+
+                var questionVm = new QuestionViewModel
                 {
-                    // Get answers for this question
-                    var answers = await _lamBaiThiService.GetAllMultiAnswerOfQuestionAsync(questionDetail.MultiQuestionId);
+                    QuestionId = questionDetail.MultiQuestionId,
+                    QuestionOrder = questionDetail.QuestionOrder, // Sử dụng QuestionOrder từ API
+                    Content = questionDetail.Content,
+                    ImageUrl = questionDetail.UrlImg,
+                    Answers = answers?.Select(a => {
+                        var answerVm = new AnswerViewModel
+                        {
+                            AnswerId = a.AnswerId,
+                            Content = a.AnswerContent,
+                            IsCorrect = a.IsCorrect,
+                            IsSelected = false
+                        };
 
-                    var correctAnswersCount = answers?.Count(a => a.IsCorrect) ?? 0;
-                    var isMultipleChoice = correctAnswersCount > 1;
-
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Question {i + 1} (ID: {questionDetail.MultiQuestionId}): {correctAnswersCount} correct answers → IsMultipleChoice = {isMultipleChoice}");
-
-                    var questionVm = new QuestionViewModel
-                    {
-                        QuestionId = questionDetail.MultiQuestionId,
-                        QuestionOrder = i + 1,
-                        Content = questionDetail.Content,
-                        ImageUrl = questionDetail.UrlImg,
-                        Answers = answers?.Select(a => {
-                            var answerVm = new AnswerViewModel
+                        // Subscribe to PropertyChanged to detect selection changes
+                        answerVm.PropertyChanged += (s, e) => {
+                            if (e.PropertyName == nameof(AnswerViewModel.IsSelected) && !_isUpdatingSelections)
                             {
-                                AnswerId = a.AnswerId,
-                                Content = a.AnswerContent,
-                                IsCorrect = a.IsCorrect,
-                                IsSelected = false
-                            };
+                                // Use Dispatcher to ensure this runs on UI thread and avoid race conditions
+                                Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+                                    // Find which question this answer belongs to
+                                    var questionIndex = _allQuestions.FindIndex(q => q.Answers.Contains(answerVm));
+                                    if (questionIndex >= 0)
+                                    {
+                                        var question = _allQuestions[questionIndex];
 
-                            // Subscribe to PropertyChanged to detect selection changes
-                            answerVm.PropertyChanged += (s, e) => {
-                                if (e.PropertyName == nameof(AnswerViewModel.IsSelected) && !_isUpdatingSelections)
-                                {
-                                    // Use Dispatcher to ensure this runs on UI thread and avoid race conditions
-                                    Application.Current.Dispatcher.BeginInvoke(new Action(() => {
-                                        // Find which question this answer belongs to
-                                        var questionIndex = _allQuestions.FindIndex(q => q.Answers.Contains(answerVm));
-                                        if (questionIndex >= 0)
+                                        System.Diagnostics.Debug.WriteLine($"[DEBUG] PropertyChanged: Answer {answerVm.AnswerId} IsSelected = {answerVm.IsSelected}");
+                                        System.Diagnostics.Debug.WriteLine($"  - Question {questionIndex + 1} IsMultipleChoice: {question.IsMultipleChoice}");
+
+                                        // CRITICAL: Only clear other selections for single choice questions when selecting
+                                        if (!question.IsMultipleChoice && answerVm.IsSelected && !_isUpdatingSelections)
                                         {
-                                            var question = _allQuestions[questionIndex];
-
-                                            System.Diagnostics.Debug.WriteLine($"[DEBUG] PropertyChanged: Answer {answerVm.AnswerId} IsSelected = {answerVm.IsSelected}");
-                                            System.Diagnostics.Debug.WriteLine($"  - Question {questionIndex + 1} IsMultipleChoice: {question.IsMultipleChoice}");
-
-                                            // CRITICAL: Only clear other selections for single choice questions when selecting
-                                            if (!question.IsMultipleChoice && answerVm.IsSelected && !_isUpdatingSelections)
+                                            System.Diagnostics.Debug.WriteLine($"  - Clearing other selections for SINGLE choice question {questionIndex + 1}");
+                                            _isUpdatingSelections = true;
+                                            try
                                             {
-                                                System.Diagnostics.Debug.WriteLine($"  - Clearing other selections for SINGLE choice question {questionIndex + 1}");
-                                                _isUpdatingSelections = true;
-                                                try
+                                                foreach (var otherAnswer in question.Answers)
                                                 {
-                                                    foreach (var otherAnswer in question.Answers)
+                                                    if (otherAnswer.AnswerId != answerVm.AnswerId && otherAnswer.IsSelected)
                                                     {
-                                                        if (otherAnswer.AnswerId != answerVm.AnswerId && otherAnswer.IsSelected)
-                                                        {
-                                                            System.Diagnostics.Debug.WriteLine($"    - Clearing answer {otherAnswer.AnswerId}");
-                                                            otherAnswer.IsSelected = false;
-                                                        }
+                                                        System.Diagnostics.Debug.WriteLine($"    - Clearing answer {otherAnswer.AnswerId}");
+                                                        otherAnswer.IsSelected = false;
                                                     }
                                                 }
-                                                finally
-                                                {
-                                                    _isUpdatingSelections = false;
-                                                }
                                             }
-                                            else if (question.IsMultipleChoice)
+                                            finally
                                             {
-                                                System.Diagnostics.Debug.WriteLine($"  - MULTIPLE choice question {questionIndex + 1}: allowing multiple selections");
+                                                _isUpdatingSelections = false;
                                             }
-
-                                            // Update question status
-                                            if (questionIndex < QuestionNumbers.Count)
-                                            {
-                                                var hasAnswers = _allQuestions[questionIndex].Answers.Any(ans => ans.IsSelected);
-                                                QuestionNumbers[questionIndex].IsAnswered = hasAnswers;
-                                            }
-
-                                            UpdateMultipleChoiceProgress();
                                         }
-                                    }));
-                                }
-                            };
+                                        else if (question.IsMultipleChoice)
+                                        {
+                                            System.Diagnostics.Debug.WriteLine($"  - MULTIPLE choice question {questionIndex + 1}: allowing multiple selections");
+                                        }
 
-                            return answerVm;
-                        }).ToList() ?? new List<AnswerViewModel>(),
-                        IsMultipleChoice = isMultipleChoice
-                    };
+                                        // Update question status
+                                        if (questionIndex < QuestionNumbers.Count)
+                                        {
+                                            var hasAnswers = _allQuestions[questionIndex].Answers.Any(ans => ans.IsSelected);
+                                            QuestionNumbers[questionIndex].IsAnswered = hasAnswers;
+                                        }
 
-                    questionsWithDetails.Add(questionVm);
-                }
+                                        UpdateMultipleChoiceProgress();
+                                    }
+                                }));
+                            }
+                        };
+
+                        return answerVm;
+                    }).ToList() ?? new List<AnswerViewModel>(),
+                    IsMultipleChoice = isMultipleChoice
+                };
+
+                questionsWithDetails.Add(questionVm);
             }
 
             // SẮP XẾP THEO THỨ TỰ TỪ SERVER (questionOrder) ĐỂ TIẾP TỤC BÀI THI KHÔNG BỊ TRỘN

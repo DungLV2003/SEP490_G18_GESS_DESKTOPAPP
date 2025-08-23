@@ -6,7 +6,11 @@
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
         xmlns:uc="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
         mc:Ignorable="d"
-        Title="HomePageView" WindowState="Maximized" Background="#F7F9FC">
+        Title="HomePageView" WindowState="Maximized" Background="#F7F9FC"
+        ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True"
+        Topmost="True" ShowInTaskbar="False" Focusable="True"
+        Activated="Window_Activated"
+        Loaded="Window_Loaded">
 
     <Window.Resources>
 
@@ -159,13 +163,67 @@
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Custom Title Bar -->
+        <Border Grid.Row="0" Background="White" Height="40" 
+                VerticalAlignment="Top" Panel.ZIndex="1000"
+                BorderThickness="0,0,0,1" BorderBrush="#E2E8F0"
+                Grid.ColumnSpan="3"
+                x:Name="CustomTitleBar"
+                MouseLeftButtonDown="CustomTitleBar_MouseLeftButtonDown"
+                Visibility="Visible">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                        <!-- Title -->
+        <TextBlock Grid.Column="0" Text="Hệ thống thi trực tuyến" 
+                  Foreground="#2D3748" FontSize="14" FontWeight="Medium"
+                  VerticalAlignment="Center" Margin="15,0,0,0"
+                  x:Name="TitleText"/>
+                
+                <!-- Window Control Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" x:Name="WindowControls">
+                    <!-- Minimize Button - Disabled -->
+                    <Button Width="40" Height="40" 
+                            Background="Transparent" BorderThickness="0"
+                            IsEnabled="False" Opacity="0.5"
+                            x:Name="MinimizeButton">
+                        <Path Data="M0,8 L8,8" Stroke="#718096" StrokeThickness="1.5" 
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Maximize Button - Disabled -->
+                    <Button Width="40" Height="40" 
+                            Background="Transparent" BorderThickness="0"
+                            IsEnabled="False" Opacity="0.5"
+                            x:Name="MaximizeButton">
+                        <Path Data="M0,0 L8,0 L8,8 L0,8 Z" 
+                              Stroke="#718096" StrokeThickness="1.5" Fill="Transparent"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Close Button -->
+                    <Button Width="40" Height="40" 
+                            Background="Transparent" BorderThickness="0"
+                            Click="CloseButton_Click" Cursor="Hand"
+                            x:Name="CloseButton">
+                        <Path Data="M0,0 L8,8 M8,0 L0,8" Stroke="#718096" StrokeThickness="1.5" 
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <!-- Header Section - Đồng bộ với 2 trang kia -->
-        <Border Grid.Row="0" Background="{StaticResource HeaderBackground}" 
+        <Border Grid.Row="1" Background="{StaticResource HeaderBackground}" 
         CornerRadius="16"
         Margin="24,24,24,12"
         BorderThickness="1"
@@ -197,7 +255,7 @@
         </Border>
 
         <!-- Welcome Text -->
-        <StackPanel Grid.Row="1" Orientation="Vertical" Margin="24,12,24,24" Grid.ColumnSpan="3">
+        <StackPanel Grid.Row="2" Orientation="Vertical" Margin="24,12,24,24" Grid.ColumnSpan="3">
 
 
             <TextBlock Text="Vui lòng chọn một trong các tùy chọn dưới đây để tiếp tục"
@@ -207,7 +265,7 @@
         </StackPanel>
 
         <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="24,57,24,24" Grid.ColumnSpan="3" Grid.RowSpan="2">
+        <Grid Grid.Row="3" Margin="24,57,24,24" Grid.ColumnSpan="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>

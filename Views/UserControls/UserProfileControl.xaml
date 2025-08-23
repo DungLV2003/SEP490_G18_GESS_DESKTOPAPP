@@ -228,129 +228,22 @@
                VerticalOffset="8">
 
             <Border Style="{StaticResource DropdownMenuStyle}"
-                    Width="340">
+                    Width="250">
                 <StackPanel Margin="8">
-                    <!-- User Info Header -->
+                    <!-- User Info Header - Chỉ hiển thị tên -->
                     <Border Background="Transparent" 
-                            Padding="16,16,16,16">
-                        <StackPanel>
-                            <TextBlock Text="{Binding StudentName}" 
-                                       FontWeight="SemiBold" 
-                                       FontSize="18"
-                                       Foreground="{StaticResource DarkText}"
-                                       Margin="0,0,0,4"/>
-                            <TextBlock Text="{Binding StudentEmail}" 
-                                       FontSize="14"
-                                       Foreground="{StaticResource LightText}"/>
-                        </StackPanel>
+                            Padding="16,16,16,8">
+                        <TextBlock Text="{Binding StudentName}" 
+                                   FontWeight="SemiBold" 
+                                   FontSize="18"
+                                   Foreground="{StaticResource DarkText}"
+                                   HorizontalAlignment="Center"/>
                     </Border>
 
                     <!-- Separator -->
                     <Rectangle Height="1" 
                                Fill="{StaticResource BorderColor}" 
-                               Margin="8,0"/>
-
-                    <!-- Menu Items -->
-                    <!-- Hướng dẫn -->
-                   <Button Style="{StaticResource MenuItemStyle}"
-        Click="Guide_Click">
-    <StackPanel Orientation="Horizontal"
-                VerticalAlignment="Center"> <!-- Đảm bảo căn giữa theo chiều dọc -->
-        <Border Background="{StaticResource IconBackground}" 
-                CornerRadius="8" 
-                Width="40" Height="40" 
-                Margin="0,0,12,0"
-                BorderThickness="1"
-                BorderBrush="{StaticResource BorderColor}">
-            <TextBlock Text="📋" 
-                       FontSize="20" 
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
-        </Border>
-        <TextBlock Text="Hướng dẫn" 
-                   Foreground="{StaticResource DarkText}"
-                   VerticalAlignment="Center"/>
-    </StackPanel>
-</Button>
-
-                    <Border Background="Transparent" 
-        Padding="12,8"
-                        Height="60">
-                       
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Column="0"
-                Background="{StaticResource IconBackground}" 
-                CornerRadius="8" 
-                Width="40" Height="40" 
-                                Margin="0,0,12,0"
-                BorderThickness="1"
-                BorderBrush="{StaticResource BorderColor}">
-                                <TextBlock Text="🌐" 
-                       FontSize="20"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
-        </Border>
-
-                            <TextBlock Grid.Column="1"
-                   Text="Ngôn ngữ" 
-                   Foreground="{StaticResource DarkText}"
-                   VerticalAlignment="Center"/>
-
-                            <ComboBox Grid.Column="2"
-                  x:Name="LanguageComboBox"
-                  Style="{StaticResource LanguageComboBoxStyle}"
-                  SelectedIndex="0"
-                  VerticalAlignment="Center"/>
-                        </Grid>
-                    </Border>
-                    <!-- Dark Mode -->
-                    <Border Background="Transparent" 
-        Padding="12,8" 
-                        Height="60">
-                       
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Column="0"
-                Background="{StaticResource IconBackground}" 
-                CornerRadius="8" 
-                Width="40" Height="40" 
-                                Margin="0,0,12,0"
-                BorderThickness="1"
-                BorderBrush="{StaticResource BorderColor}">
-                                <TextBlock Text="🌙" 
-                       FontSize="20" 
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"/>
-        </Border>
-
-                            <TextBlock Grid.Column="1"
-                   Text="Dark Mode" 
-                   Foreground="{StaticResource DarkText}"
-                   VerticalAlignment="Center"/>
-
-                            <ToggleButton Grid.Column="2"
-                      x:Name="DarkModeToggle"
-                      Style="{StaticResource ToggleSwitchStyle}"
-                      VerticalAlignment="Center"
-                      Click="DarkMode_Click"/>
-                        </Grid>
-                    </Border>
-
-                    <!-- Separator -->
-                    <Rectangle Height="1" 
-                               Fill="{StaticResource BorderColor}" 
-                               Margin="8,8"/>
+                               Margin="8,0,8,8"/>
 
                     <!-- Đăng xuất -->
                     <Button Style="{StaticResource MenuItemStyle}"

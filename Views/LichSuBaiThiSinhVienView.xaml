@@ -6,7 +6,11 @@
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
         xmlns:uc="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
         mc:Ignorable="d"
-        Title="Lịch sử bài thi" Background="#F7F9FC" WindowState="Maximized">
+        Title="Lịch sử bài thi" Background="#F7F9FC" WindowState="Maximized"
+        ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True"
+        Topmost="True" ShowInTaskbar="False" Focusable="True"
+        Activated="Window_Activated"
+        Loaded="Window_Loaded">
     <Window.Resources>
         <!-- Color Resources -->
         <SolidColorBrush x:Key="HeaderBackground" Color="#FFFFFF"/>
@@ -14,6 +18,8 @@
         <SolidColorBrush x:Key="BorderColor" Color="#E2E8F0"/>
         <SolidColorBrush x:Key="PrimaryColor" Color="#3182CE"/>
         <SolidColorBrush x:Key="PrimaryLightColor" Color="#EBF8FF"/>
+        
+        <!-- Sử dụng hiệu ứng mượt mà để tránh ghost text -->
 
         <!-- Style cho panels với shadow -->
         <Style x:Key="ShadowPanel" TargetType="Border">
@@ -216,18 +222,74 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
+    <Grid x:Name="MainGrid">
+        <!-- Sử dụng hiệu ứng chuyển view mượt mà -->
         <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Custom Title Bar -->
+        <Border Grid.Row="0" Background="White" Height="40" 
+                VerticalAlignment="Top" Panel.ZIndex="1000"
+                BorderThickness="0,0,0,1" BorderBrush="#E2E8F0"
+                x:Name="CustomTitleBar"
+                MouseLeftButtonDown="CustomTitleBar_MouseLeftButtonDown">
+            <!-- Sử dụng hiệu ứng mượt mà -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Title -->
+                <TextBlock Grid.Column="0" Text="Lịch sử bài thi" 
+                          Foreground="#2D3748" FontSize="14" FontWeight="Medium"
+                          VerticalAlignment="Center" Margin="15,0,0,0"
+                                                     x:Name="TitleText"/>
+                
+                <!-- Window Control Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" x:Name="WindowControls">
+                    <!-- Minimize Button - Disabled -->
+                    <Button Width="40" Height="40" 
+                            Background="Transparent" BorderThickness="0"
+                            IsEnabled="False" Opacity="0.5"
+                            x:Name="MinimizeButton">
+                        <Path Data="M0,8 L8,8" Stroke="#718096" StrokeThickness="1.5" 
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Maximize Button - Disabled -->
+                    <Button Width="40" Height="40" 
+                            Background="Transparent" BorderThickness="0"
+                            IsEnabled="False" Opacity="0.5"
+                            x:Name="MaximizeButton">
+                        <Path Data="M0,0 L8,0 L8,8 L0,8 Z" 
+                              Stroke="#718096" StrokeThickness="1.5" Fill="Transparent"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Close Button -->
+                    <Button Width="40" Height="40" 
+                            Background="Transparent" BorderThickness="0"
+                            Click="CloseButton_Click" Cursor="Hand"
+                            x:Name="CloseButton">
+                        <Path Data="M0,0 L8,8 M8,0 L0,8" Stroke="#718096" StrokeThickness="1.5" 
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <!-- Header Section -->
-        <Border Grid.Row="0" Background="{StaticResource HeaderBackground}" 
+        <Border Grid.Row="1" Background="{StaticResource HeaderBackground}" 
         CornerRadius="16"
         Margin="24,24,24,12"
         BorderThickness="1"
-        BorderBrush="{StaticResource BorderColor}">
+        BorderBrush="{StaticResource BorderColor}"
+        x:Name="HeaderSection">
+            <!-- Sử dụng hiệu ứng mượt mà -->
             <Border.Effect>
                 <DropShadowEffect Color="#000000" Opacity="0.08" 
                         ShadowDepth="0" BlurRadius="24"/>
@@ -254,7 +316,8 @@
                    FontSize="28" 
                    FontWeight="SemiBold" 
                    VerticalAlignment="Center" 
-                   HorizontalAlignment="Center"/>
+                   HorizontalAlignment="Center"
+                                       x:Name="MainTitleText"/>
 
                 <!-- User Profile Control -->
                 <uc:UserProfileControl Grid.Column="2" 
@@ -264,7 +327,7 @@
         </Border>
 
         <!-- Loading Indicator -->
-        <Border Grid.Row="1" Background="#F0FFFFFF" Panel.ZIndex="100">
+        <Border Grid.Row="2" Background="#F0FFFFFF" Panel.ZIndex="100">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -290,7 +353,7 @@
         </Border>
 
         <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="0,12,0,24">
+        <Grid Grid.Row="2" Margin="0,12,0,24">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="450"/>
                 <ColumnDefinition Width="*"/>

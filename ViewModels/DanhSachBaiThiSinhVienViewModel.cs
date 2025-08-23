@@ -124,7 +124,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         private readonly List<string> _blockedApplications = new List<string>
         {
             // Browsers
-           /* "chrome",*/ "firefox", "msedge", "brave", "opera",
+            "chrome", "firefox", "msedge", "brave", "opera",
             // Communication Apps
             "zalo", "discord", "telegram", "viber", "whatsapp", "messenger", "teams", "zoom", "skype",
             // Remote Access Apps
@@ -975,7 +975,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     }
                     else
                     {
-                        ErrorMessage = "Không có bài thi trắc nghiệm nào.";
+                        ErrorMessage = "Không có bài kiểm tra nào";
                     }
                 });
             }
@@ -983,7 +983,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    ErrorMessage = $"Lỗi tải dữ liệu trắc nghiệm: {ex.Message}";
+                    ErrorMessage = "Lỗi hệ thống, không thể tải dữ liệu";
                     // THÊM: Log chi tiết để debug
                     System.Diagnostics.Debug.WriteLine($"LoadMultiExamAsync Error: {ex}");
                 });
@@ -1024,7 +1024,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     }
                     else
                     {
-                        ErrorMessage = "Không có bài thi tự luận nào.";
+                        ErrorMessage = "Không có bài kiểm tra nào";
                     }
                 });
             }
@@ -1032,7 +1032,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    ErrorMessage = $"Lỗi tải dữ liệu tự luận: {ex.Message}";
+                    ErrorMessage = "Lỗi hệ thống, không thể tải dữ liệu";
                     System.Diagnostics.Debug.WriteLine($"LoadPracticeExamAsync Error: {ex}");
                 });
             }
