@@ -26,9 +26,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
 
             if (current != null && next != null)
             {
-                AnimationHelper.FadeOutAndSwitch(current, next);
+                AnimationHelper.FadeOutAndSwitch(current, next, 300);
             }
         }
+
 
 
         public void CloseApplication()

@@ -8,8 +8,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
     public class LichSuBaiThiSinhVienService : ILichSuBaiThiSinhVienService
     {
         private readonly HttpClient _httpClient;
-        private const string BASE_URL = "https://localhost:7074/api/Student"; // Thay đổi URL này
-        private const string BASE_URL_SEMESTERS = "https://localhost:7074/api/Semesters"; // Thay đổi URL này
+        private const string BASE_URL = "http://14.225.254.72:5000/api/Student"; // Server API endpoint
+        private const string BASE_URL_SEMESTERS = "http://14.225.254.72:5000/api/Semesters"; // Server API endpoint
 
 
         public LichSuBaiThiSinhVienService(HttpClient httpClient)

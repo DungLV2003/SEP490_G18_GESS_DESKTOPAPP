@@ -6,7 +6,11 @@
         xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
         xmlns:uc="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
         mc:Ignorable="d"
-        Title="DanhSachBaiThiView" Background="#F7F9FC" WindowState="Maximized">
+        Title="DanhSachBaiThiView" Background="#F7F9FC" WindowState="Maximized"
+        ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True"
+        Topmost="True" ShowInTaskbar="False" Focusable="True"
+        Activated="Window_Activated"
+        Loaded="Window_Loaded">
     <Window.Resources>
         <Style x:Key="BackButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -48,6 +52,88 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <!-- Style cho nút Refresh -->
+        <Style x:Key="RefreshButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#2D3748"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                        Background="{TemplateBinding Background}" 
+                        CornerRadius="12"
+                        BorderThickness="1"
+                        BorderBrush="Transparent">
+                            <Path x:Name="RefreshIcon"
+                          Data="M12,4V1L8,5L12,9V6C15.31,6 18,8.69 18,12C18,15.31 15.31,18 12,18C8.69,18 6,15.31 6,12H4C4,16.42 7.58,20 12,20C16.42,20 20,16.42 20,12C20,7.58 16.42,4 12,4Z"
+                          Fill="#2D3748"
+                          Width="20"
+                          Height="20"
+                          Stretch="Uniform"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          RenderTransformOrigin="0.5,0.5">
+                            <Path.RenderTransform>
+                                <RotateTransform x:Name="RefreshRotation" Angle="0"/>
+                            </Path.RenderTransform>
+                        </Path>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EDF2F7"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#E2E8F0"/>
+                                <Setter TargetName="RefreshIcon" Property="Fill" Value="#3182CE"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="RefreshRotation"
+                                                Storyboard.TargetProperty="Angle"
+                                                From="0" To="360" Duration="0:0:0.3"
+                                                RepeatBehavior="Forever">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseInOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="RefreshRotation"
+                                                Storyboard.TargetProperty="Angle"
+                                                To="0" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style cho nút Refresh với trạng thái Loading -->
+        <Style x:Key="RefreshButtonLoadingStyle" TargetType="Button" BasedOn="{StaticResource RefreshButtonStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
         
         <!-- Solid Brushes -->
@@ -221,12 +307,58 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Custom Title Bar -->
+        <Border Grid.Row="0" Background="White" Height="40" 
+                VerticalAlignment="Top" Panel.ZIndex="1000"
+                BorderThickness="0,0,0,1" BorderBrush="#E2E8F0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Title -->
+                <TextBlock Grid.Column="0" Text="Danh sách bài thi" 
+                          Foreground="#2D3748" FontSize="14" FontWeight="Medium"
+                          VerticalAlignment="Center" Margin="15,0,0,0"/>
+                
+                <!-- Window Control Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <!-- Minimize Button - Disabled -->
+                    <Button Width="40" Height="40" 
+                            Background="Transparent" BorderThickness="0"
+                            IsEnabled="False" Opacity="0.5">
+                        <Path Data="M0,8 L8,8" Stroke="#718096" StrokeThickness="1.5" 
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Maximize Button - Disabled -->
+                    <Button Width="40" Height="40" 
+                            Background="Transparent" BorderThickness="0"
+                            IsEnabled="False" Opacity="0.5">
+                        <Path Data="M0,0 L8,0 L8,8 L0,8 Z" 
+                              Stroke="#718096" StrokeThickness="1.5" Fill="Transparent"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                    
+                    <!-- Close Button -->
+                    <Button Width="40" Height="40" 
+                            Background="Transparent" BorderThickness="0"
+                            Click="CloseButton_Click" Cursor="Hand">
+                        <Path Data="M0,0 L8,8 M8,0 L0,8" Stroke="#718096" StrokeThickness="1.5" 
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <!-- Header Section với Title và Back Button -->
-        <Border Grid.Row="0" Background="{StaticResource HeaderBackground}" 
+        <Border Grid.Row="1" Background="{StaticResource HeaderBackground}" 
         CornerRadius="16"
         Margin="24,24,24,12"
         BorderThickness="1"
@@ -262,14 +394,14 @@
 
 
                 <!-- User Profile Control -->
-                <uc:UserProfileControl Grid.Column="2" 
+                <uc:UserProfileControl Grid.Column="3" 
                                      HorizontalAlignment="Right" 
                                      VerticalAlignment="Center"/>
             </Grid>
         </Border>
 
         <!-- Loading Indicator -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Border Background="#F0FFFFFF">
                 <Border.Style>
                     <Style TargetType="Border">
@@ -318,15 +450,33 @@
                             <StackPanel>
                                 <!-- Tab Section -->
                                 <Border Background="Transparent" CornerRadius="16,16,0,0" >
-                                    <StackPanel Orientation="Horizontal" Margin="16,16,16,0">
-                                        <Button Content="Trắc nghiệm" 
-                                                Style="{StaticResource TabButtonStyle}"
-                                                Command="{Binding LoadMultiExamCommand}"/>
-                                        <Button Content="Tự luận" 
-                                                Style="{StaticResource TabButtonStyle2}" 
-                                                Command="{Binding LoadPracticeExamCommand}"
-                                                Margin="4,0,0,0"/>
-                                    </StackPanel>
+                                    <Grid Margin="16,16,16,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Tab Buttons -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <Button Content="Trắc nghiệm" 
+                                                    Style="{StaticResource TabButtonStyle}"
+                                                    Command="{Binding LoadMultiExamCommand}"/>
+                                            <Button Content="Tự luận" 
+                                                    Style="{StaticResource TabButtonStyle2}" 
+                                                    Command="{Binding LoadPracticeExamCommand}"
+                                                    Margin="4,0,0,0"/>
+                                        </StackPanel>
+                                        
+                                        <!-- Refresh Button -->
+                                        <Button Grid.Column="1"
+                                                Style="{StaticResource RefreshButtonLoadingStyle}"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Width="44" Height="44"
+                                                Margin="0,0,16,0"
+                                                Command="{Binding RefreshCommand}"
+                                                ToolTip="Làm mới danh sách bài thi"/>
+                                    </Grid>
                                 </Border>
 
                                 <!-- Table Header -->

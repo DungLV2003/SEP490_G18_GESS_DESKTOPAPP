@@ -260,7 +260,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    ErrorMessage = $"Lỗi tải dữ liệu: {ex.Message}";
+                    ErrorMessage = "Lỗi hệ thống, không thể tải dữ liệu";
                     System.Diagnostics.Debug.WriteLine($"LoadInitialDataAsync Error: {ex}");
                 });
             }
@@ -305,7 +305,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    ErrorMessage = $"Lỗi tải kỳ học: {ex.Message}";
+                    ErrorMessage = "Lỗi hệ thống, không thể tải dữ liệu";
                     System.Diagnostics.Debug.WriteLine($"OnYearChangedAsync Error: {ex}");
                 });
             }
@@ -349,7 +349,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    ErrorMessage = $"Lỗi tải môn học: {ex.Message}";
+                    ErrorMessage = "Lỗi hệ thống, không thể tải dữ liệu";
                     System.Diagnostics.Debug.WriteLine($"OnSemesterChangedAsync Error: {ex}");
                 });
             }
@@ -376,10 +376,12 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                             ExamHistoryList.Add(exam);
                         }
                         System.Diagnostics.Debug.WriteLine($"Loaded {examHistory.Count} exam history records");
+                        ErrorMessage = null; // Clear error message when data is loaded
                     }
                     else
                     {
                         System.Diagnostics.Debug.WriteLine("No exam history found");
+                        ErrorMessage = "Không có lịch sử bài thi nào cho môn học này";
                     }
                 });
             }
@@ -387,7 +389,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    ErrorMessage = $"Lỗi tải lịch sử thi: {ex.Message}";
+                    ErrorMessage = "Lỗi hệ thống, không thể tải dữ liệu";
                     System.Diagnostics.Debug.WriteLine($"LoadExamHistoryAsync Error: {ex}");
                 });
             }

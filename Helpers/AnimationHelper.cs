@@ -17,6 +17,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Helpers
             fadeIn.EasingFunction = new CubicEase() { EasingMode = EasingMode.EaseOut };
             window.BeginAnimation(Window.OpacityProperty, fadeIn);
         }
+        
         public static void FadeOutAndSwitch(Window current, Window next, int durationMs = 300)
         {
             var fadeOut = new DoubleAnimation(1.05, 0.05, TimeSpan.FromMilliseconds(durationMs));
