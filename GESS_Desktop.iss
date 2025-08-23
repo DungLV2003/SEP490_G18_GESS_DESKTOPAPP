@@ -5,13 +5,15 @@ AppName=GESS Exam
 AppVersion=1.0.0
 DefaultDirName={autopf}\GESS Exam
 DefaultGroupName=GESS Exam
-OutputDir=Output
+OutputDir=InstallerOutput
+
 OutputBaseFilename=GESS_Exam_Installer
 Compression=lzma
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64
 WizardStyle=modern
-; SetupIconFile=Assets\app.ico   ; nếu có icon, nếu không thì comment dòng này
+SetupIconFile=Assets\favicon.ico
+  
 
 [Files]
 Source: "bin\publish\*"; DestDir: "{app}"; Flags: recursesubdirs

@@ -74,7 +74,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Helpers
                 var json = System.Text.Json.JsonSerializer.Serialize(refreshRequest);
                 var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-                var response = await refreshClient.PostAsync("http://14.225.254.72:5000/api/Auth/refresh-token", content);
+                var response = await refreshClient.PostAsync("https://localhost:7074/api/Auth/refresh-token", content);
 
                 if (response.IsSuccessStatusCode)
                 {

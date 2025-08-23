@@ -17,6 +17,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.DanhSachBaiThiSinhVienDTO
         public string? Status { get; set; }
         public string? RoomName { get; set; }
         public string? ExamSlotName { get; set; }
+        public int? ExamSlotRoomId { get; set; } // Có thể null - chỉ dùng cho thi cuối kỳ
         public TimeSpan? StartTime { get; set; }
         public TimeSpan? EndTime { get; set; }
     }
