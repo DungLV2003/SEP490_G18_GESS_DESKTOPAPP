@@ -193,6 +193,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         private Guid _multiExamHistoryId;
         private Guid _pracExamHistoryId;
         private int _examId;
+        private int? _examSlotRoomId; // Cần thiết cho bài thi cuối kỳ để check status
 
         // All Questions
         private List<QuestionViewModel> _allQuestions;
@@ -347,6 +348,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 IsLoading = true;
                 ExamType = examType;
                 _examId = examId;
+                // _examSlotRoomId sẽ được set từ API response trong InitializeMultipleChoiceExam hoặc InitializePracticeExam
 
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] InitializeExam: ExamType set to {ExamType}");
 
@@ -391,6 +393,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             SubjectName = examInfo.SubjectName;
             ExamCategoryName = examInfo.ExamCategoryName;
             Duration = examInfo.Duration;
+            
+            // QUAN TRỌNG: Lưu ExamSlotRoomId từ API response để sử dụng cho check status
+            _examSlotRoomId = examInfo.ExamSlotRoomId;
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] InitializeMultipleChoiceExam: ExamSlotRoomId from API response: {_examSlotRoomId}");
             
             // QUAN TRỌNG: Tính thời gian còn lại dựa trên StartTime từ server
             if (examInfo.StartTime.HasValue)
@@ -587,6 +593,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             SubjectName = examInfo.SubjectName;
             ExamCategoryName = examInfo.ExamCategoryName;
             Duration = examInfo.Duration;
+            
+            // QUAN TRỌNG: Lưu ExamSlotRoomId từ API response để sử dụng cho check status
+            _examSlotRoomId = examInfo.ExamSlotRoomId;
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] InitializePracticeExam: ExamSlotRoomId from API response: {_examSlotRoomId}");
             
             // QUAN TRỌNG: Tính thời gian còn lại dựa trên StartTime từ server
             if (examInfo.StartTime.HasValue)
@@ -1102,15 +1112,18 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 Console.WriteLine($"[DEBUG] 📋 Preparing exam status check:");
                 Console.WriteLine($"[DEBUG]   - ExamId: {_examId}");
                 Console.WriteLine($"[DEBUG]   - ExamType: {ExamType}");
+                Console.WriteLine($"[DEBUG]   - ExamSlotRoomId: {_examSlotRoomId}");
                 
                 System.Diagnostics.Debug.WriteLine($"[DEBUG] 📋 Preparing exam status check:");
                 System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamId: {_examId}");
                 System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamType: {ExamType}");
+                System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamSlotRoomId: {_examSlotRoomId}");
 
                 var request = new ExamStatusCheckRequest
                 {
                     ExamIds = new List<int> { _examId },
-                    ExamType = ExamType == ExamType.MultipleChoice ? "Multi" : "Practice"
+                    ExamType = ExamType == ExamType.MultipleChoice ? "Multi" : "Practice",
+                    ExamSlotRoomId = _examSlotRoomId // Truyền ExamSlotRoomId nếu có
                 };
 
                 Console.WriteLine($"[DEBUG] 🌐 Calling CheckExamStatusAsync API...");
@@ -1576,6 +1589,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
             var submitDto = new SubmitPracticeExamRequest
             {
                 PracExamHistoryId = _pracExamHistoryId,
+                ExamSlotRoomId = _examSlotRoomId, // Truyền ExamSlotRoomId cho submit
                 Answers = _allPracticeQuestions.Select(q => new SubmitPracticeExamAnswerDTO
                 {
                     PracticeQuestionId = q.PracticeQuestionId,

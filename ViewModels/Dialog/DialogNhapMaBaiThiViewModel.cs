@@ -198,12 +198,21 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
 
         private async System.Threading.Tasks.Task HandleMultipleChoiceExamAsync()
         {
+            // Debug log để kiểm tra ExamSlotRoomId
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] HandleMultipleChoiceExamAsync:");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamId: {_examInfo.ExamId}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamSlotRoomId from examInfo: {_examInfo.ExamSlotRoomId}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamSlotName: {_examInfo.ExamSlotName}");
+            
             var request = new CheckExamRequestDTO
             {
                 ExamId = _examInfo.ExamId,
                 Code = OTPCode,
                 StudentId = _studentId,
+                ExamSlotRoomId = _examInfo.ExamSlotRoomId // Truyền examSlotRoomId nếu có
             };
+            
+            System.Diagnostics.Debug.WriteLine($"[DEBUG]   - Request ExamSlotRoomId: {request.ExamSlotRoomId}");
 
             try
             {
@@ -217,7 +226,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                         var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
                         var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
 
-                        // Initialize exam data
+                        // Initialize exam data - ExamSlotRoomId sẽ được lấy từ API response
                         await lamBaiThiViewModel.InitializeExam(ExamType.MultipleChoice, result, _examInfo.ExamId);
 
                         lamBaiThiView.DataContext = lamBaiThiViewModel;
@@ -382,12 +391,21 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
 
         private async System.Threading.Tasks.Task HandlePracticeExamAsync()
         {
+            // Debug log để kiểm tra ExamSlotRoomId
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] HandlePracticeExamAsync:");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamId: {_examInfo.ExamId}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamSlotRoomId from examInfo: {_examInfo.ExamSlotRoomId}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG]   - ExamSlotName: {_examInfo.ExamSlotName}");
+            
             var request = new CheckPracticeExamRequestDTO
             {
                 ExamId = _examInfo.ExamId,
                 Code = OTPCode,
-                StudentId = _studentId
+                StudentId = _studentId,
+                ExamSlotRoomId = _examInfo.ExamSlotRoomId // Truyền examSlotRoomId nếu có
             };
+            
+            System.Diagnostics.Debug.WriteLine($"[DEBUG]   - Request ExamSlotRoomId: {request.ExamSlotRoomId}");
 
             try
             {
@@ -401,7 +419,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                         var lamBaiThiView = App.AppHost.Services.GetRequiredService<LamBaiThiView>();
                         var lamBaiThiViewModel = App.AppHost.Services.GetRequiredService<LamBaiThiViewModel>();
 
-                        // Initialize exam data
+                        // Initialize exam data - ExamSlotRoomId sẽ được lấy từ API response
                         await lamBaiThiViewModel.InitializeExam(ExamType.Practice, result, _examInfo.ExamId);
 
                         lamBaiThiView.DataContext = lamBaiThiViewModel;

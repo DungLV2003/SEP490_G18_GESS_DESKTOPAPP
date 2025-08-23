@@ -11,5 +11,6 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO
         public int ExamId { get; set; }
         public string Code { get; set; }
         public Guid StudentId { get; set; }
+        public int? ExamSlotRoomId { get; set; } // Có thể null - chỉ dùng cho thi cuối kỳ
     }
 }

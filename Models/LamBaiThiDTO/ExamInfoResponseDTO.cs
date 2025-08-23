@@ -16,6 +16,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO
         public int Duration { get; set; }
         public DateTime? StartTime { get; set; }
         public string Message { get; set; }
+        public int? ExamSlotRoomId { get; set; } // Lưu trữ ExamSlotRoomId từ API response khi tham gia bài thi
         public List<MultiQuestionDetailDTO> Questions { get; set; }
         public List<SavedAnswerDTO> SavedAnswers { get; set; } = new List<SavedAnswerDTO>();
     }

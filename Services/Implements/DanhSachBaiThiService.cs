@@ -13,7 +13,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
     public class DanhSachBaiThiService : IDanhSachBaiThiService
     {
         private readonly HttpClient _httpClient;
-        private const string BASE_URL = "http://14.225.254.72:5000/api/Exam"; // Server API endpoint
+        private const string BASE_URL = "https://localhost:7074/api/Exam"; // Local API endpoint
 
         public DanhSachBaiThiService(HttpClient httpClient)
         {

@@ -124,7 +124,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
         private readonly List<string> _blockedApplications = new List<string>
         {
             // Browsers
-            "chrome", "firefox", "msedge", "brave", "opera",
+            // "chrome", // Tạm thời bỏ chặn Google Chrome
+            "firefox", "msedge", "brave", "opera",
             // Communication Apps
             "zalo", "discord", "telegram", "viber", "whatsapp", "messenger", "teams", "zoom", "skype",
             // Remote Access Apps

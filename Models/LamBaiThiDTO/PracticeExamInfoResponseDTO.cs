@@ -16,6 +16,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Models.LamBaiThiDTO
         public int Duration { get; set; }
         public DateTime? StartTime { get; set; } // Thêm để tính thời gian còn lại
         public string Message { get; set; }
+        public int? ExamSlotRoomId { get; set; } // Lưu trữ ExamSlotRoomId từ API response khi tham gia bài thi
         public List<PracticeExamQuestionDetailDTO> Questions { get; set; }
     }
 
