@@ -8,8 +8,8 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
     public class LichSuBaiThiSinhVienService : ILichSuBaiThiSinhVienService
     {
         private readonly HttpClient _httpClient;
-        private const string BASE_URL = "https://localhost:7074/api/Student"; // Local API endpoint
-        private const string BASE_URL_SEMESTERS = "https://localhost:7074/api/Semesters"; // Local API endpoint
+        private const string BASE_URL = "http://14.225.254.72:5000/api/Student"; // Real API endpoint
+        private const string BASE_URL_SEMESTERS = "http://14.225.254.72:5000/api/Semesters"; // Real API endpoint
 
 
         public LichSuBaiThiSinhVienService(HttpClient httpClient)
@@ -108,6 +108,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
                     return null;
 
                 var json = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"Exam History API Response JSON: {json}");
 
                 var result = JsonSerializer.Deserialize<List<HistoryExamOfStudentDTOResponse>>(json, new JsonSerializerOptions
                 {

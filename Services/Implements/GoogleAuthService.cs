@@ -17,7 +17,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implements
 {
     public class GoogleAuthService : IGoogleAuthService
     {
-        private const string BASE_URL = "https://localhost:7074/api/Auth"; // Local API endpoint
+        private const string BASE_URL = "http://14.225.254.72:5000/api/Auth"; // Real API endpoint
         private readonly string _clientId;
         private readonly string _clientSecret;
 

@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Xác nhận tắt ứng dụng"
-        Height="320"
-        Width="480"
+        Height="380"
+        Width="520"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         WindowStyle="None"
@@ -95,7 +95,7 @@
                               BlurRadius="32"/>
         </Border.Effect>
 
-        <Grid Margin="32">
+        <Grid Margin="32,24,32,32">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -153,7 +153,7 @@
                        Foreground="#718096"
                        HorizontalAlignment="Center"
                        TextAlignment="Center"
-                       Margin="0,0,0,24"/>
+                       Margin="0,0,0,32"/>
 
             <!-- Buttons -->
             <StackPanel Grid.Row="4" 

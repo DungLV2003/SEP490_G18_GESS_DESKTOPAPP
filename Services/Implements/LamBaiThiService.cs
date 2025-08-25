@@ -15,7 +15,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
     public class LamBaiThiService : ILamBaiThiService
     {
         private readonly HttpClient _httpClient;
-        private const string BASE_URL = "https://localhost:7074/api/StudentExam"; // Local API endpoint
+        private const string BASE_URL = "http://14.225.254.72:5000/api/StudentExam"; // Real API endpoint
         private readonly JsonSerializerOptions _jsonOptions;
 
         public LamBaiThiService(HttpClient httpClient)
@@ -480,7 +480,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Services.Implement
         {
             try
             {
-                var url = $"https://localhost:7074/api/Exam/check-status";
+                var url = $"http://14.225.254.72:5000/api/Exam/check-status";
 
                 var requestPayload = JsonSerializer.Serialize(request);
                 Console.WriteLine($"[DEBUG] 🌐 ExamStatus HTTP Request:");

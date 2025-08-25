@@ -78,9 +78,20 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
                 SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
             };
             
-            // Prevent minimize via Alt+Space menu
+            // Prevent minimize via Alt+Space menu (nhưng cho phép chuyển đổi ngôn ngữ)
             this.PreviewKeyDown += (s, e) =>
             {
+                // Cho phép Ctrl+Shift và Alt+Shift để chuyển đổi ngôn ngữ
+                if ((Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.LeftShift) ||
+                    (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.RightShift) ||
+                    (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.LeftShift) ||
+                    (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.RightShift))
+                {
+                    e.Handled = false; // Cho phép chuyển đổi ngôn ngữ
+                    return;
+                }
+                
+                // Chặn Alt+Space để ngăn minimize
                 if (e.Key == System.Windows.Input.Key.Space && 
                     (Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
                 {
@@ -132,6 +143,24 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
             this.Topmost = true;
             this.Focus();
             this.Activate();
+            
+            // Auto refresh data when returning to this page
+            if (DataContext is LichSuBaiThiSinhVienViewModel viewModel)
+            {
+                // Use Dispatcher to avoid blocking UI thread
+                Dispatcher.BeginInvoke(() =>
+                {
+                    try
+                    {
+                        viewModel.RefreshCommand.Execute(null);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log error but don't show to user to avoid spam
+                        System.Diagnostics.Debug.WriteLine($"Auto refresh error: {ex.Message}");
+                    }
+                }, System.Windows.Threading.DispatcherPriority.Background);
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

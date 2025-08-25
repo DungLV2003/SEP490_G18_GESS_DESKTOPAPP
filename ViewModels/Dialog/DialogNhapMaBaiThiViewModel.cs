@@ -250,10 +250,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                         currentDialog.Visibility = Visibility.Hidden;
                     }
 
-                    // Xử lý message lỗi cụ thể từ API
-                    string errorTitle = "Xác thực thất bại";
-                    string errorMessage = apiEx.Message;
-                    string errorDetail = "";
+                                         // Xử lý message lỗi cụ thể từ API
+                     string errorTitle = "Xác thực thất bại";
+                     string errorMessage = "";
+                     string errorDetail = "";
                     Action retryAction = () => 
                     {
                         OTPCode = string.Empty;
@@ -269,20 +269,17 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                         });
                     };
 
-                    // Map error messages to user-friendly messages
-                    switch (apiEx.Message)
-                    {
-                        case "Tên bài thi không đúng.":
-                            errorMessage = "Tên bài thi không đúng!";
-                            errorDetail = "Vui lòng kiểm tra lại thông tin bài thi và thử lại.";
-                            break;
+                                                              // Map error messages to user-friendly messages
+                     switch (apiEx.Message)
+                     {
+                                                  case var msg when msg.Contains("không đúng") || msg.Contains("sai"):
+                             
+                             // Luôn hiển thị thông báo cố định khi nhập sai code
+                             errorMessage = "Mã OTP không đúng!";
+                             errorDetail = "Vui lòng thử lại.";
+                             break;
 
-                        case "Mã thi không đúng.":
-                            errorMessage = "Mã OTP không chính xác!";
-                            errorDetail = "Vui lòng kiểm tra lại mã OTP được cung cấp và thử lại. Mã OTP có phân biệt chữ hoa chữ thường.";
-                            break;
-
-                        case "Bài thi chưa được mở.":
+                        case var msg when msg.Contains("chưa được mở") || msg.Contains("chưa mở"):
                             errorMessage = "Bài thi chưa được mở!";
                             errorDetail = "Bài thi này chưa đến thời gian mở. Vui lòng quay lại sau.";
                             retryAction = () =>
@@ -299,9 +296,9 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                             };
                             break;
 
-                        case "Bạn không thuộc lớp của bài thi này.":
+                        case var msg when msg.Contains("không thuộc lớp") || msg.Contains("không có quyền"):
                             errorTitle = "Không có quyền truy cập";
-                            errorMessage = "Bạn không thuộc lớp của bài thi này@";
+                            errorMessage = "Bạn không thuộc lớp của bài thi này!";
                             errorDetail = "Vui lòng liên hệ với giáo viên để được hỗ trợ.";
                             retryAction = () =>
                             {
@@ -317,7 +314,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                             };
                             break;
 
-                        case "Bạn chưa được điểm danh.":
+                        case var msg when msg.Contains("chưa được điểm danh") || msg.Contains("chưa điểm danh"):
                             errorTitle = "Chưa điểm danh";
                             errorMessage = "Bạn chưa được điểm danh!";
                             errorDetail = "Vui lòng liên hệ với giáo viên để được điểm danh trước khi vào thi.";
@@ -335,11 +332,30 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                             };
                             break;
 
+                        case "Kỳ thi giữa kỳ đã hết hạn. Thời gian kết thúc: 24/08/2025 17:17. Thời gian hiện tại: 24/08/2025 17:22.":
+                        case var msg when msg.Contains("đã hết hạn"):
+                            errorTitle = "Bài thi đã hết hạn";
+                         
+                            errorDetail = "Vui lòng liên hệ với giáo viên để được hỗ trợ.";
+                            retryAction = () =>
+                            {
+                                // Không cho phép thử lại khi bài thi đã hết hạn
+                                // Chỉ hiện lại dialog nhập OTP để user có thể nhập bài thi khác
+                                Application.Current.Dispatcher.BeginInvoke(() =>
+                                {
+                                    if (currentDialog != null)
+                                    {
+                                        currentDialog.Visibility = Visibility.Visible;
+                                        currentDialog.Activate();
+                                    }
+                                });
+                            };
+                            break;
 
                         default:
-                            // Giữ nguyên message từ API nếu không match
-                            errorMessage = "Hiện hệ thống đang lỗi (T_T)";
-                            errorDetail = "Hãy báo cho đội ngũ hỗ trợ và xin vui lòng chờ thời gian để khắc phục hệ thống.";
+                            // Khi nhập sai code, luôn hiển thị thông báo cố định
+                            errorMessage = "Mã OTP không đúng!";
+                            errorDetail = "Vui lòng thử lại.";
                             break;
                     }
 
@@ -443,10 +459,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                         currentDialog.Visibility = Visibility.Hidden;
                     }
 
-                    // Xử lý message lỗi cụ thể từ API cho bài thi tự luận
-                    string errorTitle = "Xác thực thất bại";
-                    string errorMessage = apiEx.Message;
-                    string errorDetail = "";
+                                         // Xử lý message lỗi cụ thể từ API cho bài thi tự luận
+                     string errorTitle = "Xác thực thất bại";
+                     string errorMessage = "";
+                     string errorDetail = "";
                     Action retryAction = () => 
                     {
                         OTPCode = string.Empty;
@@ -462,21 +478,18 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                         });
                     };
 
-                    // Map error messages cho practice exam
-                    switch (apiEx.Message)
-                    {
-                        case "Tên bài thi không đúng.":
-                            errorMessage = "Tên bài thi không đúng";
-                            errorDetail = "Vui lòng kiểm tra lại thông tin bài thi tự luận và thử lại.";
-                            break;
+                                         // Map error messages cho practice exam
+                     switch (apiEx.Message)
+                     {
+                                                  case var msg when msg.Contains("không đúng") || msg.Contains("sai"):
+                             
+                             // Luôn hiển thị thông báo cố định khi nhập sai code
+                             errorMessage = "Mã OTP không đúng!";
+                             errorDetail = "Vui lòng thử lại.";
+                             break;
 
-                        case "Mã thi không đúng.":
-                            errorMessage = "Mã OTP không chính xác";
-                            errorDetail = "Vui lòng kiểm tra lại mã OTP được cung cấp và thử lại. Mã OTP có phân biệt chữ hoa chữ thường.";
-                            break;
-
-                        case "Bài thi chưa được mở.":
-                            errorMessage = "Bài thi chưa được mở";
+                        case var msg when msg.Contains("chưa được mở") || msg.Contains("chưa mở"):
+                            errorMessage = "Bài thi chưa được mở!";
                             errorDetail = "Bài thi tự luận này chưa đến thời gian mở. Vui lòng quay lại sau.";
                             retryAction = () =>
                             {
@@ -492,27 +505,11 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                             };
                             break;
 
-                        case "Bạn không thuộc lớp của bài thi này.":
-                            errorTitle = "Không có quyền truy cập";
-                            errorMessage = "Bạn không thuộc lớp của bài thi này";
-                            errorDetail = "Vui lòng liên hệ với giáo viên để được hỗ trợ.";
-                            retryAction = () =>
-                            {
-                                // Hiện lại dialog nhập OTP
-                                Application.Current.Dispatcher.BeginInvoke(() =>
-                                {
-                                    if (currentDialog != null)
-                                    {
-                                        currentDialog.Visibility = Visibility.Visible;
-                                        currentDialog.Activate();
-                                    }
-                                });
-                            };
-                            break;
+                        
 
-                        case "Bạn chưa được điểm danh.":
+                        case var msg when msg.Contains("chưa được điểm danh") || msg.Contains("chưa điểm danh"):
                             errorTitle = "Chưa điểm danh";
-                            errorMessage = "Bạn chưa được điểm danh";
+                            errorMessage = "Bạn chưa được điểm danh!";
                             errorDetail = "Vui lòng liên hệ với giáo viên để được điểm danh trước khi vào thi.";
                             retryAction = () =>
                             {
@@ -528,8 +525,29 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels.Dialog
                             };
                             break;
 
+                        case var msg when msg.Contains("đã hết hạn") || msg.Contains("hết hạn"):
+                            errorTitle = "Bài thi đã hết hạn";
+                           
+                            errorDetail = "Vui lòng liên hệ với giáo viên để được hỗ trợ.";
+                            retryAction = () =>
+                            {
+                                // Không cho phép thử lại khi bài thi đã hết hạn
+                                // Chỉ hiện lại dialog nhập OTP để user có thể nhập bài thi khác
+                                Application.Current.Dispatcher.BeginInvoke(() =>
+                                {
+                                    if (currentDialog != null)
+                                    {
+                                        currentDialog.Visibility = Visibility.Visible;
+                                        currentDialog.Activate();
+                                    }
+                                });
+                            };
+                            break;
+
                         default:
-                            errorDetail = "Vui lòng thử lại hoặc liên hệ với giáo viên để được hỗ trợ.";
+                            // Khi nhập sai code, luôn hiển thị thông báo cố định
+                            errorMessage = "Mã OTP không đúng!";
+                            errorDetail = "Vui lòng thử lại.";
                             break;
                     }
 
