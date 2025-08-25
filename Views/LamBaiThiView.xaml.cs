@@ -742,6 +742,17 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views
         {
             System.Diagnostics.Debug.WriteLine($"[DEBUG] OnPreviewKeyDown: Key={e.Key}, Modifiers={Keyboard.Modifiers}");
 
+            // Cho phép Ctrl+Shift và Alt+Shift để chuyển đổi ngôn ngữ
+            if ((Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.LeftShift) ||
+                (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.RightShift) ||
+                (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.LeftShift) ||
+                (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.RightShift))
+            {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] OnPreviewKeyDown: Allowing language switch keys");
+                e.Handled = false; // Cho phép chuyển đổi ngôn ngữ
+                return;
+            }
+
             // Chặn Alt + Tab (backup - chủ yếu được xử lý trong HookCallback)
             if (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.Tab)
             {

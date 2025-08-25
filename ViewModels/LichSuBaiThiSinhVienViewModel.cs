@@ -217,6 +217,17 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                 // BƯỚC 6: Update UI
                 await Application.Current.Dispatcher.InvokeAsync(async () =>
                 {
+                    // Clear tất cả collection trước khi thêm dữ liệu mới để tránh duplicate
+                    YearList.Clear();
+                    SemesterList.Clear();
+                    SubjectList.Clear();
+                    ExamHistoryList.Clear();
+                    
+                    // Reset selected items
+                    SelectedYear = null;
+                    SelectedSemester = null;
+                    SelectedSubject = null;
+
                     // Set years theo đúng thứ tự API trả về và chọn phần tử đầu tiên
                     if (allYears != null && allYears.Count > 0)
                     {
@@ -254,6 +265,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                             SelectedSubject = SubjectList.FirstOrDefault();
                         }
                     }
+                    
                 });
             }
             catch (Exception ex)
@@ -287,8 +299,14 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
+                    // Clear semester và các collection phụ thuộc để tránh duplicate
                     SemesterList.Clear();
+                    SubjectList.Clear();
+                    ExamHistoryList.Clear();
+                    
+                    // Reset selected items
                     SelectedSemester = null;
+                    SelectedSubject = null;
 
                     if (semesters != null && semesters.Count > 0)
                     {
@@ -325,7 +343,9 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
+                    // Clear subject và exam history để tránh duplicate
                     SubjectList.Clear();
+                    ExamHistoryList.Clear();
                     SelectedSubject = null; // Clear selected subject
 
                     if (subjects != null && subjects.Count > 0)
@@ -373,6 +393,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     {
                         foreach (var exam in examHistory)
                         {
+                            System.Diagnostics.Debug.WriteLine($"Adding exam: {exam.ExamName}, Score: {exam.Score} (Type: {exam.Score.GetType()}), IsGrade: {exam.IsGrade}");
                             ExamHistoryList.Add(exam);
                         }
                         System.Diagnostics.Debug.WriteLine($"Loaded {examHistory.Count} exam history records");

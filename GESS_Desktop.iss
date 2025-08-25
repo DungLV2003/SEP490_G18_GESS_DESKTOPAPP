@@ -5,7 +5,8 @@ AppName=GESS Exam
 AppVersion=1.0.0
 DefaultDirName={autopf}\GESS Exam
 DefaultGroupName=GESS Exam
-OutputDir=InstallerOutput
+OutputDir=D:\SEP490_G18\SEP490_G18_Desktop\SEP490_G18_GESS_DESKTOPAPP\SEP490_G18_GESS_DESKTOPAPP\InstallerOutput
+
 
 OutputBaseFilename=GESS_Exam_Installer
 Compression=lzma
@@ -16,7 +17,7 @@ SetupIconFile=Assets\favicon.ico
   
 
 [Files]
-Source: "bin\publish\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "D:\SEP490_G18\SEP490_G18_Desktop\SEP490_G18_GESS_DESKTOPAPP\SEP490_G18_GESS_DESKTOPAPP\bin\publish\*"; DestDir: "{app}"; Flags: recursesubdirs
 
 [Icons]
 Name: "{group}\GESS Exam"; Filename: "{app}\GESS Exam.exe"

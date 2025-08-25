@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
-        xmlns:uc="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
+                 xmlns:local="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views"
+         xmlns:uc="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Views.UserControls"
+         xmlns:helpers="clr-namespace:SEP490_G18_GESS_DESKTOPAPP.Helpers"
         mc:Ignorable="d"
         Title="Lịch sử bài thi" Background="#F7F9FC" WindowState="Maximized"
         ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True"
@@ -174,10 +175,103 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Converter để xử lý background cho selected subject -->
-        <local:SubjectSelectionConverter x:Key="SubjectSelectionConverter"/>
-        <!-- Converter hiển thị Trắc nghiệm/Tự luận -->
-        <local:ExamTypeToVietnameseConverter x:Key="ExamTypeToVietnameseConverter"/>
+                 <!-- Converter để xử lý background cho selected subject -->
+         <local:SubjectSelectionConverter x:Key="SubjectSelectionConverter"/>
+         <!-- Converter hiển thị Trắc nghiệm/Tự luận -->
+         <local:ExamTypeToVietnameseConverter x:Key="ExamTypeToVietnameseConverter"/>
+         
+                 <!-- Converters cho trạng thái chấm -->
+        <helpers:GradeStatusBackgroundConverter x:Key="GradeStatusBackgroundConverter"/>
+        <helpers:GradeStatusBorderConverter x:Key="GradeStatusBorderConverter"/>
+        <helpers:GradeStatusTextConverter x:Key="GradeStatusTextConverter"/>
+        <helpers:GradeStatusForegroundConverter x:Key="GradeStatusForegroundConverter"/>
+        <helpers:ScoreDisplayConverter x:Key="ScoreDisplayConverter"/>
+        
+        <!-- Converters cho hiển thị thông báo không có dữ liệu -->
+        <helpers:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+        <helpers:CountToVisibilityInverseConverter x:Key="CountToVisibilityInverseConverter"/>
+        
+        <!-- Style cho nút Refresh -->
+        <Style x:Key="RefreshButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#2D3748"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                        Background="{TemplateBinding Background}" 
+                        CornerRadius="12"
+                        BorderThickness="1"
+                        BorderBrush="Transparent">
+                            <Path x:Name="RefreshIcon"
+                          Data="M12,4V1L8,5L12,9V6C15.31,6 18,8.69 18,12C18,15.31 15.31,18 12,18C8.69,18 6,15.31 6,12H4C4,16.42 7.58,20 12,20C16.42,20 20,16.42 20,12C20,7.58 16.42,4 12,4Z"
+                          Fill="#2D3748"
+                          Width="20"
+                          Height="20"
+                          Stretch="Uniform"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          RenderTransformOrigin="0.5,0.5">
+                            <Path.RenderTransform>
+                                <RotateTransform x:Name="RefreshRotation" Angle="0"/>
+                            </Path.RenderTransform>
+                        </Path>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#EDF2F7"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#E2E8F0"/>
+                                <Setter TargetName="RefreshIcon" Property="Fill" Value="#3182CE"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="RefreshRotation"
+                                                Storyboard.TargetProperty="Angle"
+                                                From="0" To="360" Duration="0:0:0.3"
+                                                RepeatBehavior="Forever">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseInOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation 
+                                                Storyboard.TargetName="RefreshRotation"
+                                                Storyboard.TargetProperty="Angle"
+                                                To="0" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style cho nút Refresh với trạng thái Loading -->
+        <Style x:Key="RefreshButtonLoadingStyle" TargetType="Button" BasedOn="{StaticResource RefreshButtonStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
         
         <Style x:Key="BackButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
@@ -299,6 +393,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Back Button -->
@@ -319,8 +414,18 @@
                    HorizontalAlignment="Center"
                                        x:Name="MainTitleText"/>
 
+                <!-- Refresh Button -->
+                <Button Grid.Column="2"
+                        Style="{StaticResource RefreshButtonLoadingStyle}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Width="44" Height="44"
+                        Margin="0,0,16,0"
+                        Command="{Binding RefreshCommand}"
+                        ToolTip="Làm mới dữ liệu"/>
+
                 <!-- User Profile Control -->
-                <uc:UserProfileControl Grid.Column="2" 
+                <uc:UserProfileControl Grid.Column="3" 
                                      HorizontalAlignment="Right" 
                                      VerticalAlignment="Center"/>
             </Grid>
@@ -402,7 +507,33 @@
                                FontSize="16"
                                Foreground="#2D3748"
                                Margin="0,0,0,12"/>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="350">
+                    
+                    <!-- Thông báo không có môn học -->
+                    <Border Background="#F7FAFC" 
+                            BorderBrush="#E2E8F0" 
+                            BorderThickness="1" 
+                            CornerRadius="8" 
+                            Padding="20" 
+                            Margin="0,0,0,12"
+                            Height="200"
+                            Visibility="{Binding SubjectList.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock Text="📚" 
+                                       FontSize="32" 
+                                       HorizontalAlignment="Center" 
+                                       Margin="0,0,0,8"/>
+                            <TextBlock Text="Không có môn học trong kỳ học này" 
+                                       FontSize="16" 
+                                       FontWeight="Medium" 
+                                       Foreground="#718096" 
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Danh sách môn học -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="350"
+                                  Visibility="{Binding SubjectList.Count, Converter={StaticResource CountToVisibilityInverseConverter}}">
                         <ItemsControl ItemsSource="{Binding SubjectList}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -529,6 +660,7 @@
                                 <ColumnDefinition Width="1.2*"/>
                                 <ColumnDefinition Width="1.5*"/>
                                 <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1.2*"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Table Headers -->
@@ -572,7 +704,15 @@
                                            VerticalAlignment="Center" 
                                            HorizontalAlignment="Center"/>
                             </Border>
-                            <Border Grid.Row="0" Grid.Column="5" Background="#F7FAFC" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,1,1" >
+                            <Border Grid.Row="0" Grid.Column="5" Background="#F7FAFC" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,1">
+                                <TextBlock Text="Trạng thái chấm" 
+                                           Foreground="#2D3748" 
+                                           FontWeight="SemiBold" 
+                                           FontSize="14" 
+                                           VerticalAlignment="Center" 
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                            <Border Grid.Row="0" Grid.Column="6" Background="#F7FAFC" BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,1,1" >
                                 <TextBlock Text="Điểm số" 
                                            Foreground="#2D3748" 
                                            FontWeight="SemiBold" 
@@ -582,11 +722,37 @@
                             </Border>
 
                             <!-- Data Rows -->
-                            <ScrollViewer Grid.Row="1" Grid.ColumnSpan="6" VerticalScrollBarVisibility="Auto" Height="300">
-                                <ItemsControl ItemsSource="{Binding ExamHistoryList}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                                                                            <Grid Margin="0,12,0,12">
+                            <ScrollViewer Grid.Row="1" Grid.ColumnSpan="7" VerticalScrollBarVisibility="Auto" Height="300">
+                                <StackPanel>
+                                    <!-- Thông báo không có lịch sử bài thi -->
+                                    <Border Background="#F7FAFC" 
+                                            BorderBrush="#E2E8F0" 
+                                            BorderThickness="1" 
+                                            CornerRadius="8" 
+                                            Padding="40" 
+                                            Margin="0,20,0,20"
+                                            Height="200"
+                                            Visibility="{Binding ExamHistoryList.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock Text="📝" 
+                                                       FontSize="32" 
+                                                       HorizontalAlignment="Center" 
+                                                       Margin="0,0,0,8"/>
+                                            <TextBlock Text="Không có lịch sử bài thi" 
+                                                       FontSize="16" 
+                                                       FontWeight="Medium" 
+                                                       Foreground="#718096" 
+                                                       HorizontalAlignment="Center"
+                                                       TextAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                    <!-- Danh sách lịch sử bài thi -->
+                                    <ItemsControl ItemsSource="{Binding ExamHistoryList}"
+                                                  Visibility="{Binding ExamHistoryList.Count, Converter={StaticResource CountToVisibilityInverseConverter}}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,12,0,12">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="2*"/>
                                                         <ColumnDefinition Width="1.2*"/>
@@ -594,83 +760,109 @@
                                                         <ColumnDefinition Width="1.2*"/>
                                                         <ColumnDefinition Width="1.5*"/>
                                                         <ColumnDefinition Width="1*"/>
+                                                        <ColumnDefinition Width="1.2*"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                <!-- Tên bài thi -->
-                                                <TextBlock Grid.Column="0" 
-                                                           Text="{Binding ExamName}" 
-                                                           VerticalAlignment="Center" 
-                                                           HorizontalAlignment="Center" 
-                                                           Foreground="#2D3748"
-                                                           FontWeight="Medium"
-                                                           FontSize="14"/>
+                                                    <!-- Tên bài thi -->
+                                                    <TextBlock Grid.Column="0" 
+                                                               Text="{Binding ExamName}" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center" 
+                                                               Foreground="#2D3748"
+                                                               FontWeight="Medium"
+                                                               FontSize="14"/>
 
-                                                <!-- Loại bài thi với badge -->
-                                                <Border Grid.Column="1" 
-                                                        Background="{StaticResource PrimaryLightColor}" 
-                                                        CornerRadius="8" 
-                                                        Padding="12,6" 
-                                                        Margin="8,0" 
-                                                        HorizontalAlignment="Center"
-                                                        VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding ExamType, Converter={StaticResource ExamTypeToVietnameseConverter}}" 
-                                                               Foreground="{StaticResource PrimaryColor}" 
-                                                               FontWeight="Medium" 
-                                                               FontSize="12" 
-                                                               TextAlignment="Center"/>
-                                                </Border>
+                                                    <!-- Loại bài thi với badge -->
+                                                    <Border Grid.Column="1" 
+                                                            Background="{StaticResource PrimaryLightColor}" 
+                                                            CornerRadius="8" 
+                                                            Padding="12,6" 
+                                                            Margin="8,0" 
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding ExamType, Converter={StaticResource ExamTypeToVietnameseConverter}}" 
+                                                                   Foreground="{StaticResource PrimaryColor}" 
+                                                                   FontWeight="Medium" 
+                                                                   FontSize="12" 
+                                                                   TextAlignment="Center"/>
+                                                    </Border>
 
-                                                <!-- Loại đề thi -->
-                                                <TextBlock Grid.Column="2" 
-                                                           Text="{Binding CategoryExamName}" 
-                                                           VerticalAlignment="Center" 
-                                                           HorizontalAlignment="Center" 
-                                                           Foreground="#4A5568"
-                                                           FontSize="14"/>
+                                                    <!-- Loại đề thi -->
+                                                    <TextBlock Grid.Column="2" 
+                                                               Text="{Binding CategoryExamName}" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center" 
+                                                               Foreground="#4A5568"
+                                                               FontSize="14"/>
 
-                                                <!-- Thời gian thi -->
-                                                <TextBlock Grid.Column="3" 
-                                                           VerticalAlignment="Center" 
-                                                           HorizontalAlignment="Center" 
-                                                           Foreground="#4A5568"
-                                                           FontSize="14">
-                                                    <TextBlock.Text>
-                                                        <MultiBinding StringFormat="{}{0} phút">
-                                                            <Binding Path="Duration"/>
-                                                        </MultiBinding>
-                                                    </TextBlock.Text>
-                                                </TextBlock>
+                                                    <!-- Thời gian thi -->
+                                                    <TextBlock Grid.Column="3" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center" 
+                                                               Foreground="#4A5568"
+                                                               FontSize="14">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} phút">
+                                                                <Binding Path="Duration"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
 
-                                                <!-- Ngày thi -->
-                                                <TextBlock Grid.Column="4" 
-                                                           Text="{Binding SubmittedDateTime}" 
-                                                           VerticalAlignment="Center" 
-                                                           HorizontalAlignment="Center" 
-                                                           Foreground="#4A5568"
-                                                           FontSize="14"
-                                                           TextWrapping="Wrap"/>
+                                                    <!-- Ngày thi -->
+                                                    <TextBlock Grid.Column="4" 
+                                                               Text="{Binding SubmittedDateTime}" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center" 
+                                                               Foreground="#4A5568"
+                                                               FontSize="14"
+                                                               TextWrapping="Wrap"/>
 
-                                                <!-- Điểm số với badge -->
-                                                <Border Grid.Column="5" 
-                                                        Background="#F0FDF4" 
-                                                        CornerRadius="8" 
-                                                        Padding="12,6" 
-                                                        Margin="8,0" 
-                                                        HorizontalAlignment="Center"
-                                                        VerticalAlignment="Center"
-                                                        BorderThickness="1"
-                                                        BorderBrush="#BBF7D0"
-                                                        MinWidth="50">
-                                                    <TextBlock Text="{Binding Score}" 
-                                                               Foreground="#16A34A" 
-                                                               FontWeight="SemiBold" 
-                                                               FontSize="14" 
-                                                               HorizontalAlignment="Center"/>
-                                                </Border>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                                    <!-- Trạng thái chấm -->
+                                                    <Border Grid.Column="5" 
+                                                            Background="{Binding IsGrade, Converter={StaticResource GradeStatusBackgroundConverter}}" 
+                                                            CornerRadius="8" 
+                                                            Padding="12,6" 
+                                                            Margin="8,0" 
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            BorderThickness="1"
+                                                            BorderBrush="{Binding IsGrade, Converter={StaticResource GradeStatusBorderConverter}}"
+                                                            MinWidth="80">
+                                                        <TextBlock Text="{Binding IsGrade, Converter={StaticResource GradeStatusTextConverter}}" 
+                                                                   Foreground="{Binding IsGrade, Converter={StaticResource GradeStatusForegroundConverter}}" 
+                                                                   FontWeight="Medium" 
+                                                                   FontSize="12" 
+                                                                   HorizontalAlignment="Center"/>
+                                                    </Border>
+
+                                                    <!-- Điểm số với badge -->
+                                                    <Border Grid.Column="6" 
+                                                            Background="#F0FDF4" 
+                                                            CornerRadius="8" 
+                                                            Padding="12,6" 
+                                                            Margin="8,0" 
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            BorderThickness="1"
+                                                            BorderBrush="#BBF7D0"
+                                                            MinWidth="50">
+                                                        <TextBlock Foreground="#16A34A" 
+                                                                   FontWeight="SemiBold" 
+                                                                   FontSize="14" 
+                                                                   HorizontalAlignment="Center">
+                                                            <TextBlock.Text>
+                                                                <MultiBinding Converter="{StaticResource ScoreDisplayConverter}">
+                                                                    <Binding Path="Score"/>
+                                                                    <Binding Path="IsGrade"/>
+                                                                </MultiBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </ScrollViewer>
                         </Grid>
                     </Border>

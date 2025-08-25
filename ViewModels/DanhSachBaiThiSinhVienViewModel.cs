@@ -968,7 +968,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     ExamList.Clear();
                     if (result != null && result.Count > 0)
                     {
-                        foreach (var exam in result)
+                        // Sắp xếp danh sách theo thứ tự mới nhất trước
+                        var sortedExams = result.OrderByDescending(exam => exam.ExamId).ToList();
+
+                        foreach (var exam in sortedExams)
                         {
                             ExamList.Add(exam);
                         }
@@ -1017,7 +1020,10 @@ namespace SEP490_G18_GESS_DESKTOPAPP.ViewModels
                     ExamList.Clear();
                     if (result != null && result.Count > 0)
                     {
-                        foreach (var exam in result)
+                        // Sắp xếp danh sách theo thứ tự mới nhất trước
+                        var sortedExams = result.OrderByDescending(exam => exam.ExamId).ToList();
+
+                        foreach (var exam in sortedExams)
                         {
                             ExamList.Add(exam);
                         }

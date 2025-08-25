@@ -99,7 +99,7 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Helpers
                 var currentAuth = _httpClient.DefaultRequestHeaders.Authorization;
                 _httpClient.DefaultRequestHeaders.Authorization = null;
 
-                var response = await _httpClient.PostAsync("https://localhost:7074/api/Auth/refresh-token", content);
+                var response = await _httpClient.PostAsync("http://14.225.254.72:5000/api/Auth/refresh-token", content);
 
                 // Khôi phục Authorization header
                 _httpClient.DefaultRequestHeaders.Authorization = currentAuth;

@@ -64,6 +64,16 @@ namespace SEP490_G18_GESS_DESKTOPAPP.Views.BaseView
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
+            // Cho phép Ctrl+Shift và Alt+Shift để chuyển đổi ngôn ngữ
+            if ((Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.LeftShift) ||
+                (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.RightShift) ||
+                (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.LeftShift) ||
+                (Keyboard.Modifiers == ModifierKeys.Alt && e.Key == Key.RightShift))
+            {
+                e.Handled = false; // Cho phép chuyển đổi ngôn ngữ
+                return;
+            }
+
             // Chặn các phím tắt Windows
             if (Keyboard.Modifiers == ModifierKeys.Windows)
             {
